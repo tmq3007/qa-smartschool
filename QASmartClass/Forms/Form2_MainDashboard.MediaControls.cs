@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -789,8 +789,8 @@ namespace QASmartTouch.Forms
                     double newTop = originalTop + deltaY;
 
                     // Constrain to canvas bounds (account for drag handles)
-                    newLeft = Math.Max(15, Math.Min(newLeft, MainInteractiveBoard.ActualWidth - border.Width - 15 - 60)); // 15px for handles, 60px for control panel
-                    newTop = Math.Max(15, Math.Min(newTop, MainInteractiveBoard.ActualHeight - border.Height - 15)); // 15px for handles
+                    newLeft = Math.Max(BoundsHelper.VirtualBoardBounds.Left, Math.Min(newLeft, BoundsHelper.VirtualBoardBounds.Right - border.Width - 15 - 60));
+                    newTop = Math.Max(BoundsHelper.VirtualBoardBounds.Top, Math.Min(newTop, BoundsHelper.VirtualBoardBounds.Bottom - border.Height - 15));
 
                     // Update border position
                     Canvas.SetLeft(border, newLeft);
@@ -1347,9 +1347,9 @@ namespace QASmartTouch.Forms
 
                     // Đặt trực tiếp tại tọa độ thả (drag & drop point)
 
-                    borderLeft = Math.Max(0, initialLeft.Value - (displayWidth / 2));
+                    borderLeft = BoundsHelper.ClampToVirtualBoard(initialLeft.Value - (displayWidth / 2), initialTop.Value - (headerHeight / 2)).Left;
 
-                    borderTop = Math.Max(0, initialTop.Value - (headerHeight / 2));
+                    borderTop = BoundsHelper.ClampToVirtualBoard(initialLeft.Value - (displayWidth / 2), initialTop.Value - (headerHeight / 2)).Top;
 
                 }
 
@@ -1620,9 +1620,9 @@ namespace QASmartTouch.Forms
 
 
 
-                    double newLeft = Math.Max(0, touchStartLeft + offsetX);
+                    double newLeft = BoundsHelper.ClampToVirtualBoard(touchStartLeft + offsetX, touchStartTop + offsetY).Left;
 
-                    double newTop = Math.Max(0, touchStartTop + offsetY);
+                    double newTop = BoundsHelper.ClampToVirtualBoard(touchStartLeft + offsetX, touchStartTop + offsetY).Top;
 
 
 
@@ -1752,9 +1752,9 @@ namespace QASmartTouch.Forms
 
 
 
-                    double newLeft = Math.Max(0, mouseStartLeft + offsetX);
+                    double newLeft = BoundsHelper.ClampToVirtualBoard(mouseStartLeft + offsetX, mouseStartTop + offsetY).Left;
 
-                    double newTop = Math.Max(0, mouseStartTop + offsetY);
+                    double newTop = BoundsHelper.ClampToVirtualBoard(mouseStartLeft + offsetX, mouseStartTop + offsetY).Top;
 
 
 
@@ -2142,8 +2142,8 @@ namespace QASmartTouch.Forms
                     double offsetX = currentPoint.X - touchStartPoint.X;
                     double offsetY = currentPoint.Y - touchStartPoint.Y;
 
-                    double newLeft = Math.Max(0, touchStartLeft + offsetX);
-                    double newTop = Math.Max(0, touchStartTop + offsetY);
+                    double newLeft = BoundsHelper.ClampToVirtualBoard(touchStartLeft + offsetX, touchStartTop + offsetY).Left;
+                    double newTop = BoundsHelper.ClampToVirtualBoard(touchStartLeft + offsetX, touchStartTop + offsetY).Top;
 
                     Canvas.SetLeft(container, newLeft);
                     Canvas.SetTop(container, newTop);
@@ -2208,8 +2208,8 @@ namespace QASmartTouch.Forms
                     double offsetX = currentPoint.X - mouseStartPoint.X;
                     double offsetY = currentPoint.Y - mouseStartPoint.Y;
 
-                    double newLeft = Math.Max(0, mouseStartLeft + offsetX);
-                    double newTop = Math.Max(0, mouseStartTop + offsetY);
+                    double newLeft = BoundsHelper.ClampToVirtualBoard(mouseStartLeft + offsetX, mouseStartTop + offsetY).Left;
+                    double newTop = BoundsHelper.ClampToVirtualBoard(mouseStartLeft + offsetX, mouseStartTop + offsetY).Top;
 
                     Canvas.SetLeft(container, newLeft);
                     Canvas.SetTop(container, newTop);
@@ -2274,8 +2274,8 @@ namespace QASmartTouch.Forms
                     double offsetX = currentPoint.X - stylusStartPoint.X;
                     double offsetY = currentPoint.Y - stylusStartPoint.Y;
 
-                    double newLeft = Math.Max(0, stylusStartLeft + offsetX);
-                    double newTop = Math.Max(0, stylusStartTop + offsetY);
+                    double newLeft = BoundsHelper.ClampToVirtualBoard(stylusStartLeft + offsetX, stylusStartTop + offsetY).Left;
+                    double newTop = BoundsHelper.ClampToVirtualBoard(stylusStartLeft + offsetX, stylusStartTop + offsetY).Top;
 
                     Canvas.SetLeft(container, newLeft);
                     Canvas.SetTop(container, newTop);
@@ -2708,8 +2708,8 @@ namespace QASmartTouch.Forms
                     double offsetX = currentPoint.X - dragStartPoint.X;
                     double offsetY = currentPoint.Y - dragStartPoint.Y;
 
-                    double newLeft = Math.Max(0, originalLeft + offsetX);
-                    double newTop = Math.Max(0, originalTop + offsetY);
+                    double newLeft = BoundsHelper.ClampToVirtualBoard(originalLeft + offsetX, originalTop + offsetY).Left;
+                    double newTop = BoundsHelper.ClampToVirtualBoard(originalLeft + offsetX, originalTop + offsetY).Top;
 
                     Canvas.SetLeft(border, newLeft);
                     Canvas.SetTop(border, newTop);
@@ -2912,8 +2912,8 @@ namespace QASmartTouch.Forms
                         double cWidth = main3DContainer.ActualWidth > 0 ? main3DContainer.ActualWidth : 600;
                         double cHeight = main3DContainer.ActualHeight > 0 ? main3DContainer.ActualHeight : 484;
 
-                        left = Math.Max(0, Math.Min(left, MainInteractiveBoard.ActualWidth - cWidth));
-                        top = Math.Max(0, Math.Min(top, MainInteractiveBoard.ActualHeight - cHeight));
+                        left = Math.Max(BoundsHelper.VirtualBoardBounds.Left, Math.Min(left, BoundsHelper.VirtualBoardBounds.Right - cWidth));
+                        top = Math.Max(BoundsHelper.VirtualBoardBounds.Top, Math.Min(top, BoundsHelper.VirtualBoardBounds.Bottom - cHeight));
 
                         Canvas.SetLeft(main3DContainer, left);
                         Canvas.SetTop(main3DContainer, top);
@@ -2959,8 +2959,8 @@ namespace QASmartTouch.Forms
                         double cWidth = main3DContainer.ActualWidth > 0 ? main3DContainer.ActualWidth : 600;
                         double cHeight = main3DContainer.ActualHeight > 0 ? main3DContainer.ActualHeight : 484;
 
-                        left = Math.Max(0, Math.Min(left, MainInteractiveBoard.ActualWidth - cWidth));
-                        top = Math.Max(0, Math.Min(top, MainInteractiveBoard.ActualHeight - cHeight));
+                        left = Math.Max(BoundsHelper.VirtualBoardBounds.Left, Math.Min(left, BoundsHelper.VirtualBoardBounds.Right - cWidth));
+                        top = Math.Max(BoundsHelper.VirtualBoardBounds.Top, Math.Min(top, BoundsHelper.VirtualBoardBounds.Bottom - cHeight));
 
                         Canvas.SetLeft(main3DContainer, left);
                         Canvas.SetTop(main3DContainer, top);
@@ -3382,8 +3382,8 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
                     double offsetX = currentPoint.X - touchStartPoint.X;
                     double offsetY = currentPoint.Y - touchStartPoint.Y;
 
-                    double newLeft = Math.Max(0, touchStartLeft + offsetX);
-                    double newTop = Math.Max(0, touchStartTop + offsetY);
+                    double newLeft = BoundsHelper.ClampToVirtualBoard(touchStartLeft + offsetX, touchStartTop + offsetY).Left;
+                    double newTop = BoundsHelper.ClampToVirtualBoard(touchStartLeft + offsetX, touchStartTop + offsetY).Top;
 
                     Canvas.SetLeft(container, newLeft);
                     Canvas.SetTop(container, newTop);
@@ -3446,8 +3446,8 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
                     double offsetX = currentPoint.X - mouseStartPoint.X;
                     double offsetY = currentPoint.Y - mouseStartPoint.Y;
 
-                    double newLeft = Math.Max(0, mouseStartLeft + offsetX);
-                    double newTop = Math.Max(0, mouseStartTop + offsetY);
+                    double newLeft = BoundsHelper.ClampToVirtualBoard(mouseStartLeft + offsetX, mouseStartTop + offsetY).Left;
+                    double newTop = BoundsHelper.ClampToVirtualBoard(mouseStartLeft + offsetX, mouseStartTop + offsetY).Top;
 
                     Canvas.SetLeft(container, newLeft);
                     Canvas.SetTop(container, newTop);
@@ -3510,8 +3510,8 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
                     double offsetX = currentPoint.X - stylusStartPoint.X;
                     double offsetY = currentPoint.Y - stylusStartPoint.Y;
 
-                    double newLeft = Math.Max(0, stylusStartLeft + offsetX);
-                    double newTop = Math.Max(0, stylusStartTop + offsetY);
+                    double newLeft = BoundsHelper.ClampToVirtualBoard(stylusStartLeft + offsetX, stylusStartTop + offsetY).Left;
+                    double newTop = BoundsHelper.ClampToVirtualBoard(stylusStartLeft + offsetX, stylusStartTop + offsetY).Top;
 
                     Canvas.SetLeft(container, newLeft);
                     Canvas.SetTop(container, newTop);
@@ -3998,8 +3998,8 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
                     double newTop = originalTop + deltaY;
 
                     // Constrain to canvas bounds (account for drag handles)
-                    newLeft = Math.Max(15, Math.Min(newLeft, MainInteractiveBoard.ActualWidth - border.Width - 15 - 60)); // 15px for handles, 60px for control panel
-                    newTop = Math.Max(15, Math.Min(newTop, MainInteractiveBoard.ActualHeight - border.Height - 15)); // 15px for handles
+                    newLeft = Math.Max(BoundsHelper.VirtualBoardBounds.Left, Math.Min(newLeft, BoundsHelper.VirtualBoardBounds.Right - border.Width - 15 - 60));
+                    newTop = Math.Max(BoundsHelper.VirtualBoardBounds.Top, Math.Min(newTop, BoundsHelper.VirtualBoardBounds.Bottom - border.Height - 15));
 
                     // Update border position
                     Canvas.SetLeft(border, newLeft);
@@ -4534,8 +4534,8 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
                     double offsetX = currentPoint.X - touchStartPoint.X;
                     double offsetY = currentPoint.Y - touchStartPoint.Y;
 
-                    double newLeft = Math.Max(0, touchStartLeft + offsetX);
-                    double newTop = Math.Max(0, touchStartTop + offsetY);
+                    double newLeft = BoundsHelper.ClampToVirtualBoard(touchStartLeft + offsetX, touchStartTop + offsetY).Left;
+                    double newTop = BoundsHelper.ClampToVirtualBoard(touchStartLeft + offsetX, touchStartTop + offsetY).Top;
 
                     Canvas.SetLeft(container, newLeft);
                     Canvas.SetTop(container, newTop);
@@ -4598,8 +4598,8 @@ public void InsertPhysicsSimulation(string simulationUrl, string title)
                     double offsetX = currentPoint.X - mouseStartPoint.X;
                     double offsetY = currentPoint.Y - mouseStartPoint.Y;
 
-                    double newLeft = Math.Max(0, mouseStartLeft + offsetX);
-                    double newTop = Math.Max(0, mouseStartTop + offsetY);
+                    double newLeft = BoundsHelper.ClampToVirtualBoard(mouseStartLeft + offsetX, mouseStartTop + offsetY).Left;
+                    double newTop = BoundsHelper.ClampToVirtualBoard(mouseStartLeft + offsetX, mouseStartTop + offsetY).Top;
 
                     Canvas.SetLeft(container, newLeft);
                     Canvas.SetTop(container, newTop);

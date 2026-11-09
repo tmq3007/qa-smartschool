@@ -451,6 +451,9 @@ namespace QASmartTouch.Handlers
                 filterCallback: (potentialHit) =>
                 {
                     // BUG-1601: Bỏ qua eraser preview và các system elements
+                    if (potentialHit is FrameworkElement feBg && feBg.Tag?.ToString() == "BackgroundLayer")
+                        return HitTestFilterBehavior.ContinueSkipSelfAndChildren;
+
                     if (potentialHit is UIElement uie && _eraserEngine != null)
                     {
                         // Không HitTest vào chính eraser preview

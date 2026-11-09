@@ -384,10 +384,18 @@ namespace QASmartTouch.Forms
                     return true;
                 }
 
-                // Click vào vùng trống: nhường toàn quyền cho _lassoTool vẽ nét Lasso mới
+                // Click vào vùng trống: khởi tạo nét Lasso qua điều phối trung tâm để hỗ trợ toàn mặt bảng ảo
                 _isDraggingSelection = false;
                 _draggedSelectionObject = null;
                 _isPreparingRectangleSelection = false;
+                if (_lassoTool != null && _lassoTool.CanStart(clickPoint, originalSource))
+                {
+                    if (!_lassoTool.IsDrawing)
+                    {
+                        _lassoTool.StartLasso(clickPoint);
+                    }
+                    return true;
+                }
                 return false;
             }
 
@@ -761,9 +769,15 @@ namespace QASmartTouch.Forms
                 return;
             }
 
-            // 🛑 Trong chế độ Lasso, tuyệt đối không tạo khung hình chữ nhật preview nét đứt màu xanh dương
+            // 🛑 Trong chế độ Lasso, cập nhật nét vẽ Lasso và tuyệt đối không tạo khung hình chữ nhật preview nét đứt màu xanh dương
             if (_isLassoMode)
+            {
+                if (_lassoTool?.IsDrawing == true)
+                {
+                    _lassoTool.MoveLasso(currentPoint);
+                }
                 return;
+            }
 
             // ✅ QC_4.2_WIDGET_DRAG_FIX: Chỉ kiểm tra IsEventFromInteractiveControl nếu KHÔNG đang kéo di chuyển đối tượng
             if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(originalSource, MainInteractiveBoard))
@@ -879,9 +893,15 @@ namespace QASmartTouch.Forms
                 return;
             }
 
-            // 🛑 Trong chế độ Lasso, nhường toàn quyền xử lý vùng chọn cho _lassoTool
+            // 🛑 Trong chế độ Lasso, hoàn tất nét vẽ Lasso nếu đang vẽ
             if (_isLassoMode)
+            {
+                if (_lassoTool?.IsDrawing == true)
+                {
+                    _lassoTool.EndLasso();
+                }
                 return;
+            }
 
             // 2. Handle Rectangle Selection completion
             if (_rectangleSelectionPreview != null || _isRectangleSelecting)
@@ -1741,13 +1761,12 @@ namespace QASmartTouch.Forms
                     return;
                 }
 
-                double boardWidth = MainInteractiveBoard.ActualWidth > 0 ? MainInteractiveBoard.ActualWidth : 1920;
-                double boardHeight = MainInteractiveBoard.ActualHeight > 0 ? MainInteractiveBoard.ActualHeight : 1080;
+                Rect visibleBounds = BoundsHelper.GetVisibleCanvasBounds(MainInteractiveBoard);
 
                 double toolbarLeft = Canvas.GetLeft(_contextToolbar);
                 double toolbarTop = Canvas.GetTop(_contextToolbar);
-                if (double.IsNaN(toolbarLeft)) toolbarLeft = 100;
-                if (double.IsNaN(toolbarTop)) toolbarTop = 100;
+                if (double.IsNaN(toolbarLeft)) toolbarLeft = visibleBounds.Left + 100;
+                if (double.IsNaN(toolbarTop)) toolbarTop = visibleBounds.Top + 100;
 
                 double toolbarHeight = _contextToolbar.ActualHeight > 0 ? _contextToolbar.ActualHeight : 48;
 
@@ -1756,10 +1775,12 @@ namespace QASmartTouch.Forms
 
                 // Center above the toolbar / thickness button (btnThickness is centered around X = 66 within toolbar)
                 double targetX = toolbarLeft + 66 - (pickerWidth / 2.0);
-                double posX = Math.Max(10, Math.Min(targetX, boardWidth - pickerWidth - 10));
+                double minX = visibleBounds.Left + 10;
+                double maxX = Math.Max(minX, visibleBounds.Right - pickerWidth - 10);
+                double posX = Math.Max(minX, Math.Min(targetX, maxX));
 
                 double posY;
-                if (toolbarTop - pickerHeight - 10 >= 10)
+                if (toolbarTop - pickerHeight - 10 >= visibleBounds.Top + 10)
                 {
                     posY = toolbarTop - pickerHeight - 10;
                 }
@@ -1903,8 +1924,8 @@ namespace QASmartTouch.Forms
                 // Get selected object's bounds
                 Rect bounds = selectedObj.Bounds;
                 
-                // Create the geometry for the overlay: whole canvas minus the selected bounds
-                var outerGeometry = new System.Windows.Media.RectangleGeometry(new Rect(0, 0, MainInteractiveBoard.ActualWidth, MainInteractiveBoard.ActualHeight));
+                // Create the geometry for the overlay: whole virtual board minus the selected bounds
+                var outerGeometry = new System.Windows.Media.RectangleGeometry(BoundsHelper.VirtualBoardBounds);
                 var innerGeometry = new System.Windows.Media.RectangleGeometry(bounds, 8, 8);
                 var combined = new System.Windows.Media.CombinedGeometry(System.Windows.Media.GeometryCombineMode.Exclude, outerGeometry, innerGeometry);
                 
@@ -1948,25 +1969,26 @@ namespace QASmartTouch.Forms
                 const double menuWidth = 280;
                 const double menuHeight = 520;
 
-                double boardWidth = MainInteractiveBoard.ActualWidth > 0 ? MainInteractiveBoard.ActualWidth : 1920;
-                double boardHeight = MainInteractiveBoard.ActualHeight > 0 ? MainInteractiveBoard.ActualHeight : 1080;
+                Rect visibleBounds = BoundsHelper.GetVisibleCanvasBounds(MainInteractiveBoard);
 
                 double toolbarLeft = Canvas.GetLeft(_contextToolbar);
                 double toolbarTop = Canvas.GetTop(_contextToolbar);
-                if (double.IsNaN(toolbarLeft)) toolbarLeft = 100;
-                if (double.IsNaN(toolbarTop)) toolbarTop = 100;
+                if (double.IsNaN(toolbarLeft)) toolbarLeft = visibleBounds.Left + 100;
+                if (double.IsNaN(toolbarTop)) toolbarTop = visibleBounds.Top + 100;
 
                 double toolbarHeight = _contextToolbar.ActualHeight > 0 ? _contextToolbar.ActualHeight : 45;
 
                 // Calculate smart X position aligned with ContextToolbar
-                double posX = Math.Max(10, Math.Min(toolbarLeft + 50, boardWidth - menuWidth - 10));
+                double minX = visibleBounds.Left + 10;
+                double maxX = Math.Max(minX, visibleBounds.Right - menuWidth - 10);
+                double posX = Math.Max(minX, Math.Min(toolbarLeft + 50, maxX));
 
                 // Calculate smart Y position (Above or Below toolbar based on screen space)
                 double posY;
-                if (toolbarTop + toolbarHeight + menuHeight > boardHeight - 20)
+                if (toolbarTop + toolbarHeight + menuHeight > visibleBounds.Bottom - 20)
                 {
                     // Position ABOVE context toolbar if toolbar is in lower screen area
-                    posY = Math.Max(10, toolbarTop - menuHeight - 10);
+                    posY = Math.Max(visibleBounds.Top + 10, toolbarTop - menuHeight - 10);
                 }
                 else
                 {
@@ -1980,7 +2002,7 @@ namespace QASmartTouch.Forms
                 _thicknessPicker?.Hide();
                 _colorPicker?.Hide();
 
-                System.Diagnostics.Debug.WriteLine($"📋 MoreMenu shown at ({posX:F0}, {posY:F0}), board: {boardWidth:F0}×{boardHeight:F0}");
+                System.Diagnostics.Debug.WriteLine($"📋 MoreMenu shown at ({posX:F0}, {posY:F0}), visible: {visibleBounds.Width:F0}×{visibleBounds.Height:F0}");
             }
         }
 

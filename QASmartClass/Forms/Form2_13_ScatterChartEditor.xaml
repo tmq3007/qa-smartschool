@@ -4,7 +4,7 @@
 
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 
-        Title="Biểu đồ Phân tán" 
+        Title="Chức năng vẽ Biểu đồ Phân Tán (Scatter Plot)" 
 
         Height="750" 
 
@@ -19,6 +19,46 @@
 
 
     <Window.Resources>
+
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="#667EEA"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="6" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.9"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="CardBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="BorderBrush" Value="#667EEA"/>
+            <Setter Property="BorderThickness" Value="4,0,0,0"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" Opacity="0.08" BlurRadius="8" ShadowDepth="2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <Style TargetType="Button" x:Key="PresetButtonStyle">
 
@@ -94,7 +134,7 @@
 
         <!-- Header -->
 
-        <Border Grid.Row="0" Padding="20,15">
+        <Border Grid.Row="0" Padding="20">
 
             <Border.Background>
 
@@ -110,12 +150,12 @@
 
             <Grid>
                 <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
-                    <TextBlock Text="Biểu đồ Phân tán (Scatter Plot)" 
-                               FontSize="20" FontWeight="Bold" 
+                    <TextBlock Text="Chức năng vẽ Biểu đồ Phân Tán" 
+                               FontSize="24" FontWeight="Bold" 
                                Foreground="White"/>
-                    <TextBlock Text="Phân tích mối quan hệ giữa hai biến số" 
-                               FontSize="12" Foreground="White" 
-                               Opacity="0.95" Margin="0,3,0,0"/>
+                    <TextBlock Text="Công cụ tạo biểu đồ phân tán (Scatter Plot) chuyên nghiệp - Phân tích mối quan hệ giữa hai biến số" 
+                               FontSize="13" Foreground="White" 
+                               Opacity="0.95" Margin="0,5,0,0"/>
                 </StackPanel>
 
                 <Button x:Name="BtnToggleKeyboard" Click="BtnToggleKeyboard_Click"
@@ -151,17 +191,24 @@
 
             <!-- Canvas Area -->
 
-            <Border Grid.Column="0" Margin="20" Background="White" 
+            <Border Grid.Column="0" Background="#F5F7FA" Padding="20">
 
-                    CornerRadius="10" BorderBrush="#DDD" BorderThickness="2">
+                <Border x:Name="ChartBorder"
+                        Background="White" 
+                        CornerRadius="10" BorderBrush="#DDD" BorderThickness="0.5" Padding="20">
 
-                <Border.Effect>
+                    <Border.Effect>
 
-                    <DropShadowEffect Color="#000" Opacity="0.1" BlurRadius="15" ShadowDepth="0"/>
+                        <DropShadowEffect Color="Black" Opacity="0.1" BlurRadius="15" ShadowDepth="4"/>
 
-                </Border.Effect>
+                    </Border.Effect>
 
-                <Canvas x:Name="ChartCanvas" Width="900" Height="600" Background="White"/>
+                    <Canvas x:Name="ChartCanvas" Background="White"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            SizeChanged="ChartCanvas_SizeChanged"/>
+
+                </Border>
 
             </Border>
 
@@ -173,29 +220,17 @@
 
                           VerticalScrollBarVisibility="Auto">
 
-                <StackPanel Margin="15">
+                <StackPanel Margin="20">
 
 
 
                     <!-- Panel 1: Cấu hình -->
 
-                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,12">
-
-                        <Border.Style>
-
-                            <Style TargetType="Border">
-
-                                <Setter Property="BorderBrush" Value="#667eea"/>
-
-                                <Setter Property="BorderThickness" Value="0,0,0,4"/>
-
-                            </Style>
-
-                        </Border.Style>
+                    <Border Style="{StaticResource CardBorderStyle}">
 
                         <StackPanel>
 
-                            <TextBlock Text="Cấu hình biểu đồ" FontWeight="Bold" FontSize="13" Margin="0,0,0,12"/>
+                            <TextBlock Text="Nhập dữ liệu biểu đồ" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
                             
 
@@ -309,23 +344,11 @@
 
                     <!-- Panel 2: Hình dạng điểm -->
 
-                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,12">
-
-                        <Border.Style>
-
-                            <Style TargetType="Border">
-
-                                <Setter Property="BorderBrush" Value="#667eea"/>
-
-                                <Setter Property="BorderThickness" Value="0,0,0,4"/>
-
-                            </Style>
-
-                        </Border.Style>
+                    <Border Style="{StaticResource CardBorderStyle}">
 
                         <StackPanel>
 
-                            <TextBlock Text="Hình dạng điểm mặc định" FontWeight="Bold" FontSize="13" Margin="0,0,0,12"/>
+                            <TextBlock Text="Hình dạng điểm mặc định" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
                             
 
@@ -397,23 +420,11 @@
 
                     <!-- Panel 3: Tùy chỉnh hiển thị -->
 
-                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,12">
-
-                        <Border.Style>
-
-                            <Style TargetType="Border">
-
-                                <Setter Property="BorderBrush" Value="#667eea"/>
-
-                                <Setter Property="BorderThickness" Value="0,0,0,4"/>
-
-                            </Style>
-
-                        </Border.Style>
+                    <Border Style="{StaticResource CardBorderStyle}">
 
                         <StackPanel>
 
-                            <TextBlock Text="⚙️ Tùy chỉnh hiển thị" FontWeight="Bold" FontSize="13" Margin="0,0,0,12"/>
+                            <TextBlock Text="⚙️ Tùy chỉnh hiển thị" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
                             <CheckBox x:Name="ChkShowGrid" Content="Hiển thị lưới" IsChecked="True" Margin="0,0,0,8" Checked="OnCheckChanged" Unchecked="OnCheckChanged"/>
 
@@ -435,23 +446,11 @@
 
                     <!-- Panel 4: Thống kê -->
 
-                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,12">
-
-                        <Border.Style>
-
-                            <Style TargetType="Border">
-
-                                <Setter Property="BorderBrush" Value="#667eea"/>
-
-                                <Setter Property="BorderThickness" Value="0,0,0,4"/>
-
-                            </Style>
-
-                        </Border.Style>
+                    <Border Style="{StaticResource CardBorderStyle}">
 
                         <StackPanel>
 
-                            <TextBlock Text="Thống kê" FontWeight="Bold" FontSize="13" Margin="0,0,0,12"/>
+                            <TextBlock Text="Thống kê dữ liệu" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
                             <Border Background="#F8F9FA" Padding="12" CornerRadius="6">
 
@@ -499,178 +498,63 @@
 
                     <!-- Panel 5: Chức năng -->
 
-                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,12">
-
-                        <Border.Style>
-
-                            <Style TargetType="Border">
-
-                                <Setter Property="BorderBrush" Value="#667eea"/>
-
-                                <Setter Property="BorderThickness" Value="0,0,0,4"/>
-
-                            </Style>
-
-                        </Border.Style>
+                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,0">
 
                         <StackPanel>
 
-                            <TextBlock Text="Chức năng" FontWeight="Bold" FontSize="13" Margin="0,0,0,12"/>
-
-                            
-
-                            <Button Content="🔄 Cập nhật biểu đồ" Padding="10" Margin="0,0,0,8" Click="BtnUpdate_Click">
-
-                                <Button.Background>
-
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-
-                                        <GradientStop Color="#667eea" Offset="0"/>
-
-                                        <GradientStop Color="#764ba2" Offset="1"/>
-
-                                    </LinearGradientBrush>
-
-                                </Button.Background>
-
-                                <Button.Template>
-
-                                    <ControlTemplate TargetType="Button">
-
-                                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
-
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
-                                        </Border>
-
-                                    </ControlTemplate>
-
-                                </Button.Template>
-
-                                <Button.Foreground>
-
-                                    <SolidColorBrush Color="White"/>
-
-                                </Button.Foreground>
-
-                            </Button>
-
-
-
-                            <Button Content="✅ Xác nhận &amp; Áp dụng" Padding="10" Margin="0,0,0,8" Click="BtnConfirm_Click">
-
-                                <Button.Background>
-
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-
-                                        <GradientStop Color="#28A745" Offset="0"/>
-
-                                        <GradientStop Color="#20C997" Offset="1"/>
-
-                                    </LinearGradientBrush>
-
-                                </Button.Background>
-
-                                <Button.Template>
-
-                                    <ControlTemplate TargetType="Button">
-
-                                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
-
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
-                                        </Border>
-
-                                    </ControlTemplate>
-
-                                </Button.Template>
-
-                                <Button.Foreground>
-
-                                    <SolidColorBrush Color="White"/>
-
-                                </Button.Foreground>
-
-                            </Button>
-
-
-
-                            <Button Content="💾 Lưu hình ảnh PNG" Padding="10" Margin="0,0,0,8" Click="BtnSaveImage_Click">
-
-                                <Button.Background>
-
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-
-                                        <GradientStop Color="#17A2B8" Offset="0"/>
-
-                                        <GradientStop Color="#138496" Offset="1"/>
-
-                                    </LinearGradientBrush>
-
-                                </Button.Background>
-
-                                <Button.Template>
-
-                                    <ControlTemplate TargetType="Button">
-
-                                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
-
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
-                                        </Border>
-
-                                    </ControlTemplate>
-
-                                </Button.Template>
-
-                                <Button.Foreground>
-
-                                    <SolidColorBrush Color="White"/>
-
-                                </Button.Foreground>
-
-                            </Button>
-
-
-
-                            <Button Content="🔄 Làm mới biểu đồ" Padding="10" Click="BtnReset_Click">
-
-                                <Button.Background>
-
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-
-                                        <GradientStop Color="#FD7E14" Offset="0"/>
-
-                                        <GradientStop Color="#E8590C" Offset="1"/>
-
-                                    </LinearGradientBrush>
-
-                                </Button.Background>
-
-                                <Button.Template>
-
-                                    <ControlTemplate TargetType="Button">
-
-                                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
-
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
-                                        </Border>
-
-                                    </ControlTemplate>
-
-                                </Button.Template>
-
-                                <Button.Foreground>
-
-                                    <SolidColorBrush Color="White"/>
-
-                                </Button.Foreground>
-
-                            </Button>
+                            <TextBlock Text="⚙️ Chức năng" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                            <!-- 1. Xác nhận hoàn thành (Màu xanh dương) -->
+                            <Button Content="✅ Xác nhận hoàn thành"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#1976D2"
+                                    FontWeight="Bold"
+                                    Height="40"
+                                    FontSize="13"
+                                    Margin="0,0,0,8"
+                                    Click="BtnConfirm_Click"/>
+
+                            <!-- 2. Lưu hình ảnh PNG (Màu xanh ngọc) -->
+                            <Button Content="💾 Lưu hình ảnh PNG"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#00838F"
+                                    Height="40"
+                                    FontSize="13"
+                                    Margin="0,0,0,8"
+                                    Click="BtnSaveImage_Click"/>
+
+                            <!-- 3. Reset về mặc định (Màu cam) -->
+                            <Button Content="🔄 Reset về mặc định"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#E65100"
+                                    Height="40"
+                                    FontSize="13"
+                                    Margin="0,0,0,8"
+                                    Click="BtnReset_Click"/>
+
+                            <!-- 4. Thoát (Màu xám) -->
+                            <Button Content="✖ Thoát"
+                                    Style="{StaticResource ModernButton}"
+                                    Background="#546E7A"
+                                    Height="40"
+                                    FontSize="13"
+                                    Margin="0,0,0,0"
+                                    Click="Exit_Click"/>
 
                         </StackPanel>
 
+                    </Border>
+
+                    <!-- Panel 6: Hướng dẫn sư phạm -->
+                    <Border Background="#FFF9C4" BorderBrush="#FFE082" BorderThickness="1" CornerRadius="4" Margin="0,10,0,0">
+                        <Expander Header="💡 Hướng dẫn tạo nhanh biểu đồ" IsExpanded="False" Background="Transparent" BorderThickness="0">
+                            <TextBlock Padding="10" FontSize="11" TextWrapping="Wrap" Foreground="#5D4037" FontFamily="Segoe UI">
+                                Bước 1: Nhập tiêu đề và nhãn các trục X, Y bên trên.&#x0a;
+                                Bước 2: Chọn mẫu dữ liệu có sẵn hoặc mở bảng nhập dữ liệu.&#x0a;
+                                Bước 3: Tùy chỉnh hình dạng điểm, đường xu hướng và hệ số tương quan.&#x0a;
+                                Bước 4: Nhấn nút màu xanh dương 'Xác nhận hoàn thành' để chèn vào bảng vẽ.
+                            </TextBlock>
+                        </Expander>
                     </Border>
 
 

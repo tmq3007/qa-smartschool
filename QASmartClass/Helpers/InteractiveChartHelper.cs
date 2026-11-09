@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -130,9 +130,10 @@ namespace QASmartTouch.Helpers
 
             var rootContainer = BuildChartContainer(options, mainCanvas);
 
-            // 5. Tính toán tọa độ đặt trên Canvas
-            double left = options.TargetLeft ?? Math.Max(20, (mainCanvas.ActualWidth - options.InitialWidth) / 2);
-            double top = options.TargetTop ?? Math.Max(20, (mainCanvas.ActualHeight - (options.InitialHeight + HeaderBarHeight)) / 2);
+            // 5. Tính toán tọa độ đặt trên Canvas (ưu tiên căn giữa vùng nhìn thấy hiện tại khi bảng đang zoom/pan)
+            Rect visibleBounds = BoundsHelper.GetVisibleCanvasBounds(mainCanvas);
+            double left = options.TargetLeft ?? (visibleBounds.Left + Math.Max(20, (visibleBounds.Width - options.InitialWidth) / 2));
+            double top = options.TargetTop ?? (visibleBounds.Top + Math.Max(20, (visibleBounds.Height - (options.InitialHeight + HeaderBarHeight)) / 2));
 
             if (!options.TargetLeft.HasValue)
             {
@@ -144,8 +145,9 @@ namespace QASmartTouch.Helpers
                 }
             }
 
-            Canvas.SetLeft(rootContainer, Math.Max(0, left));
-            Canvas.SetTop(rootContainer, Math.Max(0, top));
+            var (clampedLeft, clampedTop) = BoundsHelper.ClampToVirtualBoard(left, top, options.InitialWidth, options.InitialHeight + HeaderBarHeight);
+            Canvas.SetLeft(rootContainer, clampedLeft);
+            Canvas.SetTop(rootContainer, clampedTop);
 
             // 6. Cấp phát Z-Index chuẩn (đè lên nét chữ cũ, nhưng nét chữ mới sẽ nổi lên trên biểu đồ)
             int zIndex = options.MainDashboard.AllocateImageZIndex();
@@ -230,11 +232,19 @@ namespace QASmartTouch.Helpers
 
             // Nút Phóng to ➕
             var btnZoomIn = CreateHeaderButton("➕", "Phóng to biểu đồ (+15%)", Color.FromRgb(108, 92, 231));
-            btnZoomIn.Click += (s, e) => ZoomIn(rootContainer, chartImage, mainCanvas);
+            btnZoomIn.Click += (s, e) =>
+            {
+                ZoomIn(rootContainer, chartImage, mainCanvas);
+                options.MainDashboard?.SyncElementSelectionBounds(rootContainer);
+            };
 
             // Nút Thu nhỏ ➖
             var btnZoomOut = CreateHeaderButton("➖", "Thu nhỏ biểu đồ (-15%)", Color.FromRgb(230, 126, 34));
-            btnZoomOut.Click += (s, e) => ZoomOut(rootContainer, chartImage);
+            btnZoomOut.Click += (s, e) =>
+            {
+                ZoomOut(rootContainer, chartImage);
+                options.MainDashboard?.SyncElementSelectionBounds(rootContainer);
+            };
 
             // Nút Sao chép 📋
             var btnCopy = CreateHeaderButton("📋", "Sao chép biểu đồ", Color.FromRgb(0, 184, 148));
@@ -296,7 +306,7 @@ namespace QASmartTouch.Helpers
             headerBar.Child = barGrid;
 
             // Gắn sự kiện kéo thả (Drag) CHỈ trên headerBar
-            EnableHeaderDrag(headerBar, rootContainer, mainCanvas);
+            EnableHeaderDrag(headerBar, rootContainer, mainCanvas, options.MainDashboard);
 
             return headerBar;
         }
@@ -346,7 +356,7 @@ namespace QASmartTouch.Helpers
         /// <summary>
         /// Kích hoạt cơ chế kéo di chuyển (Drag) CHỈ trên Header Bar (Chuẩn kép Mouse + Touch + Stylus)
         /// </summary>
-        private static void EnableHeaderDrag(Border headerBar, Grid rootContainer, Canvas? mainCanvas)
+        private static void EnableHeaderDrag(Border headerBar, Grid rootContainer, Canvas? mainCanvas, Forms.Form2_MainDashboard? mainDashboard = null)
         {
             headerBar.Tag ??= "DragHandle";
             Stylus.SetIsPressAndHoldEnabled(headerBar, false);
@@ -382,11 +392,12 @@ namespace QASmartTouch.Helpers
                 double newLeft = originalLeft + deltaX;
                 double newTop = originalTop + deltaY;
 
-                newLeft = Math.Max(0, Math.Min(newLeft, canvas.ActualWidth - rootContainer.ActualWidth));
-                newTop = Math.Max(0, Math.Min(newTop, canvas.ActualHeight - (rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : 300)));
+                double elemW = rootContainer.ActualWidth > 0 ? rootContainer.ActualWidth : (rootContainer.Width > 0 ? rootContainer.Width : 400);
+                double elemH = rootContainer.ActualHeight > 0 ? rootContainer.ActualHeight : (rootContainer.Height > 0 ? rootContainer.Height : 300);
+                var (clampedLeft, clampedTop) = BoundsHelper.ClampToVirtualBoard(newLeft, newTop, elemW, elemH);
 
-                Canvas.SetLeft(rootContainer, newLeft);
-                Canvas.SetTop(rootContainer, newTop);
+                Canvas.SetLeft(rootContainer, clampedLeft);
+                Canvas.SetTop(rootContainer, clampedTop);
             }
 
             // === 1. XỬ LÝ CẢM ỨNG (TOUCH / IFP) ===
@@ -430,6 +441,7 @@ namespace QASmartTouch.Helpers
                 {
                     activeTouchId = null;
                     try { headerBar.ReleaseTouchCapture(e.TouchDevice); } catch { }
+                    mainDashboard?.SyncElementSelectionBounds(rootContainer);
                     e.Handled = true;
                 }
             };
@@ -441,6 +453,7 @@ namespace QASmartTouch.Helpers
                 if (activeTouchId.HasValue && e.TouchDevice.Id == activeTouchId.Value)
                 {
                     activeTouchId = null;
+                    mainDashboard?.SyncElementSelectionBounds(rootContainer);
                 }
             };
 
@@ -483,6 +496,7 @@ namespace QASmartTouch.Helpers
                 {
                     isMouseDragging = false;
                     headerBar.ReleaseMouseCapture();
+                    mainDashboard?.SyncElementSelectionBounds(rootContainer);
                     e.Handled = true;
                 }
             };
@@ -530,6 +544,7 @@ namespace QASmartTouch.Helpers
                 {
                     isStylusDragging = false;
                     headerBar.ReleaseStylusCapture();
+                    mainDashboard?.SyncElementSelectionBounds(rootContainer);
                     e.Handled = true;
                 }
             };
@@ -546,8 +561,9 @@ namespace QASmartTouch.Helpers
         private static void ZoomIn(Grid rootContainer, Image chartImage, Canvas? mainCanvas)
         {
             var canvas = mainCanvas ?? rootContainer.Parent as Canvas ?? FindVisualParent<Canvas>(rootContainer);
-            double canvasW = canvas?.ActualWidth ?? 1920;
-            double canvasH = canvas?.ActualHeight ?? 1080;
+            Rect visibleBounds = BoundsHelper.GetVisibleCanvasBounds(canvas);
+            double maxW = Math.Max(2400, visibleBounds.Width - 40);
+            double maxH = Math.Max(1600, visibleBounds.Height - 100);
 
             double scale = 1.15;
             double currentW = rootContainer.Width > 0 ? rootContainer.Width : chartImage.Width;
@@ -556,7 +572,7 @@ namespace QASmartTouch.Helpers
             double newW = currentW * scale;
             double newH = currentH * scale;
 
-            if (newW <= canvasW - 40 && newH <= canvasH - 100)
+            if (newW <= maxW && newH <= maxH)
             {
                 double sx = newW / currentW;
                 double sy = newH / currentH;
@@ -741,8 +757,13 @@ namespace QASmartTouch.Helpers
             else if (rootContainer.Parent is Canvas parentCanvas)
             {
                 newChart = BuildChartContainer(copyOptions, parentCanvas);
-                Canvas.SetLeft(newChart, Math.Max(0, copyOptions.TargetLeft ?? 0));
-                Canvas.SetTop(newChart, Math.Max(0, copyOptions.TargetTop ?? 0));
+                var (clampedCopyL, clampedCopyT) = BoundsHelper.ClampToVirtualBoard(
+                    copyOptions.TargetLeft ?? 0,
+                    copyOptions.TargetTop ?? 0,
+                    copyOptions.InitialWidth,
+                    copyOptions.InitialHeight + HeaderBarHeight);
+                Canvas.SetLeft(newChart, clampedCopyL);
+                Canvas.SetTop(newChart, clampedCopyT);
                 parentCanvas.Children.Add(newChart);
             }
 

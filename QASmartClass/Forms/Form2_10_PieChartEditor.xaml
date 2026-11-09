@@ -155,7 +155,13 @@
 
 
         <!-- Header Section -->
-        <Border Grid.Row="0" Padding="20" Background="#FF667EEA">
+        <Border Grid.Row="0" Padding="20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#667EEA" Offset="0"/>
+                    <GradientStop Color="#764BA2" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
             <Grid>
                 <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
                     <TextBlock Text="Chức năng vẽ Biểu đồ Hình Tròn" 
@@ -235,7 +241,7 @@
 
             <!-- Control Panel -->
 
-            <ScrollViewer x:Name="MainScrollViewer"
+            <ScrollViewer x:Name="MainScrollViewer" Grid.Column="1"
 
                           Background="#F0F2F5" 
 
@@ -245,7 +251,7 @@
 
                           PanningDeceleration="0.002"
 
-                          Padding="20" Margin="990,0,10,0" Grid.ColumnSpan="2">
+                          Padding="20">
 
                 <StackPanel>
 
@@ -833,61 +839,73 @@
 
                                        FontSize="14" 
 
+                                       Foreground="#2C3E50"
+
                                        Margin="0,0,0,15"/>
 
-                            <Button Content="Xác nhận hoàn thành" 
+                            <Button Content="✅ Xác nhận hoàn thành" 
 
                                     Background="#1976D2"
+
+                                    FontWeight="Bold"
 
                                     Style="{StaticResource ModernButton}"
 
                                     Click="BtnConfirm_Click"
 
-                                    Height="38"
+                                    Height="40"
 
-                                    FontSize="12"
+                                    FontSize="13"
 
                                     Margin="0,0,0,8"/>
 
-                            <Button Content="Lưu hình ảnh PNG" 
+                            <Button Content="💾 Lưu hình ảnh PNG" 
 
                                     Background="#00838F"
+
+                                    FontWeight="SemiBold"
 
                                     Style="{StaticResource ModernButton}"
 
                                     Click="BtnSaveImage_Click"
 
-                                    Height="38"
+                                    Height="40"
 
-                                    FontSize="12"
+                                    FontSize="13"
 
                                     Margin="0,0,0,8"/>
 
-                            <Button Content="Reset về mặc định" 
+                            <Button Content="🔄 Reset về mặc định" 
 
                                     Background="#E65100"
+
+                                    FontWeight="SemiBold"
 
                                     Style="{StaticResource ModernButton}"
 
                                     Click="BtnReset_Click"
 
-                                    Height="38"
+                                    Height="40"
 
-                                    FontSize="12"
+                                    FontSize="13"
 
                                     Margin="0,0,0,8"/>
 
-                            <Button Content="Thoát" 
+                            <Button Content="✖ Thoát" 
 
                                     Background="#546E7A"
+
+                                    FontWeight="SemiBold"
 
                                     Style="{StaticResource ModernButton}"
 
                                     Click="Exit_Click"
 
-                                    Height="38"
+                                    Height="40"
 
-                                    FontSize="12"/>
+                                    FontSize="13"
+
+                                    Margin="0,0,0,0"/>
 
                         </StackPanel>
 

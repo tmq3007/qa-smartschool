@@ -62,6 +62,7 @@ namespace QASmartTouch.Forms
             txtTitle.TextChanged += (s, e) => { if (IsLoaded) DrawChart(); };
             txtXAxisLabel.TextChanged += (s, e) => { if (IsLoaded) DrawChart(); };
             txtYAxisLabel.TextChanged += (s, e) => { if (IsLoaded) DrawChart(); };
+            Loaded += (s, e) => DrawChart();
             DrawChart();
         }
 
@@ -331,9 +332,8 @@ namespace QASmartTouch.Forms
             double range = maxValue - minValue;
             if (range == 0) range = 1;
 
-            // Use fixed canvas size (700x450 as defined in XAML)
-            double canvasWidth = ChartCanvas.Width > 0 ? ChartCanvas.Width : 800;
-            double canvasHeight = ChartCanvas.Height > 0 ? ChartCanvas.Height : 650;
+            double canvasWidth = ChartCanvas.ActualWidth > 50 ? ChartCanvas.ActualWidth : 800;
+            double canvasHeight = ChartCanvas.ActualHeight > 50 ? ChartCanvas.ActualHeight : 550;
             
             double plotWidth = canvasWidth - marginLeft - marginRight;
             double plotHeight = canvasHeight - marginTop - marginBottom;
@@ -759,9 +759,8 @@ namespace QASmartTouch.Forms
 
         private void DrawLegend()
         {
-            // Use fixed canvas size
-            double canvasWidth = ChartCanvas.Width > 0 ? ChartCanvas.Width : 800;
-            double canvasHeight = ChartCanvas.Height > 0 ? ChartCanvas.Height : 650;
+            double canvasWidth = ChartCanvas.ActualWidth > 50 ? ChartCanvas.ActualWidth : 800;
+            double canvasHeight = ChartCanvas.ActualHeight > 50 ? ChartCanvas.ActualHeight : 550;
             double plotWidth = canvasWidth - marginLeft - marginRight;
             double plotHeight = canvasHeight - marginTop - marginBottom;
             
@@ -771,9 +770,9 @@ namespace QASmartTouch.Forms
             double legendY = marginTop + plotHeight + 50; // Below X-axis labels
 
             // Kiểm tra không vượt quá canvas height
-            if (legendY + 30 > chartHeight)
+            if (legendY + 30 > canvasHeight)
             {
-                legendY = chartHeight - 40; // Đặt ở vị trí an toàn
+                legendY = canvasHeight - 35; // Đặt ở vị trí an toàn
             }
 
             // Calculate total width to center the legend

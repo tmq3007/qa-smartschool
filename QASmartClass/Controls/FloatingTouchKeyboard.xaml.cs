@@ -189,9 +189,10 @@ namespace QASmartTouch.Controls
 
                 double newLeft = Canvas.GetLeft(this) + deltaX;
                 double newTop = Canvas.GetTop(this) + deltaY;
+                var (clampedLeft, clampedTop) = QASmartTouch.Helpers.BoundsHelper.ClampToVirtualBoard(newLeft, newTop, this.ActualWidth, this.ActualHeight);
 
-                Canvas.SetLeft(this, Math.Max(0, newLeft));
-                Canvas.SetTop(this, Math.Max(0, newTop));
+                Canvas.SetLeft(this, clampedLeft);
+                Canvas.SetTop(this, clampedTop);
 
                 _dragStartPoint = current;
             }
@@ -338,7 +339,7 @@ namespace QASmartTouch.Controls
 
             try
             {
-                double canvasHeight = canvas.ActualHeight;
+                Rect visibleBounds = QASmartTouch.Helpers.BoundsHelper.GetVisibleCanvasBounds(canvas);
                 double keyboardHeight = this.ActualHeight > 0 ? this.ActualHeight : 350; // Estimate
                 double keyboardWidth = this.ActualWidth > 0 ? this.ActualWidth : 800;
 
@@ -347,13 +348,13 @@ namespace QASmartTouch.Controls
                 if (double.IsNaN(elementTop)) elementTop = requestedPosition.Y;
 
                 double elementBottom = elementTop + elementHeight;
-                double screenMidY = canvasHeight / 2;
+                double screenMidY = visibleBounds.Top + (visibleBounds.Height / 2);
 
                 double safeY;
                 if (elementBottom > screenMidY)
                 {
                     // Element ở nửa dưới → đặt keyboard PHÍA TRÊN element
-                    safeY = Math.Max(20, elementTop - keyboardHeight - 15);
+                    safeY = Math.Max(visibleBounds.Top + 20, elementTop - keyboardHeight - 15);
                 }
                 else
                 {
@@ -361,12 +362,15 @@ namespace QASmartTouch.Controls
                     safeY = elementBottom + 15;
                 }
 
-                // Đảm bảo keyboard không vượt ngoài canvas
-                safeY = Math.Max(10, Math.Min(safeY, canvasHeight - keyboardHeight - 10));
+                // Đảm bảo keyboard không vượt ngoài vùng nhìn thấy hiện tại
+                double minY = visibleBounds.Top + 10;
+                double maxY = Math.Max(minY, visibleBounds.Bottom - keyboardHeight - 10);
+                safeY = Math.Max(minY, Math.Min(safeY, maxY));
 
-                // X: giữ vị trí yêu cầu nhưng không tràn canvas
-                double safeX = Math.Max(10, Math.Min(requestedPosition.X,
-                    canvas.ActualWidth - keyboardWidth - 10));
+                // X: giữ vị trí yêu cầu nhưng không tràn vùng nhìn thấy hiện tại
+                double minX = visibleBounds.Left + 10;
+                double maxX = Math.Max(minX, visibleBounds.Right - keyboardWidth - 10);
+                double safeX = Math.Max(minX, Math.Min(requestedPosition.X, maxX));
 
                 return new Point(safeX, safeY);
             }

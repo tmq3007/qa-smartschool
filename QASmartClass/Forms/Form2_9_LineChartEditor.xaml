@@ -62,7 +62,7 @@
 
                 <Trigger Property="IsMouseOver" Value="True">
 
-                    <Setter Property="Background" Value="#5568D3"/>
+                    <Setter Property="Opacity" Value="0.9"/>
 
                 </Trigger>
 
@@ -116,7 +116,13 @@
 
         <!-- Header Section -->
 
-        <Border Grid.Row="0" Background="#667EEA" Padding="20">
+        <Border Grid.Row="0" Padding="20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#667EEA" Offset="0"/>
+                    <GradientStop Color="#764BA2" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
 
             <Border.Effect>
                 <DropShadowEffect Color="Black" Opacity="0.2" BlurRadius="10" ShadowDepth="3"/>
@@ -157,7 +163,7 @@
 
                 <ColumnDefinition Width="*"/>
 
-                <ColumnDefinition Width="380"/>
+                <ColumnDefinition Width="400"/>
 
             </Grid.ColumnDefinitions>
 
@@ -504,44 +510,45 @@
 
                     <!-- Panel 4: Chức năng -->
 
-                    <Border Style="{StaticResource PanelStyle}" BorderBrush="#667EEA" BorderThickness="4,0,0,0">
+                    <Border Style="{StaticResource PanelStyle}" BorderBrush="#667EEA" BorderThickness="4,0,0,0" Margin="0,0,0,0">
 
                         <StackPanel>
                             <TextBlock Text="⚙️ Chức năng" FontWeight="Bold" FontSize="14" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
                             <!-- 1. Xác nhận hoàn thành (Màu xanh dương) -->
-                            <Button Content="Xác nhận hoàn thành" 
+                            <Button Content="✅ Xác nhận hoàn thành" 
                                    Style="{StaticResource ModernButton}"
                                    Background="#1976D2"
-                                   Height="38"
-                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Height="40"
+                                   FontSize="13"
                                    Click="Complete_Click"
                                    Margin="0,0,0,8"/>
 
                             <!-- 2. Lưu hình ảnh PNG (Màu xanh ngọc) -->
-                            <Button Content="Lưu hình ảnh PNG" 
+                            <Button Content="💾 Lưu hình ảnh PNG" 
                                    Style="{StaticResource ModernButton}"
                                    Background="#00838F"
-                                   Height="38"
-                                   FontSize="12"
+                                   Height="40"
+                                   FontSize="13"
                                    Click="SaveImage_Click"
                                    Margin="0,0,0,8"/>
 
                             <!-- 3. Reset về mặc định (Màu cam) -->
-                            <Button Content="Reset về mặc định" 
+                            <Button Content="🔄 Reset về mặc định" 
                                    Style="{StaticResource ModernButton}"
                                    Background="#E65100"
-                                   Height="38"
-                                   FontSize="12"
+                                   Height="40"
+                                   FontSize="13"
                                    Click="Reset_Click"
                                    Margin="0,0,0,8"/>
 
                             <!-- 4. Thoát (Màu xám) -->
-                            <Button Content="Thoát" 
+                            <Button Content="✖ Thoát" 
                                    Style="{StaticResource ModernButton}"
                                    Background="#546E7A"
-                                   Height="38"
-                                   FontSize="12"
+                                   Height="40"
+                                   FontSize="13"
                                    Click="Exit_Click"/>
                         </StackPanel>
 

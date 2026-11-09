@@ -268,8 +268,8 @@ namespace QASmartTouch.Forms
 
         private void DrawScatterChart()
         {
-            double canvasWidth = ChartCanvas.Width;
-            double canvasHeight = ChartCanvas.Height;
+            double canvasWidth = ChartCanvas.ActualWidth > 50 ? ChartCanvas.ActualWidth : 800;
+            double canvasHeight = ChartCanvas.ActualHeight > 50 ? ChartCanvas.ActualHeight : 550;
             double padding = 80;
             double chartWidth = canvasWidth - 2 * padding;
             double chartHeight = canvasHeight - 2 * padding;
@@ -289,12 +289,13 @@ namespace QASmartTouch.Forms
             var titleText = new TextBlock
             {
                 Text = ChartTitle,
-                FontSize = 18,
+                FontSize = 20,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Color.FromRgb(44, 62, 80))
             };
-            Canvas.SetLeft(titleText, (canvasWidth - titleText.Text.Length * 9) / 2);
-            Canvas.SetTop(titleText, 20);
+            titleText.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            Canvas.SetLeft(titleText, (canvasWidth - titleText.DesiredSize.Width) / 2);
+            Canvas.SetTop(titleText, 15);
             ChartCanvas.Children.Add(titleText);
 
             // Find min/max for scaling

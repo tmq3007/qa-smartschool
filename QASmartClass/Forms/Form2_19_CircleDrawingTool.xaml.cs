@@ -920,13 +920,14 @@ namespace QASmartTouch.Forms
             // 7. Update Control Panel position (placed below circle so it never blocks the Compa)
             if (_controlPanel != null)
             {
-                double boardW = Math.Max(800, _mainDashboard.MainInteractiveBoard.ActualWidth);
-                double boardH = Math.Max(600, _mainDashboard.MainInteractiveBoard.ActualHeight);
-                double panelX = Math.Clamp(centerA.X - 150, 16, boardW - 330);
+                Rect visibleBounds = QASmartTouch.Helpers.BoundsHelper.GetVisibleCanvasBounds(_mainDashboard.MainInteractiveBoard);
+                double minX = visibleBounds.Left + 16;
+                double maxX = Math.Max(minX, visibleBounds.Right - 330);
+                double panelX = Math.Clamp(centerA.X - 150, minX, maxX);
                 double panelY = centerA.Y + radiusPx + 26;
-                if (panelY + 95 > boardH)
+                if (panelY + 95 > visibleBounds.Bottom)
                 {
-                    panelY = Math.Max(16, centerA.Y + 28);
+                    panelY = Math.Max(visibleBounds.Top + 16, centerA.Y + 28);
                 }
                 Canvas.SetLeft(_controlPanel, panelX);
                 Canvas.SetTop(_controlPanel, panelY);
@@ -1906,7 +1907,7 @@ namespace QASmartTouch.Forms
             if (_mainDashboard == null || _controlPanel == null) return;
 
             _isDraggingPanel = true;
-            _panelDragStart = _mainDashboard.PointToScreen(e.GetPosition(_mainDashboard));
+            _panelDragStart = e.GetPosition(_mainDashboard.MainInteractiveBoard);
 
             if (sender is UIElement el)
                 el.CaptureMouse();
@@ -1919,13 +1920,13 @@ namespace QASmartTouch.Forms
             if (_panelTouchId != null || e.StylusDevice != null) return;
             if (!_isDraggingPanel || _mainDashboard == null || _controlPanel == null) return;
 
-            var currentScreenPoint = _mainDashboard.PointToScreen(e.GetPosition(_mainDashboard));
+            var currentPoint = e.GetPosition(_mainDashboard.MainInteractiveBoard);
 
-            double deltaX = currentScreenPoint.X - _panelDragStart.X;
-            double deltaY = currentScreenPoint.Y - _panelDragStart.Y;
+            double deltaX = currentPoint.X - _panelDragStart.X;
+            double deltaY = currentPoint.Y - _panelDragStart.Y;
 
             _circleCenter = new Point(_circleCenter.X + deltaX, _circleCenter.Y + deltaY);
-            _panelDragStart = currentScreenPoint;
+            _panelDragStart = currentPoint;
 
             UpdateCircle();
             e.Handled = true;
@@ -1959,7 +1960,7 @@ namespace QASmartTouch.Forms
             {
                 _panelTouchId = e.TouchDevice.Id;
                 _isDraggingPanel = true;
-                _panelDragStart = _mainDashboard.PointToScreen(e.GetTouchPoint(_mainDashboard).Position);
+                _panelDragStart = e.GetTouchPoint(_mainDashboard.MainInteractiveBoard).Position;
                 el.CaptureTouch(e.TouchDevice);
                 e.Handled = true;
             }
@@ -1970,13 +1971,13 @@ namespace QASmartTouch.Forms
             if (!_isDraggingPanel || _mainDashboard == null || _controlPanel == null) return;
             if (_panelTouchId != e.TouchDevice.Id) return;
 
-            var currentScreenPoint = _mainDashboard.PointToScreen(e.GetTouchPoint(_mainDashboard).Position);
+            var currentPoint = e.GetTouchPoint(_mainDashboard.MainInteractiveBoard).Position;
 
-            double deltaX = currentScreenPoint.X - _panelDragStart.X;
-            double deltaY = currentScreenPoint.Y - _panelDragStart.Y;
+            double deltaX = currentPoint.X - _panelDragStart.X;
+            double deltaY = currentPoint.Y - _panelDragStart.Y;
 
             _circleCenter = new Point(_circleCenter.X + deltaX, _circleCenter.Y + deltaY);
-            _panelDragStart = currentScreenPoint;
+            _panelDragStart = currentPoint;
 
             UpdateCircle();
             e.Handled = true;

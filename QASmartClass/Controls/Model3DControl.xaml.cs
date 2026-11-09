@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -154,14 +154,9 @@ namespace QASmartTouch.Controls
             double deltaX = currentPointInParent.X - _dragStartPoint.X;
             double deltaY = currentPointInParent.Y - _dragStartPoint.Y;
 
-            double newLeft = Math.Max(0, _dragStartLeft + deltaX);
-            double newTop = Math.Max(0, _dragStartTop + deltaY);
-
-            if (this.Parent is Canvas parentCanvas && parentCanvas.ActualWidth > 0 && parentCanvas.ActualHeight > 0)
-            {
-                newLeft = Math.Min(newLeft, Math.Max(0, parentCanvas.ActualWidth - 120));
-                newTop = Math.Min(newTop, Math.Max(0, parentCanvas.ActualHeight - 80));
-            }
+            double elemW = this.ActualWidth > 0 ? this.ActualWidth : (this.Width > 0 ? this.Width : 720);
+            double elemH = this.ActualHeight > 0 ? this.ActualHeight : (this.Height > 0 ? this.Height : 500);
+            var (newLeft, newTop) = QASmartTouch.Helpers.BoundsHelper.ClampToVirtualBoard(_dragStartLeft + deltaX, _dragStartTop + deltaY, elemW, elemH);
 
             Canvas.SetLeft(this, newLeft);
             Canvas.SetTop(this, newTop);

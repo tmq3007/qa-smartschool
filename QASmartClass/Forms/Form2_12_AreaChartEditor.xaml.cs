@@ -403,7 +403,8 @@ namespace QASmartTouch.Forms
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Color.FromRgb(44, 62, 80))
             };
-            Canvas.SetLeft(title, (canvasWidth - title.ActualWidth) / 2);
+            title.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            Canvas.SetLeft(title, (canvasWidth - title.DesiredSize.Width) / 2);
             Canvas.SetTop(title, 15);
             ChartCanvas.Children.Add(title);
 

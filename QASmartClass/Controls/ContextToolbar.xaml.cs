@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -126,18 +126,21 @@ namespace QASmartTouch.Controls
                 double height = this.ActualHeight > 0 ? this.ActualHeight : 44;
 
                 var parent = this.Parent as Canvas;
-                double canvasWidth = (parent != null && parent.ActualWidth > 0) ? parent.ActualWidth : SystemParameters.PrimaryScreenWidth;
-                double canvasHeight = (parent != null && parent.ActualHeight > 0) ? parent.ActualHeight : SystemParameters.PrimaryScreenHeight;
+                Rect visibleBounds = QASmartTouch.Helpers.BoundsHelper.GetVisibleCanvasBounds(parent);
+                double minX = visibleBounds.Left + 10;
+                double maxX = Math.Max(minX, visibleBounds.Right - width - 10);
+                double minY = visibleBounds.Top + 10;
+                double maxY = Math.Max(minY, visibleBounds.Bottom - height - 10);
 
                 double targetLeft = position.X - (width / 2.0);
-                double clampedLeft = Math.Max(10, Math.Min(targetLeft, canvasWidth - width - 10));
+                double clampedLeft = Math.Max(minX, Math.Min(targetLeft, maxX));
 
                 double targetTop = position.Y;
-                if (targetTop + height > canvasHeight - 10 && _attachedObject != null)
+                if (targetTop + height > visibleBounds.Bottom - 10 && _attachedObject != null)
                 {
-                    targetTop = Math.Max(10, _attachedObject.Position.Y - height - 10);
+                    targetTop = Math.Max(minY, _attachedObject.Position.Y - height - 10);
                 }
-                double clampedTop = Math.Max(10, Math.Min(targetTop, canvasHeight - height - 10));
+                double clampedTop = Math.Max(minY, Math.Min(targetTop, maxY));
 
                 Canvas.SetLeft(this, clampedLeft);
                 Canvas.SetTop(this, clampedTop);
@@ -443,10 +446,13 @@ namespace QASmartTouch.Controls
                     var parent = this.Parent as Canvas;
                     if (parent != null && _attachedObject != null)
                     {
+                        Rect visibleBounds = QASmartTouch.Helpers.BoundsHelper.GetVisibleCanvasBounds(parent);
+                        double minX = visibleBounds.Left + 10;
+                        double maxX = Math.Max(minX, visibleBounds.Right - this.ActualWidth - 10);
                         double objCenterX = _attachedObject.Position.X + (_attachedObject.Size.Width / 2.0);
-                        double newLeft = Math.Max(10, Math.Min(
+                        double newLeft = Math.Max(minX, Math.Min(
                             objCenterX - (this.ActualWidth / 2.0), 
-                            parent.ActualWidth - this.ActualWidth - 10));
+                            maxX));
                         Canvas.SetLeft(this, newLeft);
                     }
 

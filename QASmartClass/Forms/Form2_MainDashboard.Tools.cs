@@ -2451,7 +2451,7 @@ namespace QASmartTouch.Forms
                     bounds.Inflate(15, 15);
                     double maxW = Math.Max(MainInteractiveBoard.ActualWidth, 1000);
                     double maxH = Math.Max(MainInteractiveBoard.ActualHeight, 1000);
-                    bounds.Intersect(new Rect(0, 0, maxW, maxH));
+                    bounds.Intersect(BoundsHelper.VirtualBoardBounds);
 
                     if (bounds.Width > 5 && bounds.Height > 5)
                     {

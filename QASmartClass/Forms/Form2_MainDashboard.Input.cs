@@ -291,7 +291,7 @@ namespace QASmartTouch.Forms
                         return;
                     }
 
-                    if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
+                    if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null || (_isLassoMode && _lassoTool?.IsDrawing == true))
                     {
                         Point currentPos = e.GetTouchPoint(MainInteractiveBoard).Position;
                         UpdateSelectionInteraction(currentPos, e.OriginalSource);
@@ -349,7 +349,7 @@ namespace QASmartTouch.Forms
             {
                 if (_activeShapeTouchId != -1 && e.TouchDevice.Id == _activeShapeTouchId)
                 {
-                    if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
+                    if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null || (_isLassoMode && _lassoTool?.IsDrawing == true))
                     {
                         Point endPos = e.GetTouchPoint(MainInteractiveBoard).Position;
                         EndSelectionInteraction(endPos);
@@ -490,7 +490,7 @@ namespace QASmartTouch.Forms
 
             if (_objectSelectionMode)
             {
-                if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
+                if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null || (_isLassoMode && _lassoTool?.IsDrawing == true))
                 {
                     Point currentPos = e.GetPosition(MainInteractiveBoard);
                     UpdateSelectionInteraction(currentPos, e.OriginalSource);
@@ -531,7 +531,7 @@ namespace QASmartTouch.Forms
 
             if (_objectSelectionMode)
             {
-                if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null)
+                if (_isPreparingRectangleSelection || _isRectangleSelecting || _draggedSelectionObject != null || (_isLassoMode && _lassoTool?.IsDrawing == true))
                 {
                     Point endPos = e.GetPosition(MainInteractiveBoard);
                     EndSelectionInteraction(endPos);
@@ -1252,7 +1252,7 @@ namespace QASmartTouch.Forms
                 // ✅ QC_4.2_CAPTURE_FIX: Chỉ capture mouse khi SelectionMouseDown
                 // thực sự khởi tạo hành động (kéo đối tượng hoặc chờ chọn/vẽ khung chọn).
                 // Tránh capture vô nghĩa khi chạm vào nút bấm/thân bảng StackPanel.
-                if (_draggedSelectionObject != null || _pendingHitObject != null)
+                if (_draggedSelectionObject != null || _pendingHitObject != null || _isPreparingRectangleSelection || (_isLassoMode && _lassoTool?.IsDrawing == true))
                 {
                     // ✅ TOUCH-FIX: Chỉ capture cho Chuột thật. Touch/Stylus đã tự động capture bởi cơ chế implicit của WPF.
                     // Việc gọi CaptureMouse cho Touch sẽ làm hỏng promotion pipeline, nuốt mất sự kiện MouseUp.
@@ -2674,8 +2674,8 @@ namespace QASmartTouch.Forms
             double top = mousePosition.Y - _eraserSize;
             
             // Keep preview within canvas bounds
-            left = Math.Max(0, Math.Min(left, MainInteractiveBoard.ActualWidth - _eraserSize * 2));
-            top = Math.Max(0, Math.Min(top, MainInteractiveBoard.ActualHeight - _eraserSize * 2));
+            left = Math.Max(BoundsHelper.VirtualBoardBounds.Left, Math.Min(left, BoundsHelper.VirtualBoardBounds.Right - _eraserSize * 2));
+            top = Math.Max(BoundsHelper.VirtualBoardBounds.Top, Math.Min(top, BoundsHelper.VirtualBoardBounds.Bottom - _eraserSize * 2));
             
             Canvas.SetLeft(_eraserPreview, left);
             Canvas.SetTop(_eraserPreview, top);
@@ -6944,8 +6944,8 @@ namespace QASmartTouch.Forms
                         double left = Canvas.GetLeft(finalGraphContainer) + (currentPoint.X - dragStartPoint.X);
                         double top = Canvas.GetTop(finalGraphContainer) + (currentPoint.Y - dragStartPoint.Y);
 
-                        left = Math.Max(0, Math.Min(left, MainInteractiveBoard.ActualWidth - 600));
-                        top = Math.Max(0, Math.Min(top, MainInteractiveBoard.ActualHeight - 484));
+                        left = Math.Max(BoundsHelper.VirtualBoardBounds.Left, Math.Min(left, BoundsHelper.VirtualBoardBounds.Right - 600));
+                        top = Math.Max(BoundsHelper.VirtualBoardBounds.Top, Math.Min(top, BoundsHelper.VirtualBoardBounds.Bottom - 484));
 
                         Canvas.SetLeft(finalGraphContainer, left);
                         Canvas.SetTop(finalGraphContainer, top);
@@ -6989,8 +6989,8 @@ namespace QASmartTouch.Forms
                         double left = Canvas.GetLeft(finalGraphContainer) + (currentPoint.X - dragStartPoint.X);
                         double top = Canvas.GetTop(finalGraphContainer) + (currentPoint.Y - dragStartPoint.Y);
 
-                        left = Math.Max(0, Math.Min(left, MainInteractiveBoard.ActualWidth - 600));
-                        top = Math.Max(0, Math.Min(top, MainInteractiveBoard.ActualHeight - 484));
+                        left = Math.Max(BoundsHelper.VirtualBoardBounds.Left, Math.Min(left, BoundsHelper.VirtualBoardBounds.Right - 600));
+                        top = Math.Max(BoundsHelper.VirtualBoardBounds.Top, Math.Min(top, BoundsHelper.VirtualBoardBounds.Bottom - 484));
 
                         Canvas.SetLeft(finalGraphContainer, left);
                         Canvas.SetTop(finalGraphContainer, top);
@@ -7023,8 +7023,8 @@ namespace QASmartTouch.Forms
                 double leftPos = (MainInteractiveBoard.ActualWidth - 600) / 2;
                 double topPos = (MainInteractiveBoard.ActualHeight - 484) / 2;
 
-                Canvas.SetLeft(finalGraphContainer, Math.Max(0, leftPos));
-                Canvas.SetTop(finalGraphContainer, Math.Max(0, topPos));
+                Canvas.SetLeft(finalGraphContainer, BoundsHelper.ClampToVirtualBoard(leftPos, topPos, 600, 484).Left);
+                Canvas.SetTop(finalGraphContainer, BoundsHelper.ClampToVirtualBoard(leftPos, topPos, 600, 484).Top);
 
                 // Add to canvas (Cấp phát Z-Index tương tự như biểu đồ khác để đè lên nét vẽ cũ)
                 int zIndex = AllocateImageZIndex();
@@ -7954,8 +7954,8 @@ namespace QASmartTouch.Forms
                         double newTop = oldTop + (currentPoint.Y - dragStartPoint.Y);
 
                         // Keep within canvas bounds
-                        newLeft = Math.Max(0, Math.Min(newLeft, MainInteractiveBoard.ActualWidth - totalWidth));
-                        newTop = Math.Max(0, Math.Min(newTop, MainInteractiveBoard.ActualHeight - totalHeight));
+                        newLeft = Math.Max(BoundsHelper.VirtualBoardBounds.Left, Math.Min(newLeft, BoundsHelper.VirtualBoardBounds.Right - totalWidth));
+                        newTop = Math.Max(BoundsHelper.VirtualBoardBounds.Top, Math.Min(newTop, BoundsHelper.VirtualBoardBounds.Bottom - totalHeight));
 
                         double actualDeltaX = newLeft - oldLeft;
                         double actualDeltaY = newTop - oldTop;
@@ -8148,8 +8148,8 @@ namespace QASmartTouch.Forms
                 double topPos = position?.Y ?? ((MainInteractiveBoard.ActualHeight - totalHeight) / 2);
 
                 // Keep within canvas bounds
-                leftPos = Math.Max(0, Math.Min(leftPos, MainInteractiveBoard.ActualWidth - totalWidth));
-                topPos = Math.Max(0, Math.Min(topPos, MainInteractiveBoard.ActualHeight - totalHeight));
+                leftPos = Math.Max(BoundsHelper.VirtualBoardBounds.Left, Math.Min(leftPos, BoundsHelper.VirtualBoardBounds.Right - totalWidth));
+                topPos = Math.Max(BoundsHelper.VirtualBoardBounds.Top, Math.Min(topPos, BoundsHelper.VirtualBoardBounds.Bottom - totalHeight));
 
                 Canvas.SetLeft(finalContainer, leftPos);
                 Canvas.SetTop(finalContainer, topPos);
@@ -8323,9 +8323,9 @@ namespace QASmartTouch.Forms
 
                 // Đảm bảo không tràn đáy màn hình
                 double top = Canvas.GetTop(finalContainer);
-                if (top + totalHeight > MainInteractiveBoard.ActualHeight && top > 50)
+                if (top + totalHeight > BoundsHelper.VirtualBoardBounds.Bottom && top > BoundsHelper.VirtualBoardBounds.Top + 50)
                 {
-                    Canvas.SetTop(finalContainer, Math.Max(0, MainInteractiveBoard.ActualHeight - totalHeight - 20));
+                    Canvas.SetTop(finalContainer, Math.Max(BoundsHelper.VirtualBoardBounds.Top, BoundsHelper.VirtualBoardBounds.Bottom - totalHeight - 20));
                 }
 
                 _selectionBox?.UpdatePosition();
@@ -8379,9 +8379,9 @@ namespace QASmartTouch.Forms
 
                 // Đảm bảo không tràn lề phải màn hình
                 double left = Canvas.GetLeft(finalContainer);
-                if (left + totalWidth > MainInteractiveBoard.ActualWidth && left > 50)
+                if (left + totalWidth > BoundsHelper.VirtualBoardBounds.Right && left > BoundsHelper.VirtualBoardBounds.Left + 50)
                 {
-                    Canvas.SetLeft(finalContainer, Math.Max(0, MainInteractiveBoard.ActualWidth - totalWidth - 20));
+                    Canvas.SetLeft(finalContainer, Math.Max(BoundsHelper.VirtualBoardBounds.Left, BoundsHelper.VirtualBoardBounds.Right - totalWidth - 20));
                 }
 
                 _selectionBox?.UpdatePosition();
@@ -8639,7 +8639,7 @@ namespace QASmartTouch.Forms
                         double leftOnCanvas = Canvas.GetLeft(finalContainer);
                         if (double.IsNaN(leftOnCanvas)) leftOnCanvas = 0;
                         double otherColsW = tableData.GetTotalWidth() - tableData.Columns[colIndex].Width;
-                        double maxAllowedW = MainInteractiveBoard.ActualWidth - leftOnCanvas - otherColsW - (borderThick * 2) - 20;
+                        double maxAllowedW = BoundsHelper.VirtualBoardBounds.Right - leftOnCanvas - otherColsW - (borderThick * 2) - 20;
                         if (maxAllowedW > minW) newW = Math.Min(newW, maxAllowedW);
 
                         tableData.Columns[colIndex].Width = newW;
@@ -8813,7 +8813,7 @@ namespace QASmartTouch.Forms
                         double topOnCanvas = Canvas.GetTop(finalContainer);
                         if (double.IsNaN(topOnCanvas)) topOnCanvas = 0;
                         double otherRowsH = tableData.GetTotalHeight() - tableData.Rows[rowIndex].Height;
-                        double maxAllowedH = MainInteractiveBoard.ActualHeight - topOnCanvas - otherRowsH - (borderThick * 2) - 34 - 20;
+                        double maxAllowedH = BoundsHelper.VirtualBoardBounds.Bottom - topOnCanvas - otherRowsH - (borderThick * 2) - 34 - 20;
                         if (maxAllowedH > minH) newH = Math.Min(newH, maxAllowedH);
 
                         tableData.Rows[rowIndex].Height = newH;
@@ -8986,8 +8986,8 @@ namespace QASmartTouch.Forms
                     double curT = Canvas.GetTop(finalContainer);
                     if (double.IsNaN(curT)) curT = 0;
 
-                    double maxTableW = MainInteractiveBoard.ActualWidth - curL - 20;
-                    double maxTableH = MainInteractiveBoard.ActualHeight - curT - 34 - 20;
+                    double maxTableW = BoundsHelper.VirtualBoardBounds.Right - curL - 20;
+                    double maxTableH = BoundsHelper.VirtualBoardBounds.Bottom - curT - 34 - 20;
 
                     if (targetTotalColW + (borderThick * 2) > maxTableW && maxTableW > tableData.ColumnCount * 35)
                         targetTotalColW = maxTableW - (borderThick * 2);
@@ -9797,8 +9797,8 @@ namespace QASmartTouch.Forms
                         double newTop = oldTop + (currentPoint.Y - dragStartPoint.Y);
 
                         // Keep within canvas bounds
-                        newLeft = Math.Max(0, Math.Min(newLeft, MainInteractiveBoard.ActualWidth - container.Width));
-                        newTop = Math.Max(0, Math.Min(newTop, MainInteractiveBoard.ActualHeight - container.Height));
+                        newLeft = Math.Max(BoundsHelper.VirtualBoardBounds.Left, Math.Min(newLeft, BoundsHelper.VirtualBoardBounds.Right - container.Width));
+                        newTop = Math.Max(BoundsHelper.VirtualBoardBounds.Top, Math.Min(newTop, BoundsHelper.VirtualBoardBounds.Bottom - container.Height));
 
                         Canvas.SetLeft(container, newLeft);
                         Canvas.SetTop(container, newTop);
@@ -9846,8 +9846,8 @@ namespace QASmartTouch.Forms
                         double newLeft = oldLeft + (currentPoint.X - dragStartPoint.X);
                         double newTop = oldTop + (currentPoint.Y - dragStartPoint.Y);
 
-                        newLeft = Math.Max(0, Math.Min(newLeft, MainInteractiveBoard.ActualWidth - container.Width));
-                        newTop = Math.Max(0, Math.Min(newTop, MainInteractiveBoard.ActualHeight - container.Height));
+                        newLeft = Math.Max(BoundsHelper.VirtualBoardBounds.Left, Math.Min(newLeft, BoundsHelper.VirtualBoardBounds.Right - container.Width));
+                        newTop = Math.Max(BoundsHelper.VirtualBoardBounds.Top, Math.Min(newTop, BoundsHelper.VirtualBoardBounds.Bottom - container.Height));
 
                         Canvas.SetLeft(container, newLeft);
                         Canvas.SetTop(container, newTop);
@@ -10293,6 +10293,14 @@ namespace QASmartTouch.Forms
                     double height = Math.Abs(currentPoint.Y - startPoint.Y);
                     if (width > 1 && height > 1)
                     {
+                        if (_currentShape == "mSquare")
+                        {
+                            double side = Math.Min(width, height);
+                            if (currentPoint.X < startPoint.X) left = startPoint.X - side;
+                            if (currentPoint.Y < startPoint.Y) top  = startPoint.Y - side;
+                            width  = side;
+                            height = side;
+                        }
                         path.Data = SubjectShapeGeometryService.GenerateGeometry(_currentShape, new Rect(left, top, width, height));
                     }
                 }

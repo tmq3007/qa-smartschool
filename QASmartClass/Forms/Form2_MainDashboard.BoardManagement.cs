@@ -109,14 +109,14 @@ namespace QASmartTouch.Forms
                 double alignedOffset = Math.Ceiling(VIRTUAL_OFFSET / spacing) * spacing;
                 double virtualSize = alignedOffset * 2 + 8000.0;
 
-                // Tạo Rectangle màu nền bao phủ toàn bộ không gian
+                // Tạo Rectangle màu nền bao phủ toàn bộ không gian (Unified Virtual Hit-Test Surface theo chuẩn UMind)
                 var bgRect = new Rectangle
                 {
                     Tag = "BackgroundLayer",
                     Width = virtualSize,
                     Height = virtualSize,
                     Fill = solidBgBrush,
-                    IsHitTestVisible = false
+                    IsHitTestVisible = true
                 };
                 Canvas.SetLeft(bgRect, -alignedOffset);
                 Canvas.SetTop(bgRect, -alignedOffset);
@@ -247,12 +247,24 @@ namespace QASmartTouch.Forms
                         Stretch = Stretch.UniformToFill
                     };
 
+                    var virtualHitRect = new Rectangle
+                    {
+                        Fill = Brushes.Transparent,
+                        Tag = "BackgroundLayer",
+                        Width = BoundsHelper.VirtualBoardBounds.Width,
+                        Height = BoundsHelper.VirtualBoardBounds.Height,
+                        IsHitTestVisible = true
+                    };
+                    Canvas.SetLeft(virtualHitRect, BoundsHelper.VirtualBoardBounds.Left);
+                    Canvas.SetTop(virtualHitRect, BoundsHelper.VirtualBoardBounds.Top);
+                    Panel.SetZIndex(virtualHitRect, ZIndexConstants.Background);
+                    MainInteractiveBoard.Children.Insert(0, virtualHitRect);
+
                     var bgRect = new Rectangle
                     {
                         Fill = imageBrush,
                         Tag = "BackgroundLayer",
-                        // ✅ QC_4.2_GRID_PROTECT (G-1): Grid không bao giờ nhận touch/click
-                        IsHitTestVisible = false
+                        IsHitTestVisible = true
                     };
                     bgRect.SetBinding(FrameworkElement.WidthProperty, new System.Windows.Data.Binding("ActualWidth") { Source = MainInteractiveBoard });
                     bgRect.SetBinding(FrameworkElement.HeightProperty, new System.Windows.Data.Binding("ActualHeight") { Source = MainInteractiveBoard });

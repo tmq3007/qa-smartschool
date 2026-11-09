@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -59,7 +59,7 @@ namespace QASmartTouch.Services
             _allObjects = new List<SelectableObject>();
             _adorners = new Dictionary<UIElement, SelectionAdorner>();
             _groups = new Dictionary<string, SelectableGroup>();
-            _quadTree = new QASmartTouch.Helpers.QuadTree(0, new Rect(0, 0, 10000, 10000));
+            _quadTree = new QASmartTouch.Helpers.QuadTree(0, QASmartTouch.Helpers.BoundsHelper.VirtualBoardBounds);
         }
 
         #endregion
@@ -1768,9 +1768,7 @@ namespace QASmartTouch.Services
                 maxY = Math.Max(maxY, obj.Position.Y + obj.Size.Height);
             }
             
-            if (minX < 0) minX = 0;
-            if (minY < 0) minY = 0;
-            return new Rect(minX, minY, maxX - minX, maxY - minY);
+            return new Rect(minX, minY, Math.Max(1, maxX - minX), Math.Max(1, maxY - minY));
         }
 
         #endregion
@@ -1979,9 +1977,7 @@ namespace QASmartTouch.Services
             maxX += padding;
             maxY += padding;
 
-            if (minX < 0) minX = 0;
-            if (minY < 0) minY = 0;
-            return new Rect(minX, minY, maxX - minX, maxY - minY);
+            return new Rect(minX, minY, Math.Max(1, maxX - minX), Math.Max(1, maxY - minY));
         }
 
         /// <summary>

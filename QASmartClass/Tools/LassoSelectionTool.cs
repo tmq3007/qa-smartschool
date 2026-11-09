@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -216,6 +216,7 @@ namespace QASmartTouch.Tools
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (_isDrawing) return;
             Point clickPoint = e.GetPosition(_canvas);
 
             if (CanStartSelectionPredicate != null && !CanStartSelectionPredicate(clickPoint, e.OriginalSource))
@@ -248,6 +249,7 @@ namespace QASmartTouch.Tools
 
         private void Canvas_TouchDown(object? sender, TouchEventArgs e)
         {
+            if (_isDrawing) return;
             Point clickPoint = e.GetTouchPoint(_canvas).Position;
 
             if (CanStartSelectionPredicate != null && !CanStartSelectionPredicate(clickPoint, e.OriginalSource))
@@ -287,6 +289,7 @@ namespace QASmartTouch.Tools
 
         private void Canvas_StylusDown(object sender, StylusDownEventArgs e)
         {
+            if (_isDrawing) return;
             Point clickPoint = e.GetPosition(_canvas);
 
             if (CanStartSelectionPredicate != null && !CanStartSelectionPredicate(clickPoint, e.OriginalSource))
@@ -377,6 +380,12 @@ namespace QASmartTouch.Tools
 
         private void CreateLassoVisual()
         {
+            if (_lassoVisual != null && _canvas.Children.Contains(_lassoVisual))
+            {
+                _canvas.Children.Remove(_lassoVisual);
+                _lassoVisual = null;
+            }
+
             _lassoVisual = new Polyline
             {
                 // ✅ G1.1: Vàng Hổ Phách (#FFC107) nổi bật trên mọi màu mực & nền bảng

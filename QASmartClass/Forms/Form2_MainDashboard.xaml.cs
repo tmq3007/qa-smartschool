@@ -2446,6 +2446,42 @@ namespace QASmartTouch.Forms
         }
 
         /// <summary>
+        /// Public API đồng bộ lại tọa độ/kích thước của phần tử trong SelectionManager & QuadTree sau khi kéo/zoom nội bộ
+        /// </summary>
+        public void SyncElementSelectionBounds(UIElement element)
+        {
+            if (_selectionManager == null || element == null)
+                return;
+
+            var existing = _selectionManager.GetSelectableObjectForElement(element);
+            if (existing != null && element is FrameworkElement fe)
+            {
+                double left = Canvas.GetLeft(fe);
+                double top = Canvas.GetTop(fe);
+                if (double.IsNaN(left)) left = 0;
+                if (double.IsNaN(top)) top = 0;
+                double width = fe.ActualWidth > 0 ? fe.ActualWidth : fe.Width;
+                double height = fe.ActualHeight > 0 ? fe.ActualHeight : fe.Height;
+                if (!double.IsNaN(width) && width > 0 && !double.IsNaN(height) && height > 0)
+                {
+                    existing.Position = new Point(left, top);
+                    existing.Size = new Size(width, height);
+                    existing.Bounds = new Rect(left, top, width, height);
+                    existing.UpdateBounds();
+                }
+                _selectionManager.RebuildQuadTree();
+                if (ReferenceEquals(_selectionManager.SelectedObject, existing))
+                {
+                    _selectionBox?.UpdatePosition();
+                }
+            }
+            else
+            {
+                RefreshSelectableObjects();
+            }
+        }
+
+        /// <summary>
         /// BUG-1603: Đăng ký Shape với SelectionManager sử dụng kích thước đã xác nhận.
         /// Extracted helper method để tránh lặp code giữa đăng ký trực tiếp và Loaded event.
         /// </summary>

@@ -62,7 +62,7 @@
 
                 <Trigger Property="IsMouseOver" Value="True">
 
-                    <Setter Property="Background" Value="#5568D3"/>
+                    <Setter Property="Opacity" Value="0.9"/>
 
                 </Trigger>
 
@@ -125,7 +125,13 @@
 
 
         <!-- Header Section -->
-        <Border Grid.Row="0" Background="#667EEA" Padding="20">
+        <Border Grid.Row="0" Padding="20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#667EEA" Offset="0"/>
+                    <GradientStop Color="#764BA2" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
             <Grid>
                 <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
                     <TextBlock Text="Chức năng vẽ Biểu đồ Hình Cột" 
@@ -213,7 +219,8 @@
 
                     <!-- Panel 1: Dữ liệu -->
 
-                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15"
+                            BorderBrush="#667EEA" BorderThickness="4,0,0,0">
 
                         <Border.Effect>
 
@@ -309,7 +316,8 @@
 
                     <!-- Panel 2: Thống kê -->
 
-                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15"
+                            BorderBrush="#667EEA" BorderThickness="4,0,0,0">
 
                         <Border.Effect>
 
@@ -409,7 +417,8 @@
 
                     <!-- Panel 3: Kiểu biểu đồ -->
 
-                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15"
+                            BorderBrush="#667EEA" BorderThickness="4,0,0,0">
 
                         <Border.Effect>
 
@@ -521,7 +530,8 @@
 
                     <!-- Panel 4: Tùy chỉnh hiển thị -->
 
-                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15"
+                            BorderBrush="#667EEA" BorderThickness="4,0,0,0">
 
                         <Border.Effect>
 
@@ -631,7 +641,8 @@
 
                     <!-- Panel 5: Chức năng -->
 
-                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,0">
+                    <Border Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,0"
+                            BorderBrush="#667EEA" BorderThickness="4,0,0,0">
 
                         <Border.Effect>
 
@@ -644,24 +655,28 @@
                                       Foreground="#2C3E50" Margin="0,0,0,15"/>
 
                             <!-- 1. Xác nhận hoàn thành (Màu xanh dương) -->
-                            <Button Content="Xác nhận hoàn thành" Click="Complete_Click"
-                                   Background="#1976D2" Foreground="White" FontWeight="Bold" FontSize="12"
-                                   Height="38" Padding="15,10" Margin="0,0,0,8" Cursor="Hand"/>
+                            <Button Content="✅ Xác nhận hoàn thành" Click="Complete_Click"
+                                   Style="{StaticResource ModernButton}"
+                                   Background="#1976D2" Foreground="White" FontWeight="Bold" FontSize="13"
+                                   Height="40" Padding="15,8" Margin="0,0,0,8" Cursor="Hand"/>
 
                             <!-- 2. Lưu hình ảnh PNG (Màu xanh ngọc) -->
-                            <Button Content="Lưu hình ảnh PNG" Click="SaveImage_Click"
-                                   Background="#00838F" Foreground="White" FontWeight="SemiBold" FontSize="12"
-                                   Height="38" Padding="15,10" Margin="0,0,0,8" Cursor="Hand"/>
+                            <Button Content="💾 Lưu hình ảnh PNG" Click="SaveImage_Click"
+                                   Style="{StaticResource ModernButton}"
+                                   Background="#00838F" Foreground="White" FontWeight="SemiBold" FontSize="13"
+                                   Height="40" Padding="15,8" Margin="0,0,0,8" Cursor="Hand"/>
 
                             <!-- 3. Reset về mặc định (Màu cam) -->
-                            <Button Content="Reset về mặc định" Click="Reset_Click"
-                                   Background="#E65100" Foreground="White" FontWeight="SemiBold" FontSize="12"
-                                   Height="38" Padding="15,10" Margin="0,0,0,8" Cursor="Hand"/>
+                            <Button Content="🔄 Reset về mặc định" Click="Reset_Click"
+                                   Style="{StaticResource ModernButton}"
+                                   Background="#E65100" Foreground="White" FontWeight="SemiBold" FontSize="13"
+                                   Height="40" Padding="15,8" Margin="0,0,0,8" Cursor="Hand"/>
 
                             <!-- 4. Thoát (Màu xám) -->
-                            <Button Content="Thoát" Click="Exit_Click"
-                                   Background="#546E7A" Foreground="White" FontWeight="SemiBold" FontSize="12"
-                                    Height="38" Padding="15,10" Margin="0,0,0,0" Cursor="Hand"/>
+                            <Button Content="✖ Thoát" Click="Exit_Click"
+                                   Style="{StaticResource ModernButton}"
+                                   Background="#546E7A" Foreground="White" FontWeight="SemiBold" FontSize="13"
+                                   Height="40" Padding="15,8" Margin="0,0,0,0" Cursor="Hand"/>
                         </StackPanel>
                     </Border>
 

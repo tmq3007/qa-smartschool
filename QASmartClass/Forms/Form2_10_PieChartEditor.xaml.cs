@@ -307,30 +307,30 @@ namespace QASmartTouch.Forms
                 _ => "Normal"
             };
 
-            // Use fixed canvas size (550x550 as defined in XAML)
-            double canvasWidth = ChartCanvas.Width > 0 ? ChartCanvas.Width : 550;
-            double canvasHeight = ChartCanvas.Height > 0 ? ChartCanvas.Height : 550;
+            double canvasWidth = ChartCanvas.ActualWidth > 50 ? ChartCanvas.ActualWidth : 800;
+            double canvasHeight = ChartCanvas.ActualHeight > 50 ? ChartCanvas.ActualHeight : 550;
 
             // Center the chart for balanced display - adjusted to prevent overflow
             double centerX = canvasWidth * 0.5;  // Centered for balanced layout
             double centerY = canvasHeight / 2;
-            double radius = Math.Min(canvasWidth, canvasHeight) * (ChartSize / 100.0) * 0.24;  // Reduced from 0.28 to 0.24 to prevent overflow
+            double radius = Math.Min(canvasWidth, canvasHeight) * (ChartSize / 100.0) * 0.28;
 
             double total = chartData.Sum(d => d.Value);
             double startAngleRad = StartAngle * Math.PI / 180;
 
-            // Draw title - reduced top margin from 20 to 10
+            // Draw title
             if (!string.IsNullOrWhiteSpace(ChartTitle))
             {
                 var title = new TextBlock
                 {
                     Text = ChartTitle,
-                    FontSize = 18,  // Reduced from 20 to 18
+                    FontSize = 20,
                     FontWeight = FontWeights.Bold,
                     Foreground = new SolidColorBrush(Color.FromRgb(44, 62, 80))
                 };
-                Canvas.SetLeft(title, canvasWidth / 2 - 150);  // Center on canvas
-                Canvas.SetTop(title, 10);  // Reduced from 20 to 10
+                title.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                Canvas.SetLeft(title, (canvasWidth - title.DesiredSize.Width) / 2);
+                Canvas.SetTop(title, 15);
                 ChartCanvas.Children.Add(title);
             }
 

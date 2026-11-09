@@ -174,6 +174,7 @@ namespace QASmartTouch.Services.Tools
             AddShape(mPlane, "mIsosceles", "Tam giác cân");
             AddShape(mPlane, "mEquilateral", "Tam giác đều");
             AddShape(mPlane, "mSquare", "Hình vuông");
+            AddShape(mPlane, "mRectangle", "Hình chữ nhật");
             AddShape(mPlane, "mCircle", "Đường tròn (O)");
             AddShape(mPlane, "mAltitude", "Đường cao");
             AddShape(mPlane, "mIncircle", "Đường tròn nội tiếp");
@@ -933,9 +934,14 @@ namespace QASmartTouch.Services.Tools
                     break;
                 case "mSquare":
                     Closed(B(0.08, 0.08), B(0.92, 0.08), B(0.92, 0.92), B(0.08, 0.92));
-                    DashLine(0.08, 0.08, 0.92, 0.92);
-                    DashLine(0.92, 0.08, 0.08, 0.92);
-                    RightMark(0.08, 0.92, 1, -1);
+                    break;
+                case "mRectangle":
+                    {
+                        bool isThumb = _w <= 48 && _h <= 48 && Math.Abs(_w - _h) < 1;
+                        double v0 = isThumb ? 0.22 : 0.08;
+                        double v1 = isThumb ? 0.78 : 0.92;
+                        Closed(B(0.06, v0), B(0.94, v0), B(0.94, v1), B(0.06, v1));
+                    }
                     break;
                 case "mCircle":
                     Ellipse(0.5, 0.5, 0.42, 0.42);
@@ -1007,9 +1013,6 @@ namespace QASmartTouch.Services.Tools
                     break;
                 case "mRhombus":
                     Closed(B(0.5, 0.05), B(0.93, 0.5), B(0.5, 0.95), B(0.07, 0.5));
-                    DashLine(0.5, 0.05, 0.5, 0.95);
-                    DashLine(0.07, 0.5, 0.93, 0.5);
-                    RightMark(0.5, 0.5, 1, -1);
                     break;
                 case "mPentagon":
                     {

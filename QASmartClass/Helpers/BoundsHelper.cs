@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -277,6 +277,80 @@ namespace QASmartTouch.Helpers
                 bounds.Height + tolerance * 2);
 
             return expanded.Contains(point);
+        }
+
+        /// <summary>
+        /// Không gian bảng ảo toàn cục khớp với lớp nền ảo trong ApplyCanvasBackground (từ -10000 đến +18000).
+        /// Cho phép kéo thả tự do các đối tượng ra ngoài khung màn hình ban đầu khi thu nhỏ (Zoom Out) hoặc kéo bảng (Pan).
+        /// </summary>
+        public static readonly Rect VirtualBoardBounds = new Rect(-10000, -10000, 28000, 28000);
+
+        /// <summary>
+        /// Kẹp tọa độ (Left, Top) của phần tử trong phạm vi Không gian Bảng Ảo (VirtualBoardBounds),
+        /// cho phép tọa độ âm (bên trái/phía trên màn hình gốc) và tọa độ lớn hơn 1920x1080 khi Zoom nhỏ hoặc Pan.
+        /// </summary>
+        public static (double Left, double Top) ClampToVirtualBoard(
+            double left,
+            double top,
+            double elementWidth = 0,
+            double elementHeight = 0)
+        {
+            if (double.IsNaN(left) || double.IsInfinity(left)) left = 0;
+            if (double.IsNaN(top) || double.IsInfinity(top)) top = 0;
+
+            double safeW = (!double.IsNaN(elementWidth) && !double.IsInfinity(elementWidth) && elementWidth > 0) ? elementWidth : 0;
+            double safeH = (!double.IsNaN(elementHeight) && !double.IsInfinity(elementHeight) && elementHeight > 0) ? elementHeight : 0;
+
+            double minLeft = VirtualBoardBounds.Left;
+            double maxLeft = Math.Max(minLeft, VirtualBoardBounds.Right - safeW);
+            double minTop = VirtualBoardBounds.Top;
+            double maxTop = Math.Max(minTop, VirtualBoardBounds.Bottom - safeH);
+
+            double clampedLeft = Math.Max(minLeft, Math.Min(left, maxLeft));
+            double clampedTop = Math.Max(minTop, Math.Min(top, maxTop));
+
+            return (clampedLeft, clampedTop);
+        }
+
+        /// <summary>
+        /// Lấy hình chữ nhật Khung nhìn Hiển thị Thực tế (Visible Viewport) quy đổi sang hệ tọa độ của Canvas.
+        /// Tự động tính đến ScaleTransform (Zoom 50%..400%) và TranslateTransform (Pan) của MainInteractiveBoard.
+        /// Dùng để định vị ContextToolbar, Popup, Bàn phím ảo và lớp phủ Spotlight luôn nằm trong tầm mắt người dùng.
+        /// </summary>
+        public static Rect GetVisibleCanvasBounds(Canvas? canvas)
+        {
+            double baseWidth = (canvas != null && canvas.ActualWidth > 0) ? canvas.ActualWidth : SystemParameters.PrimaryScreenWidth;
+            double baseHeight = (canvas != null && canvas.ActualHeight > 0) ? canvas.ActualHeight : SystemParameters.PrimaryScreenHeight;
+
+            if (canvas == null)
+                return new Rect(0, 0, baseWidth, baseHeight);
+
+            try
+            {
+                if (VisualTreeHelper.GetParent(canvas) is FrameworkElement parentViewport &&
+                    parentViewport.ActualWidth > 0 &&
+                    parentViewport.ActualHeight > 0)
+                {
+                    GeneralTransform toCanvas = parentViewport.TransformToVisual(canvas);
+                    Rect visibleRect = toCanvas.TransformBounds(new Rect(0, 0, parentViewport.ActualWidth, parentViewport.ActualHeight));
+                    if (!visibleRect.IsEmpty &&
+                        visibleRect.Width > 0 &&
+                        visibleRect.Height > 0 &&
+                        !double.IsNaN(visibleRect.X) &&
+                        !double.IsNaN(visibleRect.Y) &&
+                        !double.IsInfinity(visibleRect.Width) &&
+                        !double.IsInfinity(visibleRect.Height))
+                    {
+                        return visibleRect;
+                    }
+                }
+            }
+            catch
+            {
+                // Fallback bên dưới nếu phần tử chưa gắn vào VisualTree
+            }
+
+            return new Rect(0, 0, baseWidth, baseHeight);
         }
     }
 }
