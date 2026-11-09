@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using System.IO;
 
@@ -3404,6 +3404,12 @@ namespace QASmartClass.Services
 
                     SeedMasterSettings(db);
 
+                    EnsureSubjectsTable(db);
+
+                    EnsurePeriodLogbooksTable(db);
+
+                    EnsureIncrementalColumns(db);
+
 
 
                     transaction.Commit();
@@ -4243,6 +4249,45 @@ namespace QASmartClass.Services
 
         public static void EnsureIncrementalColumns(Data.AppDbContext db)
         {
+            try
+            {
+                if (TableExists(db, "Students"))
+                {
+                    var studentCols = new (string Name, string SqlDef)[]
+                    {
+                        ("DailyStreak", "INTEGER NOT NULL DEFAULT 0"),
+                        ("LastActiveDate", "TEXT NULL"),
+                        ("IsAtRisk", "INTEGER NOT NULL DEFAULT 0"),
+                        ("RiskReason", "TEXT NOT NULL DEFAULT ''"),
+                        ("Gender", "TEXT NOT NULL DEFAULT 'Nam'"),
+                        ("Ethnicity", "TEXT NOT NULL DEFAULT 'Kinh'"),
+                        ("PositionX", "REAL NOT NULL DEFAULT 0.0"),
+                        ("PositionY", "REAL NOT NULL DEFAULT 0.0"),
+                        ("StudentLexileScore", "INTEGER NOT NULL DEFAULT 400"),
+                        ("ReservationBlockedUntil", "TEXT NULL"),
+                        ("ConsecutiveSuccessfulPickups", "INTEGER NOT NULL DEFAULT 0"),
+                        ("LowBalanceThreshold", "TEXT NOT NULL DEFAULT '30000'"),
+                        ("WalletChecksum", "TEXT NOT NULL DEFAULT ''"),
+                        ("TotalXp", "INTEGER NOT NULL DEFAULT 0"),
+                        ("WalletBalance", "TEXT NOT NULL DEFAULT '0.0'"),
+                        ("ConductScore", "INTEGER NOT NULL DEFAULT 100")
+                    };
+
+                    foreach (var (colName, sqlDef) in studentCols)
+                    {
+                        if (!ColumnExists(db, "Students", colName))
+                        {
+                            RunSafeSql(db, $"ALTER TABLE Students ADD COLUMN {colName} {sqlDef};");
+                            Log.Information("[DbMigrator] Added missing column {Col} to Students", colName);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[DbMigrator] EnsureIncrementalColumns (Students) error: {Err}", ex.Message);
+            }
+
             try
             {
                 if (TableExists(db, "RemedialPlans") && !ColumnExists(db, "RemedialPlans", "Status"))

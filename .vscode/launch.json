@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run QASmartClass (Lớp học thông minh)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-qasmartclass",
+      "program": "${workspaceFolder}/QASmartClass/bin/x64/Debug/net9.0-windows10.0.19041.0/QASmartClass.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/QASmartClass/bin/x64/Debug/net9.0-windows10.0.19041.0",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": "Run QASmartTouch (Bảng viết độc lập)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-qasmarttouch",
+      "program": "${workspaceFolder}/QASmartTouch/bin/x64/Debug/net9.0-windows10.0.19041.0/QASmartTouch.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/QASmartTouch/bin/x64/Debug/net9.0-windows10.0.19041.0",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}
