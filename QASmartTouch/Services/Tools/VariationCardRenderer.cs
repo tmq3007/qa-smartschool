@@ -9,7 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 
-namespace QASmartClass.Services.Tools
+namespace QASmartTouch.Services.Tools
 {
     /// <summary>
     /// Trình dựng Bảng Biến Thiên & Thẻ Toán Học chuẩn vector tương tác cho Form2_MainDashboard

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
@@ -292,8 +292,8 @@ namespace QASmartTouch.Models
             int recommendedResolution = QASmartTouch.Services.AppSettings.GetRecommended3DResolution();
             resolution = Math.Min(resolution, recommendedResolution);
 
-            var appConfig = QASmartClass.Services.AppConfig.Load();
-            if (appConfig.Reduce3DMeshResolution || (appConfig.AutoOptimizeForIntegratedGraphics && QASmartClass.Services.AppConfig.IsIntegratedGraphicsDetected))
+            var appConfig = QASmartTouch.Services.AppConfig.Load();
+            if (appConfig.Reduce3DMeshResolution || (appConfig.AutoOptimizeForIntegratedGraphics && QASmartTouch.Services.AppConfig.IsIntegratedGraphicsDetected))
             {
                 resolution = Math.Min(resolution, 20);
             }

@@ -8,7 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 
-namespace QASmartClass.Services.Tools
+namespace QASmartTouch.Services.Tools
 {
     /// <summary>
     /// Trình vẽ Đồ Thị Hàm Số 2D độc lập trực tiếp lên Thẻ Toán Học (Math Card)

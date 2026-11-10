@@ -1,39 +1,16 @@
 using System;
 using System.IO;
 
-namespace QASmartClass.Services
+namespace QASmartTouch.Services
 {
     public static class AppPaths
     {
         // ═══ GỐC ═══
         public static string? DataDirOverride { get; set; }
 
-        public static string RootDir => DataDirOverride != null 
-            ? DataDirOverride 
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "QASmartClass");
-
-        // ═══ DATABASE ═══
-        private static readonly System.Threading.AsyncLocal<string?> _databaseFileOverride = new();
-        private static readonly System.Threading.AsyncLocal<string?> _dbVersionFileOverride = new();
-
-        public static string DatabaseFile
-        {
-            get
-            {
-                if (_databaseFileOverride.Value != null) return _databaseFileOverride.Value;
-                string dbName = string.Equals(QASmartTouch.Services.AppSettings.RunningMode, "Test", StringComparison.OrdinalIgnoreCase) 
-                    ? "smartclass_test.db" 
-                    : "smartclass.db";
-                return Path.Combine(RootDir, dbName);
-            }
-            set => _databaseFileOverride.Value = value;
-        }
-
-        public static string DbVersionFile
-        {
-            get => _dbVersionFileOverride.Value ?? Path.Combine(RootDir, "db_version.txt");
-            set => _dbVersionFileOverride.Value = value;
-        }
+        public static string RootDir => DataDirOverride != null
+            ? DataDirOverride
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "QASmartTouch");
 
         // ═══ CẤU HÌNH ═══
         public static string SettingsDir => Path.Combine(RootDir, "Settings");
@@ -41,7 +18,6 @@ namespace QASmartClass.Services
         public static string ClassroomSettingsFile => Path.Combine(SettingsDir, "settings.json");
         public static string TextJournalFile => Path.Combine(SettingsDir, "temp_journal.log");
         public static string AdminSecurityFile => Path.Combine(SettingsDir, "admin_security.json");
-        public static string StudentProfileFile => GetStudentProfilePath();
         public static string WorkstationConfigFile => Path.Combine(SettingsDir, "workstation.json");
         public static string FirstRunFlag => Path.Combine(RootDir, ".first_run_done");
 
@@ -57,26 +33,11 @@ namespace QASmartClass.Services
         public static string TempDir => Path.Combine(RootDir, "Temp");
         public static string CrashesDir => Path.Combine(RootDir, "crashes");
         public static string ScreenCapturesDir => Path.Combine(RootDir, "ScreenCaptures");
-        public static string DocumentsDir => DataDirOverride != null 
+        public static string DocumentsDir => DataDirOverride != null
             ? Path.Combine(DataDirOverride, "Documents")
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "QASmartClass");
-        public static string PicturesDir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "QASmartClass");
-        
-        public static string DefaultDatabaseTemplate
-        {
-            get
-            {
-                string p1 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "smartclass_default.db");
-                if (File.Exists(p1)) return p1;
-                string p2 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "smartclass.db");
-                if (File.Exists(p2)) return p2;
-                string p3 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "QASmartClass.db");
-                if (File.Exists(p3)) return p3;
-                string p4 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "smartclass.db");
-                if (File.Exists(p4)) return p4;
-                return p1;
-            }
-        }
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "QASmartTouch");
+        public static string PicturesDir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "QASmartTouch");
+
         public static string SystemRestoreBackupDir => Path.Combine(DocumentsDir, "Backups", "SystemRestore");
         public static string WebView2UserDataDir => Path.Combine(RootDir, "WebView2");
 
@@ -89,20 +50,8 @@ namespace QASmartClass.Services
                 Directory.CreateDirectory(dir);
             }
         }
-        
+
         public static string GetTopologyFile(string roomId) => Path.Combine(SettingsDir, $"topology_{roomId}.json");
-
-        public static string CurrentStudentCode { get; set; } = "";
-
-        private static string GetStudentProfilePath()
-        {
-            string hwId = GetHardwareId();
-            if (string.IsNullOrEmpty(CurrentStudentCode))
-            {
-                return Path.Combine(SettingsDir, $"student_profile_{hwId}.json");
-            }
-            return Path.Combine(SettingsDir, $"student_profile_{hwId}_{CurrentStudentCode}.json");
-        }
 
         public static string GetHardwareId()
         {
@@ -112,7 +61,7 @@ namespace QASmartClass.Services
                 {
                     foreach (var obj in searcher.Get())
                     {
-                        string uuid = obj["UUID"]?.ToString();
+                        string? uuid = obj["UUID"]?.ToString();
                         if (!string.IsNullOrEmpty(uuid) && uuid != "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")
                         {
                             return uuid.Replace("-", "").ToLower();
@@ -130,7 +79,7 @@ namespace QASmartClass.Services
                 var interfaces = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
                 foreach (var ni in interfaces)
                 {
-                    if (ni.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up && 
+                    if (ni.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up &&
                         ni.NetworkInterfaceType != System.Net.NetworkInformation.NetworkInterfaceType.Loopback)
                     {
                         string mac = ni.GetPhysicalAddress().ToString();

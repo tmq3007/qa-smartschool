@@ -1,4 +1,4 @@
- using System;
+﻿ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using QASmartTouch.Managers;
 using QASmartTouch.Helpers;
-using QASmartClass.WhiteboardCore.IO.SceneGraph;
+using QASmartTouch.WhiteboardCore.IO.SceneGraph;
 using Path = System.IO.Path;
 
 namespace QASmartTouch.WhiteboardCore.IO

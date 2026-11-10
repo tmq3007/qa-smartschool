@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using QASmartClass.Services.Tools;
+using QASmartTouch.Services.Tools;
 using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
@@ -141,7 +141,7 @@ namespace QASmartTouch.Forms
             }
         }
 
-        private void cboFonts_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void cboFonts_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (_isInitializing) return;
 

@@ -1,4 +1,4 @@
-namespace QASmartClass.WhiteboardCore.Enums
+﻿namespace QASmartTouch.WhiteboardCore.Enums
 {
     /// <summary>
     /// Trạng thái hiện tại của công cụ bảng vẽ.

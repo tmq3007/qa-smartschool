@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,14 +21,14 @@ namespace QASmartTouch.PeriodicTable.Views
                 string suffix = "VN";
                 try
                 {
-                    string lang = QASmartClass.Shared.LanguageManager.CurrentLanguage;
+                    string lang = QASmartTouch.Shared.LanguageManager.CurrentLanguage;
                     if (!string.IsNullOrEmpty(lang))
                     {
                         suffix = lang.Equals("vi", StringComparison.OrdinalIgnoreCase) ? "VN" : "EN";
                     }
                     else
                     {
-                        bool isVN = QASmartClass.Shared.LanguageManager.CurrentLanguage == "vi";
+                        bool isVN = QASmartTouch.Shared.LanguageManager.CurrentLanguage == "vi";
                         suffix = isVN ? "VN" : "EN";
                     }
                 }

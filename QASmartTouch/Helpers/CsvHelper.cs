@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Linq;
 
-namespace QASmartClass.Helpers
+namespace QASmartTouch.Helpers
 {
     public static class CsvHelper
     {

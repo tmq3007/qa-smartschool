@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Ink;
-using QASmartClass.WhiteboardCore.Enums;
+using QASmartTouch.WhiteboardCore.Enums;
 
-namespace QASmartClass.WhiteboardCore.Tools
+namespace QASmartTouch.WhiteboardCore.Tools
 {
     /// <summary>
     /// EraserTool — Quản lý cấu hình và trạng thái công cụ tẩy.

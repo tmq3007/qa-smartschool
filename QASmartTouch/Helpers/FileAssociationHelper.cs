@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using Serilog;
 
-namespace QASmartClass.Helpers
+namespace QASmartTouch.Helpers
 {
     /// <summary>
     /// FileAssociationHelper — Quản lý đăng ký liên kết tệp (.qasc) với Windows

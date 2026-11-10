@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -11,7 +11,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace QASmartClass.Forms
+namespace QASmartTouch.Forms
 {
     public partial class SelfDiagnosticsWindow : Window
     {

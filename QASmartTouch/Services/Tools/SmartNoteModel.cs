@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 
-namespace QASmartClass.Services.Tools
+namespace QASmartTouch.Services.Tools
 {
     public enum SmartNoteThemeType
     {

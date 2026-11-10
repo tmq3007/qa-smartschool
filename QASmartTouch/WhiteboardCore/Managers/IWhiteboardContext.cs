@@ -1,7 +1,7 @@
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Ink;
 
-namespace QASmartClass.WhiteboardCore.Managers
+namespace QASmartTouch.WhiteboardCore.Managers
 {
     /// <summary>
     /// Context Interface — cho phép WhiteboardCore truy cập Canvas, Inking Layer và History

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -20,7 +20,7 @@ using QASmartTouch.Models;
 using QASmartTouch.Shared;
 using QASmartTouch.WhiteboardCore.IO;
 
-namespace QASmartClass.WhiteboardCore.IO.SceneGraph
+namespace QASmartTouch.WhiteboardCore.IO.SceneGraph
 {
     /// <summary>
     /// SceneGraphSerializer — Bộ chuyển đổi 2 chiều giữa WPF UIElement và SceneElementNode.

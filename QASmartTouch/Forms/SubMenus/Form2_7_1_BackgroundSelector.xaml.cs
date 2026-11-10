@@ -1,8 +1,8 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using QASmartClass.Properties; // ✨ Add for Settings
+using QASmartTouch.Properties; // ✨ Add for Settings
 using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms

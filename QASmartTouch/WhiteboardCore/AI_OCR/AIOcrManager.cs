@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace QASmartClass.WhiteboardCore.AI_OCR
+namespace QASmartTouch.WhiteboardCore.AI_OCR
 {
     /// <summary>
     /// AIOcrManager — Quản lý tích hợp AI và OCR cho bảng vẽ.

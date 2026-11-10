@@ -2,8 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Premium Font Families with standard Windows/WPF system fallbacks -->
-    <FontFamily x:Key="InterFont">pack://application:,,,/QASmartClass;component/Resources/Fonts/#Inter, Segoe UI, Arial</FontFamily>
-    <FontFamily x:Key="OutfitFont">pack://application:,,,/QASmartClass;component/Resources/Fonts/#Outfit, Century Gothic, Segoe UI Semibold</FontFamily>
+    <FontFamily x:Key="InterFont">pack://application:,,,/QASmartTouch;component/Resources/Fonts/#Inter, Segoe UI, Arial</FontFamily>
+    <FontFamily x:Key="OutfitFont">pack://application:,,,/QASmartTouch;component/Resources/Fonts/#Outfit, Century Gothic, Segoe UI Semibold</FontFamily>
 
     <!-- Base Styles for Common Controls to ensure premium typography -->
     <Style TargetType="Control">

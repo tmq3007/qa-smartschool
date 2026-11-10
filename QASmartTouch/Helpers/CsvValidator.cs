@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace QASmartClass.Helpers
+namespace QASmartTouch.Helpers
 {
     public class CsvValidationError
     {

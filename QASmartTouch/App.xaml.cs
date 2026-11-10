@@ -9,10 +9,7 @@ using QASmartTouch.Forms;
 using QASmartTouch.Services;
 using QASmartTouch.Helpers;
 using QASmartTouch.Services.License;
-using QASmartClass.Forms;
-using QASmartClass.Services;
-using QASmartClass.Helpers;
-using QASmartClass.Models;
+using QASmartTouch.Models;
 
 namespace QASmartTouch
 {
@@ -25,7 +22,7 @@ namespace QASmartTouch
         public static string? StartupLecturePath { get; private set; }
         private Form2_MainDashboard? _whiteboardWindow;
         public Form2_MainDashboard? _whiteboardShell => _whiteboardWindow;
-        public QASmartClass.Shared.ModeService ModeService { get; } = new QASmartClass.Shared.ModeService();
+        public QASmartTouch.Shared.ModeService ModeService { get; } = new QASmartTouch.Shared.ModeService();
 
         static App()
         {
@@ -72,7 +69,7 @@ namespace QASmartTouch
             StatusReportService.Instance.Start();
             GlobalExceptionHandler.Initialize();
 
-            string logFilePath = Path.Combine(QASmartClass.Services.AppPaths.LogsDir, "qasmarttouch-.json");
+            string logFilePath = Path.Combine(QASmartTouch.Services.AppPaths.LogsDir, "qasmarttouch-.json");
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(),
@@ -86,7 +83,7 @@ namespace QASmartTouch
             // 6. Tối ưu hiển thị phần cứng & Tốc độ khung hình 60 FPS
             try
             {
-                var config = QASmartClass.Services.AppConfig.Load();
+                var config = QASmartTouch.Services.AppConfig.Load();
                 System.Windows.Media.RenderOptions.ProcessRenderMode = config.EnableHardwareAcceleration
                     ? System.Windows.Interop.RenderMode.Default
                     : System.Windows.Interop.RenderMode.SoftwareOnly;

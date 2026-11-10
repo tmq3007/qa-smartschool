@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,7 +20,7 @@ using QASmartTouch.Models;
 using QASmartTouch.Controls;
 using QASmartTouch.Controllers;
 using QASmartTouch.Shared;
-using QASmartClass.Properties;
+using QASmartTouch.Properties;
 using System.Windows.Documents;
 using System.Windows.Ink;
 // ══════════════════════════════════════════════════════════════════
@@ -542,7 +542,7 @@ namespace QASmartTouch.Forms
         /// <summary>
         /// Ghi nhận kết quả của một phiên tẩy Native Inking (cắt xén nét hoặc xóa nét) vào Undo stack.
         /// </summary>
-        private void FinalizeNativeEraseSession(QASmartClass.WhiteboardCore.Tools.NativeEraseSession? session, string? description = null)
+        private void FinalizeNativeEraseSession(QASmartTouch.WhiteboardCore.Tools.NativeEraseSession? session, string? description = null)
         {
             if (session == null || !session.HasChanges || MainInkPresenter == null) return;
 
@@ -2078,8 +2078,8 @@ namespace QASmartTouch.Forms
             _objectSelectionMode = true;
 
             // ── WhiteboardCore FSM: Chuyển sang Select Mode ──
-            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Select);
-            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartClass.WhiteboardCore.Enums.SelectionMode.Rectangle);
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartTouch.WhiteboardCore.Enums.ToolMode.Select);
+            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartTouch.WhiteboardCore.Enums.SelectionMode.Rectangle);
 
             MainInteractiveBoard.Cursor = Cursors.Hand;
             _selectionManager?.DeselectAll();        // Reset selection cũ
@@ -2113,8 +2113,8 @@ namespace QASmartTouch.Forms
             _lassoTool?.Deactivate();
 
             // ── WhiteboardCore FSM: Chuyển sang Select Mode (Rectangle) ──
-            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Select);
-            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartClass.WhiteboardCore.Enums.SelectionMode.Rectangle);
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartTouch.WhiteboardCore.Enums.ToolMode.Select);
+            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartTouch.WhiteboardCore.Enums.SelectionMode.Rectangle);
 
             MainInteractiveBoard.Cursor = Cursors.Hand;
             _selectionManager?.DeselectAll();        // Reset selection cũ
@@ -2148,8 +2148,8 @@ namespace QASmartTouch.Forms
             _isMagicWandMode = false;
 
             // ── WhiteboardCore FSM: Chuyển sang Select Mode (Lasso) ──
-            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Select);
-            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartClass.WhiteboardCore.Enums.SelectionMode.Lasso);
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartTouch.WhiteboardCore.Enums.ToolMode.Select);
+            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartTouch.WhiteboardCore.Enums.SelectionMode.Lasso);
 
             MainInteractiveBoard.Cursor = Cursors.Cross;
             _selectionManager?.DeselectAll();        // Reset selection cũ
@@ -2195,8 +2195,8 @@ namespace QASmartTouch.Forms
             _lassoTool?.Deactivate();
 
             // ── WhiteboardCore FSM: Chuyển sang Select Mode (MagicWand) ──
-            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Select);
-            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartClass.WhiteboardCore.Enums.SelectionMode.MagicWand);
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartTouch.WhiteboardCore.Enums.ToolMode.Select);
+            _whiteboardManager?.ToolManager.SelectionTool.SetMode(QASmartTouch.WhiteboardCore.Enums.SelectionMode.MagicWand);
 
             MainInteractiveBoard.Cursor = Cursors.Hand;
             _selectionManager?.DeselectAll();
@@ -3360,7 +3360,7 @@ namespace QASmartTouch.Forms
         /// Chèn Bảng Biến Thiên tương tác lên bảng vẽ (tương tự như Thẻ Toán Học QA Calculator)
         /// Tự động đăng ký SelectionManager, QuadTree và ghi nhận Undo/Redo
         /// </summary>
-        public void InsertVariationTableToBoard(QASmartClass.Services.Tools.VariationModel model)
+        public void InsertVariationTableToBoard(QASmartTouch.Services.Tools.VariationModel model)
         {
             if (model == null) return;
 
@@ -3368,7 +3368,7 @@ namespace QASmartTouch.Forms
             _floatingTouchKeyboard?.HideKeyboard();
 
             // 1. Dựng Thẻ Bảng Biến Thiên hoàn chỉnh
-            var cardBorder = QASmartClass.Services.Tools.VariationCardRenderer.CreateVariationCard(model);
+            var cardBorder = QASmartTouch.Services.Tools.VariationCardRenderer.CreateVariationCard(model);
 
             // 2. XÃ¡c Ä‘á»‹nh vá»‹ trÃ­ chÃ¨n (á»Ÿ giá»¯a mÃ n hÃ¬nh hoáº·c lá»‡ch nháº¹ theo Ä‘á»‘i tÆ°á»£ng Ä‘ang chá»n)
             double posX = Math.Max(50, (MainInteractiveBoard.ActualWidth - 650) / 2);
@@ -3408,7 +3408,7 @@ namespace QASmartTouch.Forms
         /// ChÃ¨n Äá»“ Thá»‹ HÃ m Sá»‘ Oxy Ä‘á»™c láº­p tÆ°Æ¡ng tÃ¡c lÃªn báº£ng váº½ (Tháº» ToÃ¡n Há»c)
         /// Tá»± Ä‘á»™ng Ä‘Äƒng kÃ½ SelectionManager, QuadTree vÃ  ghi nháº­n Undo/Redo
         /// </summary>
-        public void InsertFunctionGraphToBoard(string expression, QASmartClass.Services.Tools.VariationModel? model = null)
+        public void InsertFunctionGraphToBoard(string expression, QASmartTouch.Services.Tools.VariationModel? model = null)
         {
             if (string.IsNullOrWhiteSpace(expression)) return;
 
@@ -3416,7 +3416,7 @@ namespace QASmartTouch.Forms
             _floatingTouchKeyboard?.HideKeyboard();
 
             // 1. Dá»±ng Tháº» Äá»“ Thá»‹ HÃ m Sá»‘ hoÃ n chá»‰nh
-            var cardBorder = QASmartClass.Services.Tools.FunctionGraphCardRenderer.CreateGraphCard(expression, model);
+            var cardBorder = QASmartTouch.Services.Tools.FunctionGraphCardRenderer.CreateGraphCard(expression, model);
 
             // 2. XÃ¡c Ä‘á»‹nh vá»‹ trÃ­ chÃ¨n (á»Ÿ giá»¯a mÃ n hÃ¬nh hoáº·c lá»‡ch nháº¹ theo Ä‘á»‘i tÆ°á»£ng Ä‘ang chá»n)
             double posX = Math.Max(50, (MainInteractiveBoard.ActualWidth - 620) / 2);
@@ -3460,15 +3460,15 @@ namespace QASmartTouch.Forms
         /// ChÃ¨n Tháº» Ghi ChÃº ThÃ´ng Minh (SmartNoteCard) chuáº©n phong cÃ¡ch MathCard lÃªn báº£ng váº½
         /// Há»— trá»£ sá»­a chá»¯ trá»±c tiáº¿p, bÃ n phÃ­m áº£o, Ä‘a dáº¡ng phÃ´ng chá»¯ viáº¿t tay vÃ  8 mÃ u tháº» sinh Ä‘á»™ng
         /// </summary>
-        public void InsertSmartNoteCardToBoard(QASmartClass.Services.Tools.SmartNoteModel? initialData = null)
+        public void InsertSmartNoteCardToBoard(QASmartTouch.Services.Tools.SmartNoteModel? initialData = null)
         {
             // áº¨n bÃ n phÃ­m ná»•i náº¿u Ä‘ang hiá»‡n
             _floatingTouchKeyboard?.HideKeyboard();
 
-            var model = initialData ?? new QASmartClass.Services.Tools.SmartNoteModel();
+            var model = initialData ?? new QASmartTouch.Services.Tools.SmartNoteModel();
 
             // 1. Dá»±ng Tháº» Ghi ChÃº hoÃ n chá»‰nh
-            var cardBorder = QASmartClass.Services.Tools.SmartNoteCardRenderer.CreateNoteCard(
+            var cardBorder = QASmartTouch.Services.Tools.SmartNoteCardRenderer.CreateNoteCard(
                 model,
                 onRequestEdit: (card) => StartInPlaceSmartNoteEditing(card),
                 onRequestFormat: (card) => OpenSmartNoteFormatDialog(card)
@@ -3520,7 +3520,7 @@ namespace QASmartTouch.Forms
         {
             if (noteCard == null) return;
 
-            var tbDisplay = QASmartClass.Services.Tools.SmartNoteCardRenderer.GetDisplayTextBlock(noteCard);
+            var tbDisplay = QASmartTouch.Services.Tools.SmartNoteCardRenderer.GetDisplayTextBlock(noteCard);
             if (tbDisplay == null) return;
 
             // Tuyá»‡t Ä‘á»‘i khÃ´ng má»Ÿ bÃ n phÃ­m ná»•i tá»± cháº¿ cÅ© (_floatingTouchKeyboard) cho SmartNoteCard
@@ -3533,14 +3533,14 @@ namespace QASmartTouch.Forms
             _editingSmartNoteCard = noteCard;
             _editingTextBlock = null;
 
-            var txtEditor = QASmartClass.Services.Tools.SmartNoteCardRenderer.GetEditorTextBox(noteCard);
+            var txtEditor = QASmartTouch.Services.Tools.SmartNoteCardRenderer.GetEditorTextBox(noteCard);
             if (txtEditor != null)
             {
                 txtEditor.LostFocus -= OnSmartNoteEditorLostFocus;
                 txtEditor.LostFocus += OnSmartNoteEditorLostFocus;
             }
 
-            QASmartClass.Services.Tools.SmartNoteCardRenderer.StartEditing(noteCard);
+            QASmartTouch.Services.Tools.SmartNoteCardRenderer.StartEditing(noteCard);
         }
 
         private void OnSmartNoteEditorLostFocus(object sender, RoutedEventArgs e)
@@ -3561,13 +3561,13 @@ namespace QASmartTouch.Forms
 
             try
             {
-                var txtEditor = QASmartClass.Services.Tools.SmartNoteCardRenderer.GetEditorTextBox(card);
+                var txtEditor = QASmartTouch.Services.Tools.SmartNoteCardRenderer.GetEditorTextBox(card);
                 if (txtEditor != null)
                 {
                     txtEditor.LostFocus -= OnSmartNoteEditorLostFocus;
                 }
 
-                QASmartClass.Services.Tools.SmartNoteCardRenderer.FinishEditing(card);
+                QASmartTouch.Services.Tools.SmartNoteCardRenderer.FinishEditing(card);
                 card.UpdateLayout();
                 RefreshSelectableObjects();
                 _selectionBox?.UpdatePosition();
@@ -3584,7 +3584,7 @@ namespace QASmartTouch.Forms
         /// </summary>
         public void OpenSmartNoteFormatDialog(Border cardBorder)
         {
-            if (cardBorder == null || cardBorder.DataContext is not QASmartClass.Services.Tools.SmartNoteModel model) return;
+            if (cardBorder == null || cardBorder.DataContext is not QASmartTouch.Services.Tools.SmartNoteModel model) return;
 
             try
             {
@@ -3592,13 +3592,13 @@ namespace QASmartTouch.Forms
                 bool? result = WindowHelper.ShowChildDialog(dlg, this);
                 if (result == true && dlg.IsConfirmed && dlg.Model != null)
                 {
-                    QASmartClass.Services.Tools.SmartNoteCardRenderer.ApplyTitleAndBadge(cardBorder, dlg.Model.Title, dlg.Model.BadgeText);
-                    QASmartClass.Services.Tools.SmartNoteCardRenderer.ApplyTheme(cardBorder, dlg.Model.ThemeType);
-                    QASmartClass.Services.Tools.SmartNoteCardRenderer.ApplyFont(cardBorder, dlg.Model.FontFamily);
-                    QASmartClass.Services.Tools.SmartNoteCardRenderer.ApplyFontSize(cardBorder, dlg.Model.FontSize);
-                    QASmartClass.Services.Tools.SmartNoteCardRenderer.ApplyFontStyle(cardBorder, dlg.Model.IsBold, dlg.Model.IsItalic);
+                    QASmartTouch.Services.Tools.SmartNoteCardRenderer.ApplyTitleAndBadge(cardBorder, dlg.Model.Title, dlg.Model.BadgeText);
+                    QASmartTouch.Services.Tools.SmartNoteCardRenderer.ApplyTheme(cardBorder, dlg.Model.ThemeType);
+                    QASmartTouch.Services.Tools.SmartNoteCardRenderer.ApplyFont(cardBorder, dlg.Model.FontFamily);
+                    QASmartTouch.Services.Tools.SmartNoteCardRenderer.ApplyFontSize(cardBorder, dlg.Model.FontSize);
+                    QASmartTouch.Services.Tools.SmartNoteCardRenderer.ApplyFontStyle(cardBorder, dlg.Model.IsBold, dlg.Model.IsItalic);
 
-                    QASmartClass.Services.Tools.SmartNoteCardRenderer.FinishEditing(cardBorder, dlg.Model.Content);
+                    QASmartTouch.Services.Tools.SmartNoteCardRenderer.FinishEditing(cardBorder, dlg.Model.Content);
 
                     cardBorder.DataContext = dlg.Model;
 

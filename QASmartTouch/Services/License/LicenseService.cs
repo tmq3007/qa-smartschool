@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -42,7 +42,7 @@ namespace QASmartTouch.Services.License
         private const string PUBLIC_KEY_BASE64 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE6fuo4tIgPrK5+Ggs/Z8lPMkjKbojSLY9dBFEc8JpKs64oDVdZ0sJU7w6nWkHw0zYXiovX6dAwsRrYaHxSeOSVA==";
 
         // ═══ PATHS ═══
-        private static readonly string LicenseDir = QASmartClass.Services.AppPaths.RootDir;
+        private static readonly string LicenseDir = QASmartTouch.Services.AppPaths.RootDir;
 
         private static readonly string LicensePath = Path.Combine(LicenseDir, "license.lic");
 

@@ -1,6 +1,6 @@
-using QASmartClass.WhiteboardCore.Enums;
+﻿using QASmartTouch.WhiteboardCore.Enums;
 
-namespace QASmartClass.WhiteboardCore.Tools
+namespace QASmartTouch.WhiteboardCore.Tools
 {
     /// <summary>
     /// Interface bắt buộc cho mọi công cụ bảng vẽ.

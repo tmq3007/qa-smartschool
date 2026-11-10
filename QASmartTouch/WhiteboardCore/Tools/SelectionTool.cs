@@ -1,7 +1,7 @@
-using System;
-using QASmartClass.WhiteboardCore.Enums;
+﻿using System;
+using QASmartTouch.WhiteboardCore.Enums;
 
-namespace QASmartClass.WhiteboardCore.Tools
+namespace QASmartTouch.WhiteboardCore.Tools
 {
     /// <summary>
     /// SelectionTool — Quản lý trạng thái và cấu hình công cụ chọn đối tượng.

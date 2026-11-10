@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace QASmartClass.Shared
+namespace QASmartTouch.Shared
 {
     /// <summary>
     /// Enum định nghĩa 3 chế độ hoạt động của ứng dụng

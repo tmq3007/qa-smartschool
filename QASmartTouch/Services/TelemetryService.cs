@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace QASmartClass.Services
+namespace QASmartTouch.Services
 {
     public class TelemetryService
     {

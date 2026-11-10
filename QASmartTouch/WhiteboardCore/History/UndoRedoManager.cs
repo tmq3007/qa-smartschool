@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
 
-namespace QASmartClass.WhiteboardCore.History
+namespace QASmartTouch.WhiteboardCore.History
 {
     /// <summary>
     /// Enum liệt kê các loại hành động Undo/Redo.

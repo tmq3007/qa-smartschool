@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QASmartClass.Services.Tools
+namespace QASmartTouch.Services.Tools
 {
     public enum PhETSubject
     {

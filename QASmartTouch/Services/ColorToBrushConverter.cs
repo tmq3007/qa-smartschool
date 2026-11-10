@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace QASmartClass.Services
+namespace QASmartTouch.Services
 {
     /// <summary>
     /// S2-07: Converter string hex color ? SolidColorBrush cho KPI DataGrid.

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,7 +20,7 @@ using QASmartTouch.Models;
 using QASmartTouch.Controls;
 using QASmartTouch.Controllers;
 using QASmartTouch.Shared;
-using QASmartClass.Properties;
+using QASmartTouch.Properties;
 using System.Windows.Documents;
 using QASmartTouch.Services.Tools;
 // ══════════════════════════════════════════════════════════════════

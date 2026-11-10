@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
-using QASmartClass.WhiteboardCore.Enums;
+using QASmartTouch.WhiteboardCore.Enums;
 
-namespace QASmartClass.WhiteboardCore.Tools
+namespace QASmartTouch.WhiteboardCore.Tools
 {
     /// <summary>
     /// PenTool — Quản lý cấu hình và trạng thái bút vẽ tự do.

@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using QASmartClass.WhiteboardCore.Enums;
-using QASmartClass.WhiteboardCore.Tools;
+using QASmartTouch.WhiteboardCore.Enums;
+using QASmartTouch.WhiteboardCore.Tools;
 
-namespace QASmartClass.WhiteboardCore.Managers
+namespace QASmartTouch.WhiteboardCore.Managers
 {
     /// <summary>
     /// ToolManager — Quản lý vòng đời và chuyển đổi giữa các công cụ bảng vẽ.

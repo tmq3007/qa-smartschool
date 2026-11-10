@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,11 +20,11 @@ using QASmartTouch.Models;
 using QASmartTouch.Controls;
 using QASmartTouch.Controllers;
 using QASmartTouch.Shared;
-using QASmartClass.Properties;
+using QASmartTouch.Properties;
 using System.Windows.Documents; // For TextRange
 using System.Windows.Ink;
-using QASmartClass.WhiteboardCore.Managers;
-using QASmartClass.WhiteboardCore.Enums;
+using QASmartTouch.WhiteboardCore.Managers;
+using QASmartTouch.WhiteboardCore.Enums;
 
 namespace QASmartTouch.Forms
 {
@@ -64,7 +64,7 @@ namespace QASmartTouch.Forms
         }
     }
 
-    public partial class Form2_MainDashboard : Window, QASmartClass.WhiteboardCore.Managers.IWhiteboardContext
+    public partial class Form2_MainDashboard : Window, QASmartTouch.WhiteboardCore.Managers.IWhiteboardContext
     {
         #region IWhiteboardContext Implementation
 
@@ -72,7 +72,7 @@ namespace QASmartTouch.Forms
         public InkPresenter? MainInkPresenterControl => MainInkPresenter;
         InkPresenter? IWhiteboardContext.MainInkPresenter => MainInkPresenter;
         public System.Windows.Ink.StrokeCollection? Strokes => MainInkPresenter?.Strokes;
-        public QASmartClass.WhiteboardCore.History.IUndoRedoManager? History => _whiteboardManager?.History;
+        public QASmartTouch.WhiteboardCore.History.IUndoRedoManager? History => _whiteboardManager?.History;
         void IWhiteboardContext.InvalidateVisual() => MainInteractiveBoard?.InvalidateVisual();
 
         #endregion
@@ -1584,8 +1584,8 @@ namespace QASmartTouch.Forms
             try
             {
                 // Get API key from settings
-                string storedKey = QASmartClass.Properties.Settings.Default.GoogleCloudVisionApiKey ?? string.Empty;
-                string decryptedKey = QASmartClass.Utilities.CryptoHelper.DecryptWithDpapi(storedKey);
+                string storedKey = QASmartTouch.Properties.Settings.Default.GoogleCloudVisionApiKey ?? string.Empty;
+                string decryptedKey = QASmartTouch.Utilities.CryptoHelper.DecryptWithDpapi(storedKey);
                 string apiKey = string.Empty;
 
                 if (string.IsNullOrEmpty(decryptedKey) && !string.IsNullOrEmpty(storedKey))
@@ -3279,7 +3279,7 @@ namespace QASmartTouch.Forms
             // F12: Open Diagnostics
             else if (e.Key == Key.F12)
             {
-                var diagWindow = new QASmartClass.Forms.SelfDiagnosticsWindow();
+                var diagWindow = new QASmartTouch.Forms.SelfDiagnosticsWindow();
                 diagWindow.Owner = this;
                 diagWindow.ShowDialog();
                 e.Handled = true;
@@ -3435,37 +3435,37 @@ namespace QASmartTouch.Forms
         /// Xử lý sự kiện khi ToolManager chuyển đổi công cụ.
         /// Đồng bộ UI (cursor, touch handler, selection state...) theo tool mới.
         /// </summary>
-        private void OnWhiteboardToolChanged(object? sender, QASmartClass.WhiteboardCore.Managers.ToolChangedEventArgs e)
+        private void OnWhiteboardToolChanged(object? sender, QASmartTouch.WhiteboardCore.Managers.ToolChangedEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine($"🔄 WhiteboardCore ToolChanged: {e.PreviousMode} → {e.NewMode}");
 
             // ── FSM Synchronization (Strangler Fig Pattern) ──
-            if (e.NewMode != QASmartClass.WhiteboardCore.Enums.ToolMode.Select)
+            if (e.NewMode != QASmartTouch.WhiteboardCore.Enums.ToolMode.Select)
             {
                 _selectionManager?.DeselectAll();
                 _selectionManager?.ClearClipboard();
             }
 
-            if (e.NewMode != QASmartClass.WhiteboardCore.Enums.ToolMode.Eraser && _eraserEnabled)
+            if (e.NewMode != QASmartTouch.WhiteboardCore.Enums.ToolMode.Eraser && _eraserEnabled)
             {
                 HideEraserCursorPreview();
             }
 
             switch (e.NewMode)
             {
-                case QASmartClass.WhiteboardCore.Enums.ToolMode.Pen:
+                case QASmartTouch.WhiteboardCore.Enums.ToolMode.Pen:
                     _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Drawing);
                     break;
-                case QASmartClass.WhiteboardCore.Enums.ToolMode.Eraser:
+                case QASmartTouch.WhiteboardCore.Enums.ToolMode.Eraser:
                     _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Eraser);
                     break;
-                case QASmartClass.WhiteboardCore.Enums.ToolMode.Select:
+                case QASmartTouch.WhiteboardCore.Enums.ToolMode.Select:
                     _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Selection);
                     break;
-                case QASmartClass.WhiteboardCore.Enums.ToolMode.Pointer:
+                case QASmartTouch.WhiteboardCore.Enums.ToolMode.Pointer:
                     _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.Pointer);
                     break;
-                case QASmartClass.WhiteboardCore.Enums.ToolMode.None:
+                case QASmartTouch.WhiteboardCore.Enums.ToolMode.None:
                 default:
                     _touchHandler?.SetToolMode(QASmartTouch.Handlers.TouchToolMode.None);
                     break;

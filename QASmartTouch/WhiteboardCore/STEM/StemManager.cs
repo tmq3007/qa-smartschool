@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace QASmartClass.WhiteboardCore.STEM
+namespace QASmartTouch.WhiteboardCore.STEM
 {
     /// <summary>
     /// IStemTool — Interface cho các công cụ STEM (Ruler, Compass, Protractor, SetSquare).

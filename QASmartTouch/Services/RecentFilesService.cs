@@ -45,7 +45,7 @@ namespace QASmartTouch.Services
 
         private RecentFilesService()
         {
-            var appDataDir = QASmartClass.Services.AppPaths.RootDir;
+            var appDataDir = QASmartTouch.Services.AppPaths.RootDir;
             Directory.CreateDirectory(appDataDir);
             _filePath = Path.Combine(appDataDir, FILE_NAME);
             Load();

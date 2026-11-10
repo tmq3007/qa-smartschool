@@ -1,7 +1,7 @@
-using System;
-using QASmartClass.Utilities;
+﻿using System;
+using QASmartTouch.Utilities;
 
-namespace QASmartClass.Utilities
+namespace QASmartTouch.Utilities
 {
     public static class NetworkCryptoHelper
     {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -65,8 +65,8 @@ namespace QASmartTouch.Forms
         private void ApplyGraphicsSettings()
         {
             int resolutionSetting = QASmartTouch.Services.AppSettings.GetRecommended3DResolution();
-            var config = QASmartClass.Services.AppConfig.Load();
-            if (resolutionSetting <= 20 || config.Disable3DAntiAliasing || (config.AutoOptimizeForIntegratedGraphics && QASmartClass.Services.AppConfig.IsIntegratedGraphicsDetected))
+            var config = QASmartTouch.Services.AppConfig.Load();
+            if (resolutionSetting <= 20 || config.Disable3DAntiAliasing || (config.AutoOptimizeForIntegratedGraphics && QASmartTouch.Services.AppConfig.IsIntegratedGraphicsDetected))
             {
                 System.Windows.Media.RenderOptions.SetEdgeMode(viewport3D, System.Windows.Media.EdgeMode.Aliased);
             }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace QASmartTouch.Services
 {
@@ -137,7 +137,7 @@ namespace QASmartTouch.Services
         {
             try
             {
-                string settingsDir = QASmartClass.Services.AppPaths.SettingsDir;
+                string settingsDir = QASmartTouch.Services.AppPaths.SettingsDir;
                 string path = System.IO.Path.Combine(settingsDir, "app_settings.json");
                 if (System.IO.File.Exists(path))
                 {
@@ -173,7 +173,7 @@ namespace QASmartTouch.Services
         {
             try
             {
-                string settingsDir = QASmartClass.Services.AppPaths.SettingsDir;
+                string settingsDir = QASmartTouch.Services.AppPaths.SettingsDir;
                 System.IO.Directory.CreateDirectory(settingsDir);
                 string path = System.IO.Path.Combine(settingsDir, "app_settings.json");
                 var data = new AppSettingsData

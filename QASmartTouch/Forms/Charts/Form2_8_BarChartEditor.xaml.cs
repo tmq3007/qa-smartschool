@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Linq;
@@ -632,7 +632,7 @@ namespace QASmartTouch.Forms
             try
             {
                 string configPath = IOPath.Combine(
-                    QASmartClass.Services.AppPaths.RootDir, "ChartConfigs");
+                    QASmartTouch.Services.AppPaths.RootDir, "ChartConfigs");
                 
                 IODirectory.CreateDirectory(configPath);
                 

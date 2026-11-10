@@ -154,7 +154,7 @@ namespace QASmartTouch.Services
         {
             try
             {
-                var crashDir = QASmartClass.Services.AppPaths.CrashesDir;
+                var crashDir = QASmartTouch.Services.AppPaths.CrashesDir;
                 Directory.CreateDirectory(crashDir);
 
                 var crashFile = Path.Combine(crashDir, $"crash_{DateTime.Now:yyyyMMdd_HHmmss}.txt");

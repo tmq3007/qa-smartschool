@@ -1,9 +1,9 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Collections.Generic;
 
-namespace QASmartClass.Services.Canvas
+namespace QASmartTouch.Services.Canvas
 {
     public interface IUndoableCommand
     {

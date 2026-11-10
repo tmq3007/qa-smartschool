@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -1309,15 +1309,15 @@ namespace QASmartTouch.Services
             if (border == null) return null;
 
             // 1. Thẻ Ghi Chú Thông Minh (SmartNoteCard)
-            var noteClone = QASmartClass.Services.Tools.SmartNoteCardRenderer.TryCloneNoteCard(border);
+            var noteClone = QASmartTouch.Services.Tools.SmartNoteCardRenderer.TryCloneNoteCard(border);
             if (noteClone != null) return noteClone;
 
             // 2. Thẻ Bảng Biến Thiên (VariationCard)
-            var variationClone = QASmartClass.Services.Tools.VariationCardRenderer.TryCloneVariationCard(border);
+            var variationClone = QASmartTouch.Services.Tools.VariationCardRenderer.TryCloneVariationCard(border);
             if (variationClone != null) return variationClone;
 
             // 3. Thẻ Đồ Thị Hàm Số (FunctionGraphCard)
-            var graphClone = QASmartClass.Services.Tools.FunctionGraphCardRenderer.TryCloneGraphCard(border);
+            var graphClone = QASmartTouch.Services.Tools.FunctionGraphCardRenderer.TryCloneGraphCard(border);
             if (graphClone != null) return graphClone;
 
             // 4. Nếu Border chứa cây giao diện phức tạp (ví dụ: Bảng biến thiên / Đồ thị nạp từ file .qasc, hoặc Grid/Canvas lồng nhau)

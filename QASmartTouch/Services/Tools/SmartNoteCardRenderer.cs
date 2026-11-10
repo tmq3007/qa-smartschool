@@ -6,7 +6,7 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 
-namespace QASmartClass.Services.Tools
+namespace QASmartTouch.Services.Tools
 {
     /// <summary>
     /// Trình dựng Thẻ Ghi Chú Thông Minh (SmartNoteCard) chuẩn vector tương tác cho Form2_MainDashboard.

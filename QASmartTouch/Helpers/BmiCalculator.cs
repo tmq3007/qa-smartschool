@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace QASmartClass.Helpers
+namespace QASmartTouch.Helpers
 {
     public static class BmiCalculator
     {

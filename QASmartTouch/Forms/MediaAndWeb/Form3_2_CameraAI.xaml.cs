@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using QASmartTouch.Services.Camera;
 using QASmartTouch.Models.Camera;
-using QASmartClass.Data;
+using QASmartTouch.Data;
 
 namespace QASmartTouch.Forms
 {

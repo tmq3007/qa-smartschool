@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace QASmartClass.WhiteboardCore.IO.SceneGraph
+namespace QASmartTouch.WhiteboardCore.IO.SceneGraph
 {
     /// <summary>
     /// Toàn bộ kịch bản bài giảng gồm nhiều trang bảng

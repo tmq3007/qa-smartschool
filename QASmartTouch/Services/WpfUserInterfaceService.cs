@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace QASmartClass.Services
+namespace QASmartTouch.Services
 {
     public class WpfUserInterfaceService : IUserInterfaceService
     {

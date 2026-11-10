@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Windows;
 using Serilog;
 
-namespace QASmartClass.Shared
+namespace QASmartTouch.Shared
 {
     /// <summary>
     /// Manages bilingual UI (Vietnamese / English).

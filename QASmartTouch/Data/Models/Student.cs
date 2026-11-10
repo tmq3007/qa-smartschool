@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace QASmartClass.Data
+namespace QASmartTouch.Data
 {
     public partial class Student
     {

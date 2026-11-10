@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace QASmartClass.Controls
+namespace QASmartTouch.Controls
 {
     public partial class NotificationWindow : Window
     {

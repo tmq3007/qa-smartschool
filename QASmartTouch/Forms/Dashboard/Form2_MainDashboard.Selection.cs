@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,7 +20,7 @@ using QASmartTouch.Models;
 using QASmartTouch.Controls;
 using QASmartTouch.Controllers;
 using QASmartTouch.Shared;
-using QASmartClass.Properties;
+using QASmartTouch.Properties;
 using System.Windows.Documents;
 using QASmartTouch.Services.Tools;
 // ══════════════════════════════════════════════════════════════════
@@ -1463,7 +1463,7 @@ namespace QASmartTouch.Forms
             {
                 if (_editingSmartNoteCard != null)
                 {
-                    QASmartClass.Services.Tools.SmartNoteCardRenderer.FinishEditing(_editingSmartNoteCard, newText);
+                    QASmartTouch.Services.Tools.SmartNoteCardRenderer.FinishEditing(_editingSmartNoteCard, newText);
                     RecordAddAction(_editingSmartNoteCard, "Edit SmartNoteCard");
                     RefreshSelectableObjects();
                     _selectionBox?.UpdatePosition();

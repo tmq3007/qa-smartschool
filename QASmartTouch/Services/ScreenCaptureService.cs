@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Windows;
 namespace QASmartTouch.Services
 {
     // NOTE: Namespace cũ QASmartTouch.Services được giữ lại vì 160+ chỗ tham chiếu.
-    // Nên sử dụng QASmartClass.Services cho code mới.
+    // Nên sử dụng QASmartTouch.Services cho code mới.
     // Alias: using ScreenCapture = QASmartTouch.Services.ScreenCaptureService;
     /// <summary>
     /// Service for capturing screenshots

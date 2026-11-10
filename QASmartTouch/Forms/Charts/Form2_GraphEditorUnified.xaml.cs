@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -161,8 +161,8 @@ namespace QASmartTouch.Forms
         private void ApplyGraphicsSettings()
         {
             int resolutionSetting = QASmartTouch.Services.AppSettings.GetRecommended3DResolution();
-            var config = QASmartClass.Services.AppConfig.Load();
-            if (resolutionSetting <= 20 || config.Disable3DAntiAliasing || (config.AutoOptimizeForIntegratedGraphics && QASmartClass.Services.AppConfig.IsIntegratedGraphicsDetected))
+            var config = QASmartTouch.Services.AppConfig.Load();
+            if (resolutionSetting <= 20 || config.Disable3DAntiAliasing || (config.AutoOptimizeForIntegratedGraphics && QASmartTouch.Services.AppConfig.IsIntegratedGraphicsDetected))
             {
                 System.Windows.Media.RenderOptions.SetEdgeMode(viewport3D, System.Windows.Media.EdgeMode.Aliased);
             }
@@ -1126,8 +1126,8 @@ namespace QASmartTouch.Forms
                 xStep = 0.01; // 2000 points
             }
 
-            var appConfig = QASmartClass.Services.AppConfig.Load();
-            if (appConfig.Reduce3DMeshResolution || (appConfig.AutoOptimizeForIntegratedGraphics && QASmartClass.Services.AppConfig.IsIntegratedGraphicsDetected))
+            var appConfig = QASmartTouch.Services.AppConfig.Load();
+            if (appConfig.Reduce3DMeshResolution || (appConfig.AutoOptimizeForIntegratedGraphics && QASmartTouch.Services.AppConfig.IsIntegratedGraphicsDetected))
             {
                 xStep = Math.Max(xStep, 0.05);
             }

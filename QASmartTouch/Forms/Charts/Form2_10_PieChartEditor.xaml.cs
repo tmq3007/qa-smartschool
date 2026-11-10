@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Linq;
@@ -894,7 +894,7 @@ namespace QASmartTouch.Forms
                     ShowLegend = ChkShowLegend.IsChecked ?? true
                 };
 
-                string appDataPath = QASmartClass.Services.AppPaths.RootDir;
+                string appDataPath = QASmartTouch.Services.AppPaths.RootDir;
                 string configDir = IOPath.Combine(appDataPath, "ChartConfigs");
                 
                 if (!IODirectory.Exists(configDir))

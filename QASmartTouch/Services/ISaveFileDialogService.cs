@@ -1,4 +1,4 @@
-﻿namespace QASmartClass.Services
+﻿namespace QASmartTouch.Services
 {
     public interface ISaveFileDialogService
     {

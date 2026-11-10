@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace QASmartClass.WhiteboardCore.Shapes3D
+namespace QASmartTouch.WhiteboardCore.Shapes3D
 {
     /// <summary>
     /// Shape3DManager — Quản lý các khối hình học 3D (Cube, Sphere, Cylinder, Cone, Pyramid, Prism).

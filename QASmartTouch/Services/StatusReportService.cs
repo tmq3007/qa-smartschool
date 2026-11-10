@@ -4,9 +4,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using QASmartClass.Models;
+using QASmartTouch.Models;
 
-namespace QASmartClass.Services
+namespace QASmartTouch.Services
 {
     public class StatusReportService
     {

@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Serilog;
 
-namespace QASmartClass.Shared
+namespace QASmartTouch.Shared
 {
     // ═══════════════════════════════════════════════════════════
     //  USER ROLES — Hệ sinh thái QA Smart School

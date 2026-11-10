@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.Json;
 using Serilog;
 
-namespace QASmartClass.Services
+namespace QASmartTouch.Services
 {
     public class WorkstationConfig
     {

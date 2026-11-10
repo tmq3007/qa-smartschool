@@ -1,10 +1,10 @@
-using System;
-using QASmartClass.WhiteboardCore.Enums;
-using QASmartClass.WhiteboardCore.History;
-using QASmartClass.WhiteboardCore.Input;
-using QASmartClass.WhiteboardCore.Tools;
+﻿using System;
+using QASmartTouch.WhiteboardCore.Enums;
+using QASmartTouch.WhiteboardCore.History;
+using QASmartTouch.WhiteboardCore.Input;
+using QASmartTouch.WhiteboardCore.Tools;
 
-namespace QASmartClass.WhiteboardCore.Managers
+namespace QASmartTouch.WhiteboardCore.Managers
 {
     /// <summary>
     /// WhiteboardManager — Façade class: Cầu nối DUY NHẤT giữa Form2 và WhiteboardCore.

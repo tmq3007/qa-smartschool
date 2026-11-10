@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Windows;
-using QASmartClass.WhiteboardCore.Enums;
+using QASmartTouch.WhiteboardCore.Enums;
 
-namespace QASmartClass.WhiteboardCore.Input
+namespace QASmartTouch.WhiteboardCore.Input
 {
     /// <summary>
     /// IInputBridge — Interface cầu nối giữa WhiteboardCore và lớp Input Handler (TouchHandler, StylusHandler...).

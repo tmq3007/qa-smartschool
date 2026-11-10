@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace QASmartClass.WhiteboardCore.IO
+namespace QASmartTouch.WhiteboardCore.IO
 {
     /// <summary>
     /// IOManager — Quản lý Save/Load bài giảng và Export.

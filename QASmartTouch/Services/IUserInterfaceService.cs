@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace QASmartClass.Services
+namespace QASmartTouch.Services
 {
     public interface IUserInterfaceService
     {

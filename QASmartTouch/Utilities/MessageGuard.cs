@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace QASmartClass.Utilities
+namespace QASmartTouch.Utilities
 {
     /// <summary>
     /// Bộ lọc tin nhắn tập trung — áp dụng ràng buộc NET-001, SEC-001, SP-002.

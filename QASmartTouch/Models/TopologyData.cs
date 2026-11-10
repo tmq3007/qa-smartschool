@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace QASmartClass.Models
+namespace QASmartTouch.Models
 {
     public class TopologyNode
     {

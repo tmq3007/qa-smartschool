@@ -226,7 +226,7 @@ namespace QASmartTouch.Controls
             if (_attachedObject?.Element is Border noteCard && noteCard.Tag?.ToString() == "SmartNoteCard")
             {
                 Point ptInCard = e.GetPosition(noteCard);
-                if (QASmartClass.Services.Tools.SmartNoteCardRenderer.TryInvokeHeaderFormatIfHit(noteCard, ptInCard, card =>
+                if (QASmartTouch.Services.Tools.SmartNoteCardRenderer.TryInvokeHeaderFormatIfHit(noteCard, ptInCard, card =>
                 {
                     if (Application.Current.MainWindow is QASmartTouch.Forms.Form2_MainDashboard md)
                     {
@@ -286,7 +286,7 @@ namespace QASmartTouch.Controls
             if (_attachedObject?.Element is Border noteCard && noteCard.Tag?.ToString() == "SmartNoteCard")
             {
                 Point ptInCard = e.GetTouchPoint(noteCard).Position;
-                if (QASmartClass.Services.Tools.SmartNoteCardRenderer.TryInvokeHeaderFormatIfHit(noteCard, ptInCard, card =>
+                if (QASmartTouch.Services.Tools.SmartNoteCardRenderer.TryInvokeHeaderFormatIfHit(noteCard, ptInCard, card =>
                 {
                     if (Application.Current.MainWindow is QASmartTouch.Forms.Form2_MainDashboard md)
                     {

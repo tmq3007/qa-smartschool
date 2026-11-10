@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace QASmartClass.Shared
+namespace QASmartTouch.Shared
 {
     /// <summary>
     /// Simple ICommand implementation for keyboard shortcuts and MVVM binding

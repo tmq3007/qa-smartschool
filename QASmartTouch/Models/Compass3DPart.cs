@@ -1,4 +1,4 @@
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using System.Windows.Media.Media3D;
 
 namespace QASmartTouch.Models
@@ -29,8 +29,8 @@ namespace QASmartTouch.Models
         protected int GetOptimizedSegments(int segments)
         {
             int resolutionSetting = QASmartTouch.Services.AppSettings.GetRecommended3DResolution();
-            var appConfig = QASmartClass.Services.AppConfig.Load();
-            if (resolutionSetting <= 20 || appConfig.Reduce3DMeshResolution || (appConfig.AutoOptimizeForIntegratedGraphics && QASmartClass.Services.AppConfig.IsIntegratedGraphicsDetected))
+            var appConfig = QASmartTouch.Services.AppConfig.Load();
+            if (resolutionSetting <= 20 || appConfig.Reduce3DMeshResolution || (appConfig.AutoOptimizeForIntegratedGraphics && QASmartTouch.Services.AppConfig.IsIntegratedGraphicsDetected))
             {
                 return Math.Max(6, segments / 2);
             }

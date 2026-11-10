@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,7 +21,7 @@ using QASmartTouch.Models;
 using QASmartTouch.Controls;
 using QASmartTouch.Controllers;
 using QASmartTouch.Shared;
-using QASmartClass.Properties;
+using QASmartTouch.Properties;
 using System.Windows.Documents;
 using QASmartTouch.Services.Tools;
 // ══════════════════════════════════════════════════════════════════
@@ -131,8 +131,8 @@ namespace QASmartTouch.Forms
 
             // ── WhiteboardCore FSM Guard: Nếu FSM đang ở một công cụ cụ thể (khác None và khác Pen) thì TUYỆT ĐỐI không auto-pen ──
             if (_whiteboardManager?.ToolManager != null && 
-                _whiteboardManager.ToolManager.CurrentMode != QASmartClass.WhiteboardCore.Enums.ToolMode.None && 
-                _whiteboardManager.ToolManager.CurrentMode != QASmartClass.WhiteboardCore.Enums.ToolMode.Pen)
+                _whiteboardManager.ToolManager.CurrentMode != QASmartTouch.WhiteboardCore.Enums.ToolMode.None && 
+                _whiteboardManager.ToolManager.CurrentMode != QASmartTouch.WhiteboardCore.Enums.ToolMode.Pen)
             {
                 return;
             }
@@ -2527,7 +2527,7 @@ namespace QASmartTouch.Forms
             _drawingEnabled = true;
 
             // ── WhiteboardCore FSM: Chuyển sang Pen Mode ──
-            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Pen);
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartTouch.WhiteboardCore.Enums.ToolMode.Pen);
             _whiteboardManager?.ToolManager.PenTool.Configure(brushType, penSize, penColor);
             
             // Disable eraser with proper cleanup
@@ -2585,7 +2585,7 @@ namespace QASmartTouch.Forms
             _eraserEnabled = true;
 
             // ── WhiteboardCore FSM: Chuyển sang Eraser Mode ──
-            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Eraser);
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartTouch.WhiteboardCore.Enums.ToolMode.Eraser);
             _whiteboardManager?.ToolManager.EraserTool.Configure(eraserSize, eraserMode);
             _drawingEnabled = false; // Disable drawing
             _shapeDrawingEnabled = false; // Disable shape drawing
@@ -2751,7 +2751,7 @@ namespace QASmartTouch.Forms
             _shapeDrawingEnabled = true;
 
             // ── WhiteboardCore FSM: Chuyển sang Shape Mode ──
-            _whiteboardManager?.ToolManager.SwitchTo(QASmartClass.WhiteboardCore.Enums.ToolMode.Shape);
+            _whiteboardManager?.ToolManager.SwitchTo(QASmartTouch.WhiteboardCore.Enums.ToolMode.Shape);
             _drawingEnabled = false; // Disable pen drawing
             
             // Disable eraser with proper cleanup

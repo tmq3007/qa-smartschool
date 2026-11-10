@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,7 +8,7 @@ using System.Windows.Shapes;
 using Path = System.Windows.Shapes.Path;
 using QASmartTouch.Managers;
 using QASmartTouch.Services.VersionManagement;
-using QASmartClass.Properties;
+using QASmartTouch.Properties;
 using QASmartTouch.Helpers;
 
 namespace QASmartTouch.Forms
