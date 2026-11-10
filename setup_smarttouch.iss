@@ -27,7 +27,7 @@ AppPublisher=QA SmartSchool
 AppPublisherURL=https://qasmartschool.com
 DefaultDirName={autopf}\QA SmartSchool\QA Smart Touch
 DefaultGroupName=QA SmartSchool
-SetupIconFile=QASmartClass\logo.ico
+SetupIconFile=QASmartTouch\logo.ico
 UninstallDisplayName={#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ; Nhận diện tiến trình đang mở khớp với MutexName trong QASmartTouch/App.xaml.cs
