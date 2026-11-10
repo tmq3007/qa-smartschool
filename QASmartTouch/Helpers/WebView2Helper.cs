@@ -17,7 +17,7 @@ namespace QASmartTouch.Helpers
         private static readonly object _lock = new();
 
         /// <summary>
-        /// Đường dẫn thư mục User Data Folder an toàn trong LocalAppData (%LocalAppData%\QASmartClass\WebView2)
+        /// Đường dẫn thư mục User Data Folder an toàn trong LocalAppData (%LocalAppData%\QASmartTouch\WebView2)
         /// </summary>
         public static string UserDataFolder
         {
@@ -32,7 +32,7 @@ namespace QASmartTouch.Helpers
                             try
                             {
                                 string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                                _userDataFolder = Path.Combine(localAppData, "QASmartClass", "WebView2");
+                                _userDataFolder = Path.Combine(localAppData, "QASmartTouch", "WebView2");
                                 if (!Directory.Exists(_userDataFolder))
                                 {
                                     Directory.CreateDirectory(_userDataFolder);
@@ -41,7 +41,7 @@ namespace QASmartTouch.Helpers
                             catch (Exception ex)
                             {
                                 Log.Warning("[WebView2Helper] Không thể tạo thư mục trong LocalAppData: {Error}", ex.Message);
-                                _userDataFolder = Path.Combine(Path.GetTempPath(), "QASmartClass_WebView2");
+                                _userDataFolder = Path.Combine(Path.GetTempPath(), "QASmartTouch_WebView2");
                                 Directory.CreateDirectory(_userDataFolder);
                             }
                         }

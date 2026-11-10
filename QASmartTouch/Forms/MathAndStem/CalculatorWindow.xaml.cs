@@ -81,10 +81,10 @@ namespace QASmartTouch.Forms
             string path1 = Path.Combine(basePath, "Assets", "Calculator", "qa-calculator.html");
             if (File.Exists(path1)) return path1;
 
-            string path2 = Path.GetFullPath(Path.Combine(basePath, "..", "..", "..", "..", "QASmartClass", "Assets", "Calculator", "qa-calculator.html"));
+            string path2 = Path.GetFullPath(Path.Combine(basePath, "..", "..", "..", "..", "QASmartTouch", "Assets", "Calculator", "qa-calculator.html"));
             if (File.Exists(path2)) return path2;
 
-            string path3 = Path.GetFullPath(Path.Combine(basePath, "..", "QASmartClass", "Assets", "Calculator", "qa-calculator.html"));
+            string path3 = Path.GetFullPath(Path.Combine(basePath, "..", "QASmartTouch", "Assets", "Calculator", "qa-calculator.html"));
             if (File.Exists(path3)) return path3;
 
             return path1;

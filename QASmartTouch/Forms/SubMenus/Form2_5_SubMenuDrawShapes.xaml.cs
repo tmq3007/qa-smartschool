@@ -251,8 +251,8 @@ namespace QASmartTouch.Forms
             string p1 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "EnglishCards", safeName);
             if (System.IO.File.Exists(p1)) return p1;
 
-            // 2. Thư mục mã nguồn QASmartClass nếu đang build/debug
-            string p2 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "QASmartClass", "Assets", "EnglishCards", safeName);
+            // 2. Thư mục mã nguồn QASmartTouch nếu đang build/debug
+            string p2 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "QASmartTouch", "Assets", "EnglishCards", safeName);
             if (System.IO.File.Exists(p2)) return p2;
 
             string p3 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Assets", "EnglishCards", safeName);

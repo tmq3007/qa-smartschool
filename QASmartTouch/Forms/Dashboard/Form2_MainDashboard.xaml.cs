@@ -25,45 +25,10 @@ using System.Windows.Documents; // For TextRange
 using System.Windows.Ink;
 using QASmartTouch.WhiteboardCore.Managers;
 using QASmartTouch.WhiteboardCore.Enums;
+using QASmartTouch.WhiteboardCore.History;
 
 namespace QASmartTouch.Forms
 {
-    /// <summary>
-    /// Undo/Redo Action Types
-    /// </summary>
-    public enum ActionType
-    {
-        Add,        // Thêm element (drawing, shape creation)
-        Remove,     // Xóa element (erasing, delete)
-        Modify,     // Sửa element (move, rotate, resize)
-        ClearAll,   // Xóa tất cả elements
-        Batch       // Nhóm nhiều actions (compound operations)
-    }
-
-    /// <summary>
-    /// Represents an action that can be undone/redone
-    /// </summary>
-    public class UndoRedoAction
-    {
-        public ActionType Type { get; set; }
-        public UIElement? Element { get; set; }
-        public UIElement? Parent { get; set; }
-        public Stroke? Stroke { get; set; }
-        public List<Stroke>? Strokes { get; set; }
-        public object? OldValue { get; set; }    // For modify operations
-        public object? NewValue { get; set; }    // For modify operations
-        public List<UndoRedoAction> BatchActions { get; set; } // For batch operations
-        public DateTime Timestamp { get; set; }
-        public string Description { get; set; } // For debugging
-
-        public UndoRedoAction()
-        {
-            Timestamp = DateTime.Now;
-            BatchActions = new List<UndoRedoAction>();
-            Description = string.Empty;
-        }
-    }
-
     public partial class Form2_MainDashboard : Window, QASmartTouch.WhiteboardCore.Managers.IWhiteboardContext
     {
         #region IWhiteboardContext Implementation
@@ -326,34 +291,6 @@ namespace QASmartTouch.Forms
         // Zoom area overlay drag functionality
         private bool _isDraggingOverlay = false;
         private Point _overlayDragStartPoint;
-        
-        // Undo/Redo stacks with advanced action tracking
-        private System.Collections.Generic.Stack<UndoRedoAction> _undoStack = new();
-        private System.Collections.Generic.Stack<UndoRedoAction> _redoStack = new();
-        private int MAX_UNDO_LEVELS => GetMaxUndoSteps();
-        
-        private int GetMaxUndoSteps()
-        {
-            try
-            {
-                string settingsDir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "QASmartClass", "Settings");
-                string settingsFile = System.IO.Path.Combine(settingsDir, "board_settings.json");
-                if (System.IO.File.Exists(settingsFile))
-                {
-                    string json = System.IO.File.ReadAllText(settingsFile);
-                    var match = System.Text.RegularExpressions.Regex.Match(json, @"\""MaxUndoSteps\""\s*:\s*(\d+)");
-                    if (match.Success && int.TryParse(match.Groups[1].Value, out int value))
-                    {
-                        return Math.Clamp(value, 10, 500);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Failed to read MaxUndoSteps setting, using default 100: " + ex.Message);
-            }
-            return 100; // Default limit 100
-        }
         
         // Window/Fullscreen mode settings
         private bool _isWindowMode = false;

@@ -146,12 +146,12 @@ namespace QASmartTouch.PeriodicTable.Models
             // 2. Thử các đường dẫn dự phòng về thư mục mã nguồn dự án (cho môi trường dev / dotnet run)
             string[] possibleDirs = new[]
             {
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "QASmartClass", "PeriodicTable", "Data"),
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "QASmartClass", "PeriodicTable", "Data"),
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "QASmartClass", "PeriodicTable", "Data"),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "QASmartTouch", "PeriodicTable", "Data"),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "QASmartTouch", "PeriodicTable", "Data"),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "QASmartTouch", "PeriodicTable", "Data"),
                 Path.Combine(Directory.GetCurrentDirectory(), "PeriodicTable", "Data"),
-                Path.Combine(Directory.GetCurrentDirectory(), "QASmartClass", "PeriodicTable", "Data"),
-                Path.Combine(Directory.GetCurrentDirectory(), "..", "QASmartClass", "PeriodicTable", "Data")
+                Path.Combine(Directory.GetCurrentDirectory(), "QASmartTouch", "PeriodicTable", "Data"),
+                Path.Combine(Directory.GetCurrentDirectory(), "..", "QASmartTouch", "PeriodicTable", "Data")
             };
 
             foreach (var dir in possibleDirs)

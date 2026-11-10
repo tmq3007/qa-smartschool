@@ -286,7 +286,7 @@ namespace QASmartTouch.Managers
 
             if (sourceBoard.UndoStack != null)
             {
-                var remappedUndo = new List<QASmartTouch.Forms.UndoRedoAction>();
+                var remappedUndo = new List<QASmartTouch.WhiteboardCore.History.UndoRedoAction>();
                 foreach (var action in sourceBoard.UndoStack.Reverse())
                 {
                     var clonedAction = CloneAndRemapUndoRedoAction(action, elementMap, strokeMap);
@@ -295,12 +295,12 @@ namespace QASmartTouch.Managers
                         remappedUndo.Add(clonedAction);
                     }
                 }
-                newBoard.UndoStack = new Stack<QASmartTouch.Forms.UndoRedoAction>(remappedUndo);
+                newBoard.UndoStack = new Stack<QASmartTouch.WhiteboardCore.History.UndoRedoAction>(remappedUndo);
             }
 
             if (sourceBoard.RedoStack != null)
             {
-                var remappedRedo = new List<QASmartTouch.Forms.UndoRedoAction>();
+                var remappedRedo = new List<QASmartTouch.WhiteboardCore.History.UndoRedoAction>();
                 foreach (var action in sourceBoard.RedoStack.Reverse())
                 {
                     var clonedAction = CloneAndRemapUndoRedoAction(action, elementMap, strokeMap);
@@ -309,7 +309,7 @@ namespace QASmartTouch.Managers
                         remappedRedo.Add(clonedAction);
                     }
                 }
-                newBoard.RedoStack = new Stack<QASmartTouch.Forms.UndoRedoAction>(remappedRedo);
+                newBoard.RedoStack = new Stack<QASmartTouch.WhiteboardCore.History.UndoRedoAction>(remappedRedo);
             }
             
             _boards.Add(newBoard);
@@ -325,8 +325,8 @@ namespace QASmartTouch.Managers
         /// <summary>
         /// Clones a UI element (with fallback for shapes and dynamic controls)
         /// </summary>
-        private QASmartTouch.Forms.UndoRedoAction? CloneAndRemapUndoRedoAction(
-            QASmartTouch.Forms.UndoRedoAction? srcAction,
+        private QASmartTouch.WhiteboardCore.History.UndoRedoAction? CloneAndRemapUndoRedoAction(
+            QASmartTouch.WhiteboardCore.History.UndoRedoAction? srcAction,
             Dictionary<UIElement, UIElement> elementMap,
             Dictionary<Stroke, Stroke> strokeMap)
         {
@@ -375,7 +375,7 @@ namespace QASmartTouch.Managers
                 }
             }
 
-            var mappedBatch = new List<QASmartTouch.Forms.UndoRedoAction>();
+            var mappedBatch = new List<QASmartTouch.WhiteboardCore.History.UndoRedoAction>();
             if (srcAction.BatchActions != null && srcAction.BatchActions.Count > 0)
             {
                 foreach (var sub in srcAction.BatchActions)
@@ -392,7 +392,7 @@ namespace QASmartTouch.Managers
                 }
             }
 
-            return new QASmartTouch.Forms.UndoRedoAction
+            return new QASmartTouch.WhiteboardCore.History.UndoRedoAction
             {
                 Type = srcAction.Type,
                 Element = mappedElement,
@@ -1255,12 +1255,12 @@ namespace QASmartTouch.Managers
         /// <summary>
         /// Stack Hoàn tác (Undo) riêng của trang này
         /// </summary>
-        public Stack<QASmartTouch.Forms.UndoRedoAction> UndoStack { get; set; } = new();
+        public Stack<QASmartTouch.WhiteboardCore.History.UndoRedoAction> UndoStack { get; set; } = new();
 
         /// <summary>
         /// Stack Làm lại (Redo) riêng của trang này
         /// </summary>
-        public Stack<QASmartTouch.Forms.UndoRedoAction> RedoStack { get; set; } = new();
+        public Stack<QASmartTouch.WhiteboardCore.History.UndoRedoAction> RedoStack { get; set; } = new();
 
         /// <summary>
         /// Màu nền dạng mã Hex (mặc định xanh bảng #3D6D64)

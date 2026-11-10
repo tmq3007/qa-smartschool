@@ -615,12 +615,12 @@ namespace QASmartTouch.Forms
 
             if (elements.Count > 0)
             {
-                var batchActions = new List<Managers.UndoRedoAction>();
+                var batchActions = new List<QASmartTouch.WhiteboardCore.History.UndoRedoAction>();
                 foreach (var el in elements)
                 {
-                    batchActions.Add(new Managers.UndoRedoAction
+                    batchActions.Add(new QASmartTouch.WhiteboardCore.History.UndoRedoAction
                     {
-                        Type = Managers.ActionType.Remove,
+                        Type = QASmartTouch.WhiteboardCore.History.ActionType.Remove,
                         Element = el,
                         Parent = DrawingCanvas,
                         Description = "Clear All Element"
@@ -954,12 +954,12 @@ namespace QASmartTouch.Forms
             }
             else
             {
-                var batchActions = new List<Managers.UndoRedoAction>(_currentEraseSessionElements.Count);
+                var batchActions = new List<QASmartTouch.WhiteboardCore.History.UndoRedoAction>(_currentEraseSessionElements.Count);
                 foreach (var elem in _currentEraseSessionElements)
                 {
-                    batchActions.Add(new Managers.UndoRedoAction
+                    batchActions.Add(new QASmartTouch.WhiteboardCore.History.UndoRedoAction
                     {
-                        Type = Managers.ActionType.Remove,
+                        Type = QASmartTouch.WhiteboardCore.History.ActionType.Remove,
                         Element = elem,
                         Parent = DrawingCanvas,
                         Description = "Xóa nét vẽ (kéo giữ)"
@@ -1294,9 +1294,9 @@ namespace QASmartTouch.Forms
             }
         }
 
-        private void ExecuteUndoAction(Managers.UndoRedoAction action)
+        private void ExecuteUndoAction(QASmartTouch.WhiteboardCore.History.UndoRedoAction action)
         {
-            if (action.Type == Managers.ActionType.Batch)
+            if (action.Type == QASmartTouch.WhiteboardCore.History.ActionType.Batch)
             {
                 for (int i = action.BatchActions.Count - 1; i >= 0; i--)
                 {
@@ -1307,14 +1307,14 @@ namespace QASmartTouch.Forms
 
             if (action.Element != null)
             {
-                if (action.Type == Managers.ActionType.Add)
+                if (action.Type == QASmartTouch.WhiteboardCore.History.ActionType.Add)
                 {
                     // Undo "Add" = Xóa phần tử
                     DrawingCanvas.Children.Remove(action.Element);
                     if (action.Element is Polyline stroke)
                         _strokes.Remove(stroke);
                 }
-                else if (action.Type == Managers.ActionType.Remove)
+                else if (action.Type == QASmartTouch.WhiteboardCore.History.ActionType.Remove)
                 {
                     // Undo "Remove" = Khôi phục phần tử
                     if (!DrawingCanvas.Children.Contains(action.Element))
@@ -1325,9 +1325,9 @@ namespace QASmartTouch.Forms
             }
         }
 
-        private void ExecuteRedoAction(Managers.UndoRedoAction action)
+        private void ExecuteRedoAction(QASmartTouch.WhiteboardCore.History.UndoRedoAction action)
         {
-            if (action.Type == Managers.ActionType.Batch)
+            if (action.Type == QASmartTouch.WhiteboardCore.History.ActionType.Batch)
             {
                 foreach (var subAction in action.BatchActions)
                 {
@@ -1338,7 +1338,7 @@ namespace QASmartTouch.Forms
 
             if (action.Element != null)
             {
-                if (action.Type == Managers.ActionType.Add)
+                if (action.Type == QASmartTouch.WhiteboardCore.History.ActionType.Add)
                 {
                     // Redo "Add" = Thêm lại phần tử
                     if (!DrawingCanvas.Children.Contains(action.Element))
@@ -1346,7 +1346,7 @@ namespace QASmartTouch.Forms
                     if (action.Element is Polyline stroke && !_strokes.Contains(stroke))
                         _strokes.Add(stroke);
                 }
-                else if (action.Type == Managers.ActionType.Remove)
+                else if (action.Type == QASmartTouch.WhiteboardCore.History.ActionType.Remove)
                 {
                     // Redo "Remove" = Xóa lại phần tử
                     DrawingCanvas.Children.Remove(action.Element);

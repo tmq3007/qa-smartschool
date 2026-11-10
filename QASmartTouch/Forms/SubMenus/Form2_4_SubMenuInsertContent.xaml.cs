@@ -474,7 +474,7 @@ namespace QASmartTouch.Forms
             string p1 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "EnglishCards", safeName);
             if (System.IO.File.Exists(p1)) return p1;
 
-            string p2 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "QASmartClass", "Assets", "EnglishCards", safeName);
+            string p2 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "QASmartTouch", "Assets", "EnglishCards", safeName);
             if (System.IO.File.Exists(p2)) return p2;
 
             string p3 = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Assets", "EnglishCards", safeName);

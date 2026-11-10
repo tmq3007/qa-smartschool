@@ -351,11 +351,8 @@ namespace QASmartTouch.Forms
             string p1 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Simulations", "Physics");
             if (Directory.Exists(p1) && File.Exists(Path.Combine(p1, "player.html"))) return p1;
 
-            string p2 = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\QASmartClass\Assets\Simulations\Physics"));
+            string p2 = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\QASmartTouch\Assets\Simulations\Physics"));
             if (Directory.Exists(p2) && File.Exists(Path.Combine(p2, "player.html"))) return p2;
-
-            string p3 = @"D:\Document\_Projects\qa-smartschool\QASmartClass\Assets\Simulations\Physics";
-            if (Directory.Exists(p3) && File.Exists(Path.Combine(p3, "player.html"))) return p3;
 
             return p1;
         }

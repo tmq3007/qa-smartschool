@@ -1,52 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Windows;
+using QASmartTouch.WhiteboardCore.History;
 
 namespace QASmartTouch.Managers
 {
     /// <summary>
-    /// Undo/Redo action types
+    /// Class quản lý Undo/Redo dành cho AnnotationOverlay (Chế độ vẽ trên màn hình DESKTOP).
+    /// Bảng vẽ chính (Form2_MainDashboard) sử dụng QASmartTouch.WhiteboardCore.History.UndoRedoAction trong Form2_MainDashboard.History.cs.
     /// </summary>
-    public enum ActionType
-    {
-        Add,        // Add element (drawing, shape creation)
-        Remove,     // Remove element (erasing, delete)
-        Modify,     // Modify element (move, rotate, resize)
-        ClearAll,   // Clear all elements
-        Batch       // Batch of multiple actions
-    }
-    
-    /// <summary>
-    /// Represents an action that can be undone/redone
-    /// </summary>
-    public class UndoRedoAction
-    {
-        public ActionType Type { get; set; }
-        public UIElement? Element { get; set; }
-        public UIElement? Parent { get; set; }
-        public object? OldValue { get; set; }
-        public object? NewValue { get; set; }
-        public List<UndoRedoAction> BatchActions { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string Description { get; set; }
-        
-        public UndoRedoAction()
-        {
-            Timestamp = DateTime.Now;
-            BatchActions = new List<UndoRedoAction>();
-            Description = string.Empty;
-        }
-    }
-    
-    /// <summary>
-    /// [OBSOLETE] Class quản lý Undo/Redo dạng standalone — KHÔNG ĐƯỢC SỬ DỤNG.
-    /// 
-    /// Dashboard (Form2_MainDashboard) dùng inline stacks + UndoRedoAction.
-    /// Student Whiteboard dùng IUndoableCommand pattern.
-    /// 
-    /// Nếu cần Undo/Redo cho component mới, hãy tham khảo 2 pattern trên thay vì dùng class này.
-    /// </summary>
-    [Obsolete("Không sử dụng. Dùng inline stacks trong Form2_MainDashboard hoặc IUndoableCommand pattern trong StudentLocalWhiteboardPage.")]
     public class UndoRedoManager
     {
         #region Constants
