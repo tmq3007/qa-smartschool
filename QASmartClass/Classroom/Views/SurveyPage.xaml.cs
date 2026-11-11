@@ -35,8 +35,9 @@ namespace QASmartClass.Classroom.Views
             Loaded += (_, _) =>
             {
                 WireSurveyResponseListeners();
-                LoadClassList();
-                LoadTemplates();
+                // [MYTHWARE_LITE] Không đọc danh sách lớp hay mẫu khảo sát từ SQLite DB — chỉ chạy 100% trên RAM trong lớp
+                // LoadClassList();
+                // LoadTemplates();
             };
         }
 
@@ -62,8 +63,8 @@ namespace QASmartClass.Classroom.Views
                 panelCustom.Visibility = tag == "custom" ? Visibility.Visible : Visibility.Collapsed;
                 panelSatisfaction.Visibility = tag == "satisfaction" ? Visibility.Visible : Visibility.Collapsed;
 
-                // Show/hide target class selection panel
-                panelTargetSelection.Visibility = tag == "quick" ? Visibility.Collapsed : Visibility.Visible;
+                // [MYTHWARE_LITE] Luôn gửi trực tiếp cho toàn bộ Học sinh đang kết nối trong lớp hiện tại (ALL)
+                panelTargetSelection.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -157,21 +158,83 @@ namespace QASmartClass.Classroom.Views
         }
 
         // ═══════════════════════════════════════════════════════════
-        //  QUICK POLL (GV click thủ công)
+        //  QUICK POLL (1-Click Live Classroom Broadcast — 100% RAM)
         // ═══════════════════════════════════════════════════════════
 
-        private void QuickPoll_Click(object sender, MouseButtonEventArgs e)
+        private async void QuickPoll_Click(object sender, MouseButtonEventArgs e)
         {
             if (sender is FrameworkElement fe && fe.Tag is string tag)
             {
+                string title;
+                string question;
+                List<string> options;
+
                 switch (tag)
                 {
-                    case "yes":  _yes++;  txtYes.Text  = _yes.ToString();  break;
-                    case "no":   _no++;   txtNo.Text   = _no.ToString();   break;
-                    case "slow": _slow++; txtSlow.Text = _slow.ToString(); break;
-                    case "fast": _fast++; txtFast.Text = _fast.ToString(); break;
+                    case "understand":
+                    case "yes":
+                        title = "Khảo sát mức độ hiểu bài";
+                        question = "Em đã hiểu nội dung vừa giảng chưa?";
+                        options = new List<string>
+                        {
+                            "Đã hiểu rõ bài",
+                            "Hiểu sơ bộ, cần thêm ví dụ",
+                            "Chưa hiểu, nhờ thầy/cô giảng lại"
+                        };
+                        break;
+                    case "abcd":
+                    case "no":
+                        title = "Trắc nghiệm nhanh A / B / C / D";
+                        question = "Chọn đáp án đúng cho câu hỏi trên bảng:";
+                        options = new List<string>
+                        {
+                            "Đáp án A",
+                            "Đáp án B",
+                            "Đáp án C",
+                            "Đáp án D"
+                        };
+                        break;
+                    case "truefalse":
+                    case "slow":
+                        title = "Biểu quyết Đúng / Sai";
+                        question = "Nhận định vừa nêu là Đúng hay Sai?";
+                        options = new List<string>
+                        {
+                            "Đúng / Đồng ý",
+                            "Sai / Không đồng ý"
+                        };
+                        break;
+                    default:
+                        title = "Khảo sát nhịp độ bài giảng";
+                        question = "Tốc độ giảng bài hiện tại như thế nào?";
+                        options = new List<string>
+                        {
+                            "Vừa phải, dễ theo dõi",
+                            "Hơi nhanh, cần chậm lại",
+                            "Hơi chậm, có thể đi nhanh hơn"
+                        };
+                        break;
                 }
-                SaveEventLog("POLL", "GV", $"Quick Poll: {tag} — Yes={_yes} No={_no} Slow={_slow} Fast={_fast}");
+
+                var surveyId = Guid.NewGuid().ToString();
+                var startPayload = new
+                {
+                    SurveyId = surveyId,
+                    Title = title,
+                    SurveyType = "quick",
+                    QuestionText = question,
+                    Options = options,
+                    TimeLimitSeconds = 60,
+                    IsAnonymous = false,
+                    TargetClasses = "ALL"
+                };
+                var startMsg = new
+                {
+                    Action = "SURVEY_START",
+                    Payload = startPayload
+                };
+                var command = System.Text.Json.JsonSerializer.Serialize(startMsg);
+                await SendSurveyCommand(command, "ALL", question, options, 60, "quick", surveyId);
             }
         }
 
@@ -179,6 +242,61 @@ namespace QASmartClass.Classroom.Views
         {
             _yes = _no = _slow = _fast = 0;
             txtYes.Text = txtNo.Text = txtSlow.Text = txtFast.Text = "0";
+            EndActiveSurveyInternal(notifyStudents: true, toastMessage: "🧹 Đã kết thúc và xóa sạch phiên khảo sát.");
+        }
+
+        private void EndActiveSurvey_Click(object sender, RoutedEventArgs e)
+        {
+            EndActiveSurveyInternal(notifyStudents: true, toastMessage: "⏹ Đã kết thúc khảo sát — dữ liệu tạm đã xóa sạch.");
+        }
+
+        public void EndActiveSurveyInternal(bool notifyStudents, string? toastMessage = null)
+        {
+            try
+            {
+                _countdownTimer?.Stop();
+                _countdownTimer = null;
+                _remainingSeconds = 0;
+
+                if (notifyStudents)
+                {
+                    const string endCmd = "CMD|SURVEY_END|0";
+                    if (ClassroomAppContext.Network != null &&
+                        (ClassroomAppContext.Network.IsBroadcasting || ClassroomAppContext.Network.ConnectedCount > 0))
+                    {
+                        _ = ClassroomAppContext.Network.SendCommandAsync(endCmd);
+                    }
+                    ((QASmartTouch.App)System.Windows.Application.Current).RaiseLocalCommand(endCmd);
+                }
+
+                // Wipe 100% RAM state
+                _activeSurveyId = "";
+                _activeQuestion = "";
+                _activeSurveyType = "";
+                _responseCount = 0;
+                _studentStarCount = 0;
+                _studentStarSum = 0;
+                _voteCounts.Clear();
+                _currentOptions.Clear();
+                QASmartTouch.App.AssessmentState.ClearSurvey();
+
+                resultBarsPanel.Children.Clear();
+                surveyResponseLog.Children.Clear();
+                txtActiveQuestion.Text = "";
+                txtTotalVotes.Text = "0";
+                timerBadge.Visibility = Visibility.Collapsed;
+                panelStudentStarRating.Visibility = Visibility.Collapsed;
+                surveyResultsPanel.Visibility = Visibility.Collapsed;
+
+                if (!string.IsNullOrWhiteSpace(toastMessage))
+                {
+                    ShowToast(toastMessage, "#475569");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("EndActiveSurveyInternal error: {Err}", ex.Message);
+            }
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -236,15 +354,15 @@ namespace QASmartClass.Classroom.Views
             // Get time limit
             int timeSec = GetSelectedTime(cboTimeLimit);
 
-            // Get target classes
-            string targetClasses = GetTargetClasses();
+            // Luôn gửi cho toàn bộ Học sinh đang kết nối trong lớp hiện tại
+            string targetClasses = "ALL";
 
             var surveyId = Guid.NewGuid().ToString();
-            var optionsJson = System.Text.Json.JsonSerializer.Serialize(options);
 
+            /* [MYTHWARE_LITE] Tuyệt đối không lưu khảo sát vào SQLite DB — chỉ giữ trên RAM lúc khảo sát đang mở
+            var optionsJson = System.Text.Json.JsonSerializer.Serialize(options);
             try
             {
-                // → ClassroomAppContext
                 if (ClassroomAppContext.Db != null)
                 {
                     var newSurvey = new Survey
@@ -256,7 +374,7 @@ namespace QASmartClass.Classroom.Views
                         QuestionText = question,
                         OptionsJson = optionsJson,
                         TimeLimitSeconds = timeSec,
-                        IsAnonymous = 1,
+                        IsAnonymous = 0,
                         TargetClasses = targetClasses,
                         CreatedByTeacher = "GV",
                         CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
@@ -266,16 +384,17 @@ namespace QASmartClass.Classroom.Views
                 }
             }
             catch (Exception exDb) { Log.Warning("Save Survey to DB error: {Err}", exDb.Message); }
+            */
 
             var startPayload = new
             {
                 SurveyId = surveyId,
-                Title = "Khảo sát tùy chỉnh",
+                Title = "Khảo sát nhanh trong lớp",
                 SurveyType = "custom",
                 QuestionText = question,
                 Options = options,
                 TimeLimitSeconds = timeSec,
-                IsAnonymous = true,
+                IsAnonymous = false,
                 TargetClasses = targetClasses
             };
             var startMsg = new
@@ -352,6 +471,9 @@ namespace QASmartClass.Classroom.Views
 
         private void SaveTemplate_Click(object sender, RoutedEventArgs e)
         {
+            // [MYTHWARE_LITE] Chế độ khảo sát nhanh 100% trên RAM — không lưu mẫu xuống SQLite DB
+            ShowToast("ℹ️ Chế độ khảo sát nhanh không lưu vào Database.", "#475569");
+            /*
             var question = txtQuestion.Text.Trim();
             if (string.IsNullOrWhiteSpace(question))
             {
@@ -420,6 +542,7 @@ namespace QASmartClass.Classroom.Views
                 Log.Warning("SaveTemplate error: {Err}", ex.Message);
                 ShowToast("⚠️ Lỗi lưu mẫu câu hỏi!", "#C62828");
             }
+            */
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -450,6 +573,7 @@ namespace QASmartClass.Classroom.Views
             string targetClasses = GetTargetClasses();
 
             var surveyId = Guid.NewGuid().ToString();
+            /* [MYTHWARE_LITE] Không ghi khảo sát vào SQLite DB
             var optionsJson = System.Text.Json.JsonSerializer.Serialize(options);
 
             try
@@ -476,6 +600,7 @@ namespace QASmartClass.Classroom.Views
                 }
             }
             catch (Exception exDb) { Log.Warning("Save Survey to DB error: {Err}", exDb.Message); }
+            */
 
             var startPayload = new
             {
@@ -506,21 +631,39 @@ namespace QASmartClass.Classroom.Views
         private int _studentStarCount = 0;
         private int _studentStarSum = 0;
 
+        private bool IsClassroomSessionOpen()
+        {
+            var net = ClassroomAppContext.Network;
+            if (net != null && (net.IsBroadcasting || net.ConnectedCount > 0))
+                return true;
+            return false;
+        }
+
         private async System.Threading.Tasks.Task SendSurveyCommand(string command, string targetClasses, string question, List<string> options, int timeSec, string surveyType, string surveyId)
         {
             try
             {
-                // → ClassroomAppContext
+                // Chỉ khảo sát khi đang mở lớp học
+                if (!IsClassroomSessionOpen())
+                {
+                    ShowToast("⚠️ Chỉ có thể phát khảo sát khi đang mở lớp học!", "#E65100");
+                    return;
+                }
+
                 _activeSurveyId = surveyId;
 
-                // Set shared state
-                QASmartTouch.App.AssessmentState.ActiveSurveyQuestion = command; // Full JSON string
+                // Set shared RAM state (100% ephemeral)
+                QASmartTouch.App.AssessmentState.ActiveSurveyQuestion = command;
                 QASmartTouch.App.AssessmentState.ActiveSurveyTime = DateTime.Now;
                 QASmartTouch.App.AssessmentState.SurveyAnswered = false;
+                QASmartTouch.App.AssessmentState.SelectedSurveyOptionIndex = -1;
+                QASmartTouch.App.AssessmentState.SelectedSurveyOptionText = "";
                 QASmartTouch.App.AssessmentState.ActivePollId = surveyId;
+                QASmartTouch.App.AssessmentState.ActivePollOptions = options.ToArray();
+                QASmartTouch.App.AssessmentState.NotifyChanged();
 
-                // Save to DB
-                SaveEventLog("SURVEY", "GV", command);
+                // [MYTHWARE_LITE] Không lưu DB (chỉ lưu RAM lúc đang khảo sát)
+                // SaveEventLog("SURVEY", "GV", command);
 
                 // Setup results panel
                 _activeQuestion = question;
@@ -545,21 +688,23 @@ namespace QASmartClass.Classroom.Views
 
                 BuildResultBars(options);
                 surveyResponseLog.Children.Clear();
-                surveyResponseLog.Children.Add(new TextBlock { Text = "⏳ Đang chờ phản hồi từ học sinh...", FontSize = 14, Foreground = new SolidColorBrush(Color.FromRgb(189, 189, 189)), FontStyle = FontStyles.Italic, HorizontalAlignment = HorizontalAlignment.Center });
+                surveyResponseLog.Children.Add(new TextBlock { Text = "⏳ Đang chờ phản hồi từ học sinh trong lớp...", FontSize = 14, Foreground = new SolidColorBrush(Color.FromRgb(189, 189, 189)), FontStyle = FontStyles.Italic, HorizontalAlignment = HorizontalAlignment.Center });
 
                 // Start countdown
                 StartCountdown(timeSec);
 
                 // Toast
-                ShowToast($"✅ Đã gửi khảo sát: \"{question}\"", "#2E7D32");
+                ShowToast($"✅ Đã phát khảo sát trực tiếp: \"{question}\"", "#2E7D32");
 
-                // Send command
-                if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                // Send command to all connected LAN students (Windows & Android) + local command bus
+                if (ClassroomAppContext.Network != null)
+                {
                     await ClassroomAppContext.Network.SendCommandAsync(command);
-                else
-                    Dispatcher.BeginInvoke(new Action(() => ClassroomAppContext.DispatchCommand(command)), DispatcherPriority.Background);
+                }
+                _ = Dispatcher.BeginInvoke(new Action(() =>
+                    ((QASmartTouch.App)System.Windows.Application.Current).RaiseLocalCommand(command)), DispatcherPriority.Background);
 
-                Log.Information("Survey sent (JSON): {Type} — {Q} — Target: {Target} — {N} options — {T}s", surveyType, question, targetClasses, options.Count, timeSec);
+                Log.Information("Survey sent (RAM-only): {Type} — {Q} — Target: {Target} — {N} options — {T}s", surveyType, question, targetClasses, options.Count, timeSec);
             }
             catch (Exception ex) { Log.Warning("SendSurveyCommand error: {Err}", ex.Message); }
         }
@@ -685,19 +830,20 @@ namespace QASmartClass.Classroom.Views
                 if (_remainingSeconds <= 0)
                 {
                     _countdownTimer.Stop();
-                    txtCountdown.Text = "⏰ Hết giờ!";
-                    ShowToast("⏰ Hết thời gian khảo sát!", "#C62828");
+                    txtCountdown.Text = "⏰ Đã đóng";
+                    ShowToast("⏰ Hết giờ khảo sát — đã đóng nhận phản hồi trên máy Học sinh!", "#C62828");
 
-                    // Send end command
+                    // Send end command to close student survey RAM state
                     try
                     {
-                        // → ClassroomAppContext
                         var endCmd = "CMD|SURVEY_END|0";
-                        if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                        if (ClassroomAppContext.Network != null &&
+                            (ClassroomAppContext.Network.IsBroadcasting || ClassroomAppContext.Network.ConnectedCount > 0))
+                        {
                             _ = ClassroomAppContext.Network.SendCommandAsync(endCmd);
-                        else
-                            ClassroomAppContext.DispatchCommand(endCmd);
-                        QASmartTouch.App.AssessmentState.ActiveSurveyQuestion = ""; // Clear shared state
+                        }
+                        ((QASmartTouch.App)System.Windows.Application.Current).RaiseLocalCommand(endCmd);
+                        QASmartTouch.App.AssessmentState.ClearSurvey();
                     }
                     catch { }
                 }
@@ -721,6 +867,18 @@ namespace QASmartClass.Classroom.Views
                 // → ClassroomAppContext
 
                 // Local command bus
+                QASmartTouch.App.AssessmentState.StateChanged += (s, ev) =>
+                {
+                    if (string.IsNullOrEmpty(QASmartTouch.App.AssessmentState.ActiveSurveyQuestion) && _remainingSeconds <= 0 && string.IsNullOrEmpty(_activeQuestion))
+                    {
+                        Dispatcher.BeginInvoke(new Action(() => surveyResultsPanel.Visibility = Visibility.Collapsed));
+                    }
+                    else if (string.IsNullOrEmpty(QASmartTouch.App.AssessmentState.ActiveSurveyQuestion) && !ClassroomAppContext.Session.IsSessionActive && ClassroomAppContext.Network?.IsBroadcasting != true)
+                    {
+                        Dispatcher.BeginInvoke(new Action(() => EndActiveSurveyInternal(notifyStudents: false)));
+                    }
+                };
+
                 ((QASmartTouch.App)System.Windows.Application.Current).LocalCommandReceived += (s, cmd) =>
                 {
                     if (cmd.StartsWith("CMD|SURVEY_RESPONSE"))
@@ -864,6 +1022,8 @@ namespace QASmartClass.Classroom.Views
 
         private void SaveEventLog(string type, string actor, string details)
         {
+            // [MYTHWARE_LITE] Chế độ khảo sát trực tiếp 100% trên RAM — tuyệt đối không lưu vào SQLite Database
+            /*
             try
             {
                 // → ClassroomAppContext
@@ -872,6 +1032,7 @@ namespace QASmartClass.Classroom.Views
                 ClassroomAppContext.Db.SaveChanges();
             }
             catch (Exception ex) { Log.Warning("SaveEventLog error: {Err}", ex.Message); }
+            */
         }
 
         private void ShowToast(string message, string colorHex)

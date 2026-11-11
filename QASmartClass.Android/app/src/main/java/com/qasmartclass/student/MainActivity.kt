@@ -1879,7 +1879,7 @@ class MainActivity : AppCompatActivity() {
                             return@setOnClickListener
                         }
                         val studentName = currentStudentName.ifBlank { "Học sinh" }
-                        val optKey = "opt${selectedSurveyOptionIdx + 1}"
+                        val optKey = "opt$selectedSurveyOptionIdx"
                         sendRawTcpLine("SURVEY_RESPONSE|$optKey|$studentName")
                         if (activeSurveyType.equals("satisfaction", ignoreCase = true) && selectedSurveyStar in 1..5) {
                             sendRawTcpLine("SURVEY_STAR|$selectedSurveyStar")
@@ -3506,11 +3506,19 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 cleanCmd.startsWith("CMD|SURVEY_END") || cleanCmd.contains("\"SURVEY_END\"") -> {
-                    surveySubmitted = true
+                    // Xóa sạch trạng thái khảo sát trên RAM khi Giáo viên đóng/tắt khảo sát
+                    activeSurveyId = ""
+                    activeSurveyTitle = ""
+                    activeSurveyType = ""
+                    activeSurveyQuestion = ""
+                    activeSurveyOptions.clear()
+                    selectedSurveyOptionIdx = -1
+                    selectedSurveyStar = 0
+                    surveySubmitted = false
                     if (currentTab == 1) {
                         switchWorkSubTab(currentWorkSubTab)
                     }
-                    Toast.makeText(this, "Giáo viên đã đóng khảo sát", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Giáo viên đã kết thúc khảo sát", Toast.LENGTH_SHORT).show()
                 }
                 cleanCmd.startsWith("CMD|HOMEWORK|") -> {
                     val hwPayload = cleanCmd.substringBefore("|id=").removePrefix("CMD|HOMEWORK|").trim()
@@ -4081,6 +4089,15 @@ class MainActivity : AppCompatActivity() {
         activeLessonStage = 0
         hasTeacherNotice = false
         unreadTeacherChatCount = 0
+        // Xóa sạch khảo sát tạm trên RAM khi rời lớp / mất kết nối
+        activeSurveyId = ""
+        activeSurveyTitle = ""
+        activeSurveyType = ""
+        activeSurveyQuestion = ""
+        activeSurveyOptions.clear()
+        selectedSurveyOptionIdx = -1
+        selectedSurveyStar = 0
+        surveySubmitted = false
         stopScreenBroadcast()
         heartbeatJob?.cancel()
         heartbeatJob = null

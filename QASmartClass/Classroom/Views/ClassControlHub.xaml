@@ -212,6 +212,15 @@
                             </StackPanel>
                         </Button>
 
+                        <!-- 9c. Khảo sát nhanh trực tiếp trong lớp (100% RAM Ephemeral Quick Poll) -->
+                        <Button x:Name="tabBtnSurvey" Style="{StaticResource HubTabButton}" Tag="Survey"
+                                Click="TabButton_Click" ToolTip="Phát khảo sát nhanh trực tiếp tới Học sinh đang trong lớp (không lưu DB)">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="📊" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Khảo sát" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
                         <!-- 10. Mở Website (Open Website) -->
                         <Button x:Name="tabBtnWeb" Style="{StaticResource HubTabButton}" Tag="Web"
                                 Click="TabButton_Click" ToolTip="Đẩy đường dẫn URL tự mở trên máy Học sinh (Veyon Open Website)">
@@ -268,6 +277,7 @@
             <Frame x:Name="frameMonitor" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Visible"/>
             <Frame x:Name="frameBroadcast" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
             <Frame x:Name="frameMessaging" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
+            <Frame x:Name="frameSurvey" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
             <Frame x:Name="frameFiles" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
             <Frame x:Name="frameWeb" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
         </Grid>

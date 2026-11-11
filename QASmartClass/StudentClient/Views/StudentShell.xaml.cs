@@ -724,6 +724,7 @@ namespace QASmartClass.StudentClient.Views
 				{
 					appInstance.ClassRoster.ActiveRosterChanged -= OnActiveRosterChanged;
 				}
+				App.AssessmentState.ClearSurvey();
 				// Hủy đăng ký FrameReceived của UdpScreenBroadcastService.Instance để tránh rò rỉ bộ nhớ
 				QASmartClass.Services.UdpScreenBroadcastService.Instance.FrameReceived -= OnUdpFrameReceived;
 			}
@@ -3047,100 +3048,61 @@ namespace QASmartClass.StudentClient.Views
 
 
 
-					// Update global state
-
-					App.AssessmentState.ActiveSurveyQuestion = cmd; // Store raw JSON string
-
-					App.AssessmentState.ActiveSurveyTime = DateTime.Now;
-
-					App.AssessmentState.SurveyAnswered = false;
-
-					App.AssessmentState.ActivePollId = payload.SurveyId;
-
-
-
 					if (!IsStudentInTargetClasses(payload.TargetClasses))
-
 					{
-
 						Log.Information("Survey custom ignored. Student class not in target: {Target}", payload.TargetClasses);
-
 						return;
-
 					}
 
+					// Update global ephemeral RAM state (100% RAM — không ghi SQLite DB)
+					App.AssessmentState.ActiveSurveyQuestion = cmd;
+					App.AssessmentState.ActiveSurveyTime = DateTime.Now;
+					App.AssessmentState.SurveyAnswered = false;
+					App.AssessmentState.SelectedSurveyOptionIndex = -1;
+					App.AssessmentState.SelectedSurveyOptionText = string.Empty;
+					App.AssessmentState.ActivePollId = payload.SurveyId;
+					App.AssessmentState.ActivePollOptions = payload.Options.ToArray();
+					App.AssessmentState.NotifyChanged();
 
-
-					// Save to local database for StudentSurveyPage to consume
-
+					/* [MYTHWARE_LITE] Không lưu SURVEY_START vào SQLite EventLogs — chỉ giữ trên RAM trong lúc khảo sát diễn ra
 					try
-
 					{
-
 						var app = (App)Application.Current;
-
 						if (app?.Database != null)
-
 						{
-
 							app.Database.EventLogs.Add(new QASmartClass.Data.EventLog
-
 							{
-
 								EventType = "SURVEY",
-
 								Actor = "GV",
-
 								Details = cmd,
-
 								Timestamp = DateTime.Now
-
 							});
-
 							app.Database.SaveChanges();
-
 							Log.Information("Saved SURVEY_START command to local EventLogs");
-
 						}
-
 					}
-
 					catch (Exception exDb)
-
 					{
-
 						Log.Warning("Failed to save SURVEY_START to local database: {Err}", exDb.Message);
-
 					}
-
-
+					*/
 
 					base.Dispatcher.Invoke(() =>
-
 					{
-
+						UpdateMythwareSurveyBadge();
 						ShowSurveyPopup(payload.QuestionText, payload.Options, payload.TimeLimitSeconds);
-
-						ShowNotification("Khảo sát từ GV", "\"" + payload.QuestionText + "\"", "#1565C0");
-
+						ShowNotification("📊 Khảo sát nhanh từ GV", "\"" + payload.QuestionText + "\"", "#1565C0");
 					});
-
 				}
-
 				else if (msg.Action == "SURVEY_END")
-
 				{
-
+					App.AssessmentState.ClearSurvey();
 					base.Dispatcher.Invoke(() =>
-
 					{
-
 						CloseSurveyPopup();
-
 						_surveyCountdownTimer?.Stop();
-
-						ShowNotification("⏰ Hết giờ khảo sát", "Thời gian khảo sát đã kết thúc", "#E65100");
-
+						UpdateMythwareSurveyBadge();
+						ShowNotification("⏹ Đã kết thúc khảo sát", "Giáo viên đã đóng phiên khảo sát", "#475569");
 					});
 
 				}
@@ -3867,6 +3829,10 @@ namespace QASmartClass.StudentClient.Views
 								App.ClassControl.IsScreenLocked = false;
 								App.ClassControl.ScreenLockType = "";
 								App.ClassControl.IsSilenceActive = false;
+								App.AssessmentState.ClearSurvey();
+								CloseSurveyPopup();
+								_surveyCountdownTimer?.Stop();
+								UpdateMythwareSurveyBadge();
 								CloseScreenLockOverlay();
 								CloseScreenBroadcast();
 								CloseVncBroadcast();
@@ -6219,105 +6185,104 @@ namespace QASmartClass.StudentClient.Views
 				break;
 
 			case "SURVEY_QUESTION":
-
 				if (parts.Length >= 3)
-
 				{
-
 					string question = string.Join("|", parts.Skip(2));
-
-					ShowSurveyPopup(question, new List<string> { "\ud83d\udc4d Đồng ý", "\ud83d\udc4e Không đồng ý", "\ud83e\udd14 Có thể" }, 0);
-
+					var qOpts = new List<string> { "👍 Đồng ý", "👎 Không đồng ý", "🤔 Có thể" };
+					App.AssessmentState.ActiveSurveyQuestion = System.Text.Json.JsonSerializer.Serialize(new
+					{
+						Action = "SURVEY_START",
+						Payload = new
+						{
+							SurveyId = Guid.NewGuid().ToString(),
+							Title = "Khảo sát nhanh",
+							SurveyType = "quick",
+							QuestionText = question,
+							Options = qOpts,
+							TimeLimitSeconds = 0,
+							IsAnonymous = false,
+							TargetClasses = "ALL"
+						}
+					});
+					App.AssessmentState.ActiveSurveyTime = DateTime.Now;
+					App.AssessmentState.SurveyAnswered = false;
+					App.AssessmentState.SelectedSurveyOptionIndex = -1;
+					App.AssessmentState.SelectedSurveyOptionText = string.Empty;
+					App.AssessmentState.ActivePollOptions = qOpts.ToArray();
+					App.AssessmentState.NotifyChanged();
+					UpdateMythwareSurveyBadge();
+					ShowSurveyPopup(question, qOpts, 0);
 				}
-
 				break;
 
 			case "SURVEY_CUSTOM":
-
 				if (parts.Length >= 5)
-
 				{
-
 					int result5;
-
 					int timeSec = (int.TryParse(parts[2], out result5) ? result5 : 0);
-
 					string text9 = "ALL";
-
 					string text10 = "";
-
 					bool flag = false;
-
 					if (parts.Length >= 6)
-
 					{
-
 						string text11 = parts[3];
-
 						if (text11 == "ALL" || !text11.Contains(" ") || text11.Split(',').All((string c) => c.Length < 15 && !c.Contains("?")))
-
 						{
-
 							flag = true;
-
 						}
-
 					}
-
 					List<string> options;
-
 					if (flag)
-
 					{
-
 						text9 = parts[3];
-
 						text10 = parts[4];
-
 						options = parts.Skip(5).ToList();
-
 					}
-
 					else
-
 					{
-
 						text9 = "ALL";
-
 						text10 = parts[3];
-
 						options = parts.Skip(4).ToList();
-
 					}
-
 					if (!IsStudentInTargetClasses(text9))
-
 					{
-
 						Log.Information("Survey custom ignored. Student class not in target: {Target}", text9);
-
 						break;
-
 					}
-
+					App.AssessmentState.ActiveSurveyQuestion = System.Text.Json.JsonSerializer.Serialize(new
+					{
+						Action = "SURVEY_START",
+						Payload = new
+						{
+							SurveyId = Guid.NewGuid().ToString(),
+							Title = "Khảo sát nhanh trong lớp",
+							SurveyType = "custom",
+							QuestionText = text10,
+							Options = options,
+							TimeLimitSeconds = timeSec,
+							IsAnonymous = false,
+							TargetClasses = text9
+						}
+					});
+					App.AssessmentState.ActiveSurveyTime = DateTime.Now;
+					App.AssessmentState.SurveyAnswered = false;
+					App.AssessmentState.SelectedSurveyOptionIndex = -1;
+					App.AssessmentState.SelectedSurveyOptionText = string.Empty;
+					App.AssessmentState.ActivePollOptions = options.ToArray();
+					App.AssessmentState.NotifyChanged();
+					UpdateMythwareSurveyBadge();
 					ShowSurveyPopup(text10, options, timeSec);
-
-					ShowNotification("\ud83d\udcca Khảo sát từ GV", "\"" + text10 + "\"", "#1565C0");
-
+					ShowNotification("📊 Khảo sát nhanh từ GV", "\"" + text10 + "\"", "#1565C0");
 				}
-
 				Log.Information("Survey custom received: {Cmd}", cmd);
-
 				break;
 
 			case "SURVEY_END":
-
+				App.AssessmentState.ClearSurvey();
 				CloseSurveyPopup();
-
 				_surveyCountdownTimer?.Stop();
-
-				ShowNotification("⏰ Hết giờ khảo sát", "Thời gian khảo sát đã kết thúc", "#E65100");
-
+				UpdateMythwareSurveyBadge();
+				ShowNotification("⏹ Đã kết thúc khảo sát", "Giáo viên đã đóng phiên khảo sát", "#475569");
 				break;
 
 			case "ASSIGNMENT":
@@ -7514,138 +7479,96 @@ namespace QASmartClass.StudentClient.Views
 
 
 
-		private void HandleSurveyVote(string voteKey, string question, string optionText)
-
+		internal void SubmitSurveyVoteFromPage(int optIndex, string question, string optionText)
 		{
+			HandleSurveyVote($"opt{optIndex}", question, optionText);
+		}
 
+		private void HandleSurveyVote(string voteKey, string question, string optionText)
+		{
 			if (App.AssessmentState.SurveyAnswered)
-
 			{
-
 				return;
+			}
 
+			int parsedOptIdx = -1;
+			if (voteKey.StartsWith("opt") && int.TryParse(voteKey.Substring(3), out int parsed))
+			{
+				parsedOptIdx = parsed;
 			}
 
 			App.AssessmentState.SurveyAnswered = true;
+			App.AssessmentState.SelectedSurveyOptionIndex = parsedOptIdx;
+			App.AssessmentState.SelectedSurveyOptionText = optionText;
+			App.AssessmentState.NotifyChanged();
+			UpdateMythwareSurveyBadge();
 
 			try
-
 			{
-
 				App app = (App)Application.Current;
-
 				string text = App.AssessmentState.ActivePollId ?? "";
+				string text2 = !string.IsNullOrWhiteSpace(app?.StudentNetwork?.StudentName)
+					? app.StudentNetwork.StudentName.Trim()
+					: Environment.MachineName;
 
-				string text2 = "Student";
-
+				/* [MYTHWARE_LITE] Chế độ khảo sát nhanh 100% trên RAM — tuyệt đối không đọc/ghi SQLite Database
 				try
-
 				{
-
 					Student student = app?.Database?.Students?.FirstOrDefault((Student s) => s.IsOnline);
-
 					if (student != null)
-
 					{
-
 						text2 = student.FullName;
-
 					}
-
 				}
-
 				catch
-
 				{
-
 				}
-
 				if (app?.Database != null)
-
 				{
-
 					app.Database.EventLogs.Add(new QASmartClass.Data.EventLog
-
 					{
-
 						EventType = "POLL_VOTE",
-
 						Actor = text2,
-
 						Details = $"PollId:{text}|{voteKey}|{optionText}|Q:{question}",
-
 						Timestamp = DateTime.Now
-
 					});
-
 					app.Database.SaveChanges();
-
 				}
+				*/
 
 				if (app != null && app.StudentNetwork?.IsConnected == true)
-
 				{
-
 					var client = app.StudentNetwork;
-
 					_ = Task.Run(async () =>
-
 					{
-
 						int retryCount = 0;
-
 						bool sent = false;
-
 						while (retryCount < 3 && !sent)
-
 						{
-
 							try
-
 							{
-
 								await client.SendAsync("SURVEY_RESPONSE|" + voteKey + "|" + text2);
-
 								sent = true;
-
 							}
-
 							catch (Exception ex)
-
 							{
-
 								retryCount++;
-
 								Log.Warning("Failed to send survey response, retry {Count}/3: {Err}", retryCount, ex.Message);
-
 								if (retryCount < 3) await Task.Delay(1000);
-
 							}
-
 						}
-
 					});
-
 				}
-
 				else
-
 				{
-
 					app?.RaiseLocalCommand("CMD|SURVEY_RESPONSE|" + voteKey + "|" + text2);
-
 				}
 
 				_surveyCountdownTimer?.Stop();
-
 				CloseSurveyPopup();
-
-				ShowNotification("✅ Da gui!", "Ban da chon: " + optionText, "#2E7D32");
-
-				Log.Information("Survey voted: {Key} - {Text} - PollId:{PollId}", voteKey, optionText, text);
-
+				ShowNotification("✅ Đã gửi phản hồi!", "Bạn đã chọn: " + optionText, "#2E7D32");
+				Log.Information("Survey voted (RAM-only): {Key} - {Text} - PollId:{PollId}", voteKey, optionText, text);
 			}
-
 			catch (Exception ex)
 
 			{
@@ -12174,7 +12097,7 @@ namespace QASmartClass.StudentClient.Views
 				return;
 			}
 
-			if (App.FocusState.ActiveFocusSort >= 0 && tag != "S2" && tag != "S6" && tag != "S12")
+			if (App.FocusState.ActiveFocusSort >= 0 && tag != "S2" && tag != "S5" && tag != "S6" && tag != "S12")
 
 			{
 
@@ -12296,7 +12219,7 @@ namespace QASmartClass.StudentClient.Views
 
 					"S4" => "Bài tập học tập", 
 
-					"S5" => "Khảo sát", 
+					"S5" => "📊 Khảo sát nhanh", 
 
 					"S6" => "Tin nhắn", 
 
@@ -13534,6 +13457,10 @@ namespace QASmartClass.StudentClient.Views
 				txtConnectionStatus.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
 				txtConnectionStatus.ToolTip = !string.IsNullOrEmpty(client?.LastErrorReason) ? client.LastErrorReason : "Mất kết nối tới máy Giáo viên.";
 				iconConnection.Foreground = new SolidColorBrush(Color.FromRgb(239, 83, 80));
+				App.AssessmentState.ClearSurvey();
+				CloseSurveyPopup();
+				_surveyCountdownTimer?.Stop();
+				UpdateMythwareSurveyBadge();
 				CloseScreenBroadcast();
 				CloseScreenLockOverlay();
 				UpdateWifiIndicator();
@@ -18624,8 +18551,34 @@ namespace QASmartClass.StudentClient.Views
 		// ═══ MYTHWARE STUDENT TOP BAR & MULTI-CHANNEL ROOM PICKER ═══
 		private void MythwareNavHome_Click(object sender, RoutedEventArgs e) => NavigateTo("S1");
 		private void MythwareNavChat_Click(object sender, RoutedEventArgs e) => NavigateTo("S6");
+		private void MythwareNavSurvey_Click(object sender, RoutedEventArgs e) => NavigateTo("S5");
 		private void MythwareNavFiles_Click(object sender, RoutedEventArgs e) => NavigateTo("S4");
 		private void MythwareNavWhiteboard_Click(object sender, RoutedEventArgs e) => NavigateTo("S12");
+
+		internal void UpdateMythwareSurveyBadge()
+		{
+			try
+			{
+				bool hasPendingSurvey = !string.IsNullOrWhiteSpace(App.AssessmentState.ActiveSurveyQuestion) && !App.AssessmentState.SurveyAnswered;
+				if (badgeMythwareSurvey != null)
+				{
+					badgeMythwareSurvey.Visibility = hasPendingSurvey ? Visibility.Visible : Visibility.Collapsed;
+				}
+				if (btnMythwareSurvey != null)
+				{
+					btnMythwareSurvey.Background = hasPendingSurvey
+						? new SolidColorBrush(Color.FromRgb(239, 246, 255))
+						: new SolidColorBrush(Color.FromRgb(241, 245, 249));
+					btnMythwareSurvey.Foreground = hasPendingSurvey
+						? new SolidColorBrush(Color.FromRgb(29, 78, 216))
+						: new SolidColorBrush(Color.FromRgb(51, 65, 85));
+					btnMythwareSurvey.BorderBrush = hasPendingSurvey
+						? new SolidColorBrush(Color.FromRgb(147, 197, 253))
+						: Brushes.Transparent;
+				}
+			}
+			catch { }
+		}
 
 		private void SwitchClassroom_Click(object sender, RoutedEventArgs e)
 		{

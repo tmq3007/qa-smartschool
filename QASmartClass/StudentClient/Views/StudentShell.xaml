@@ -1217,6 +1217,15 @@
                                 BorderThickness="1" BorderBrush="#BFDBFE" Padding="10,5" Margin="0,0,6,0" Cursor="Hand" Click="MythwareNavChat_Click">
                             <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources>
                         </Button>
+                        <Button x:Name="btnMythwareSurvey" FontSize="11.5" FontWeight="SemiBold" Foreground="#334155" Background="#F1F5F9"
+                                BorderThickness="1" BorderBrush="Transparent" Padding="10,5" Margin="0,0,6,0" Cursor="Hand" Click="MythwareNavSurvey_Click"
+                                ToolTip="Mở bảng Khảo sát nhanh trực tiếp trong lớp">
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="📊 Khảo sát nhanh" VerticalAlignment="Center"/>
+                                <Ellipse x:Name="badgeMythwareSurvey" Width="8" Height="8" Fill="#DC2626" Margin="6,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                         <Button Content="📁 Nhận / Nộp bài" FontSize="11.5" FontWeight="SemiBold" Foreground="#334155" Background="#F1F5F9"
                                 BorderThickness="0" Padding="10,5" Margin="0,0,6,0" Cursor="Hand" Click="MythwareNavFiles_Click">
                             <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources>

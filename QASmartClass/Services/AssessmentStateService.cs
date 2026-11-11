@@ -29,7 +29,7 @@ namespace QASmartClass.Services
             set { lock (_lock) _isLocked = value; }
         }
 
-        // Survey
+        // Survey (100% Ephemeral RAM-only during active classroom session)
         private string _activeSurveyQuestion = string.Empty;
         public string ActiveSurveyQuestion
         {
@@ -38,6 +38,8 @@ namespace QASmartClass.Services
         }
         public DateTime ActiveSurveyTime { get; set; } = DateTime.MinValue;
         public volatile bool SurveyAnswered;
+        public int SelectedSurveyOptionIndex { get; set; } = -1;
+        public string SelectedSurveyOptionText { get; set; } = string.Empty;
 
         // Poll
         private string _activePollId = string.Empty;
@@ -56,17 +58,25 @@ namespace QASmartClass.Services
 
         public event EventHandler? StateChanged;
 
+        public void ClearSurvey()
+        {
+            ActiveSurveyQuestion = string.Empty;
+            ActiveSurveyTime = DateTime.MinValue;
+            SurveyAnswered = false;
+            SelectedSurveyOptionIndex = -1;
+            SelectedSurveyOptionText = string.Empty;
+            ActivePollId = string.Empty;
+            ActivePollOptions = Array.Empty<string>();
+            NotifyChanged();
+        }
+
         public void Reset()
         {
             AssignmentDescription = string.Empty;
             AssignmentDeadline = null;
             AssignmentSentTime = DateTime.MinValue;
             IsLocked = false;
-            ActiveSurveyQuestion = string.Empty;
-            ActiveSurveyTime = DateTime.MinValue;
-            SurveyAnswered = false;
-            ActivePollId = string.Empty;
-            ActivePollOptions = Array.Empty<string>();
+            ClearSurvey();
             Log.Information("[AssessmentState] Reset");
         }
 

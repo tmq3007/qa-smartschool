@@ -261,6 +261,16 @@ namespace QASmartClass.Classroom.Services
 
             try
             {
+                if (!string.IsNullOrEmpty(QASmartClass.Services.AssessmentStateService.Instance.ActiveSurveyQuestion))
+                {
+                    await _networkService.SendCommandAsync("CMD|SURVEY_END|0");
+                }
+                QASmartClass.Services.AssessmentStateService.Instance.ClearSurvey();
+            }
+            catch { }
+
+            try
+            {
                 if (QASmartClass.Services.LessonStateService.Instance.IsLessonActive)
                 {
                     QASmartClass.Services.LessonStateService.Instance.Reset();

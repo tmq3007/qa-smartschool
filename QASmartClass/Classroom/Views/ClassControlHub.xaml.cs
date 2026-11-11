@@ -187,6 +187,7 @@ namespace QASmartClass.Classroom.Views
                 "F4" or "F5" or "F12" => "Monitor",
                 "F16" => "Broadcast",
                 "F13" => "Messaging",
+                "F18" => "Survey",
                 "F11" => "Files",
                 "F30" => "Web",
                 _ => "Monitor"
@@ -218,6 +219,8 @@ namespace QASmartClass.Classroom.Views
             tabBtnBroadcast.Style = tabKey == "Broadcast" ? activeStyle : normalStyle;
             if (tabBtnMessaging != null)
                 tabBtnMessaging.Style = tabKey == "Messaging" ? activeStyle : normalStyle;
+            if (tabBtnSurvey != null)
+                tabBtnSurvey.Style = tabKey == "Survey" ? activeStyle : normalStyle;
             tabBtnFiles.Style = tabKey == "Files" ? activeStyle : normalStyle;
             tabBtnWeb.Style = tabKey == "Web" ? activeStyle : normalStyle;
 
@@ -225,6 +228,8 @@ namespace QASmartClass.Classroom.Views
             frameMonitor.Visibility = Visibility.Collapsed;
             frameBroadcast.Visibility = Visibility.Collapsed;
             frameMessaging.Visibility = Visibility.Collapsed;
+            if (frameSurvey != null)
+                frameSurvey.Visibility = Visibility.Collapsed;
             frameFiles.Visibility = Visibility.Collapsed;
             frameWeb.Visibility = Visibility.Collapsed;
 
@@ -246,6 +251,15 @@ namespace QASmartClass.Classroom.Views
                     if (frameMessaging.Content == null)
                         frameMessaging.Navigate(new MessagingPage());
                     frameMessaging.Visibility = Visibility.Visible;
+                    break;
+
+                case "Survey":
+                    if (frameSurvey != null)
+                    {
+                        if (frameSurvey.Content == null)
+                            frameSurvey.Navigate(new SurveyPage());
+                        frameSurvey.Visibility = Visibility.Visible;
+                    }
                     break;
 
                 case "Files":

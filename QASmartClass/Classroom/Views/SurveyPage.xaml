@@ -76,12 +76,12 @@
                         <Border Background="#EFF6FF" CornerRadius="8" Padding="8,6" Margin="0,0,12,0">
                             <TextBlock Text="📊" FontSize="18"/>
                         </Border>
-                        <TextBlock Text="Khảo sát &amp; Thăm dò ý kiến học tập" FontSize="20" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                        <TextBlock Text="Khảo sát nhanh trực tiếp trong lớp" FontSize="20" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
                         <Border Background="#DCFCE7" CornerRadius="12" Padding="8,3" Margin="12,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="● REAL-TIME" FontSize="10" FontWeight="Bold" Foreground="#15803D"/>
+                            <TextBlock Text="● TRỰC TIẾP TRONG LỚP • KHÔNG LƯU DB" FontSize="10" FontWeight="Bold" Foreground="#15803D"/>
                         </Border>
                     </StackPanel>
-                    <TextBlock Text="Tạo khảo sát nhanh, trắc nghiệm tương tác và thu thập phản hồi trực tiếp từ thiết bị học sinh" 
+                    <TextBlock Text="Phát câu hỏi nhanh tới thiết bị học sinh đang trong lớp — kết quả đếm trực tiếp và tự xóa sạch khi tắt" 
                                FontSize="13" Foreground="#64748B" Margin="44,3,0,0"/>
                 </StackPanel>
 
@@ -91,17 +91,18 @@
                             MouseLeftButtonDown="Tab_Click" Tag="quick">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⚡" FontSize="14" Margin="0,0,6,0"/>
-                            <TextBlock Text="Khảo sát nhanh" FontSize="13" FontWeight="SemiBold" Foreground="#1D4ED8"/>
+                            <TextBlock Text="Mẫu 1 chạm" FontSize="13" FontWeight="SemiBold" Foreground="#1D4ED8"/>
                         </StackPanel>
                     </Border>
                     <Border x:Name="tabCustom" Style="{StaticResource TabBtn}"
                             MouseLeftButtonDown="Tab_Click" Tag="custom">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📝" FontSize="14" Margin="0,0,6,0"/>
-                            <TextBlock Text="Câu hỏi tùy chỉnh" FontSize="13" FontWeight="SemiBold" Foreground="#334155"/>
+                            <TextBlock Text="Tự nhập câu hỏi" FontSize="13" FontWeight="SemiBold" Foreground="#334155"/>
                         </StackPanel>
                     </Border>
-                    <Border x:Name="tabSatisfaction" Style="{StaticResource TabBtn}"
+                    <!-- [MYTHWARE_LITE] Ẩn tab Độ hài lòng lưu DB theo ngày -->
+                    <Border x:Name="tabSatisfaction" Visibility="Collapsed" Style="{StaticResource TabBtn}"
                             MouseLeftButtonDown="Tab_Click" Tag="satisfaction">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⭐" FontSize="14" Margin="0,0,6,0"/>
@@ -170,7 +171,7 @@
                     </Border>
 
                     <!-- ─────────────────────────────────────────────── -->
-                    <!--  TAB 1: QUICK POLL CARD (Khảo sát nhanh)        -->
+                    <!--  TAB 1: QUICK POLL CARD (Khảo sát nhanh 1 chạm) -->
                     <!-- ─────────────────────────────────────────────── -->
                     <Border x:Name="panelQuickPoll" Background="White" CornerRadius="16" Padding="24" 
                             BorderBrush="#E2E8F0" BorderThickness="1.5" Effect="{StaticResource CardShadow}">
@@ -178,124 +179,92 @@
                             <DockPanel Margin="0,0,0,18">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Border Background="#FEF3C7" CornerRadius="8" Padding="6,4" Margin="0,0,8,0">
+                                        <Border Background="#EFF6FF" CornerRadius="8" Padding="6,4" Margin="0,0,8,0">
                                             <TextBlock Text="⚡" FontSize="15"/>
                                         </Border>
-                                        <TextBlock Text="Thăm dò mức độ tiếp thu bài" FontSize="16" FontWeight="Bold" Foreground="#0F172A"/>
+                                        <TextBlock Text="Khảo sát nhanh 1 chạm tới cả lớp" FontSize="16" FontWeight="Bold" Foreground="#0F172A"/>
                                     </StackPanel>
-                                    <TextBlock Text="Chạm trực tiếp vào các thẻ lớn để ghi nhận số lượt giơ tay biểu quyết tức thời" 
-                                               FontSize="12" Foreground="#64748B" Margin="32,2,0,0"/>
+                                    <TextBlock Text="Chạm vào một mẫu bên dưới để phát ngay câu hỏi tới tất cả máy Học sinh (Windows &amp; Android) đang trong lớp" 
+                                               FontSize="12" Foreground="#64748B" Margin="32,2,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
-                                <Button Content="🔄 Đặt lại số liệu" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                        Background="#F1F5F9" Foreground="#475569" FontSize="12" FontWeight="SemiBold"
-                                        BorderThickness="1" BorderBrush="#E2E8F0" Cursor="Hand" Padding="14,7"
-                                        Click="ResetPoll_Click" Template="{StaticResource RoundBtn}"/>
                             </DockPanel>
 
-                            <!-- 4 Large Interactive Touch Cards (2x2 Grid for IFP Touch screen) -->
+                            <!-- 4 Large 1-Click Live Broadcast Poll Cards -->
                             <UniformGrid Columns="2" Rows="2" Margin="0,0,0,16">
-                                <!-- Card 1: Hiểu rồi (yes) -->
-                                <Border Background="#F0FDF4" CornerRadius="14" Padding="16,18" Margin="0,0,10,12" Cursor="Hand"
+                                <!-- Card 1: Mức độ hiểu bài -->
+                                <Border Background="#F0FDF4" CornerRadius="14" Padding="18" Margin="0,0,10,12" Cursor="Hand"
                                         BorderBrush="#86EFAC" BorderThickness="1.5" Effect="{StaticResource CardShadow}"
-                                        MouseLeftButtonDown="QuickPoll_Click" Tag="yes">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <DockPanel Grid.Row="0">
-                                            <TextBlock Text="👍" FontSize="36" VerticalAlignment="Center"/>
+                                        MouseLeftButtonDown="QuickPoll_Click" Tag="understand">
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <TextBlock Text="🎯" FontSize="30" VerticalAlignment="Center"/>
                                             <Border Background="#DCFCE7" CornerRadius="6" Padding="8,3" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                                <TextBlock Text="+ Chạm để tăng" FontSize="11" FontWeight="Bold" Foreground="#15803D"/>
+                                                <TextBlock Text="📤 Chạm để phát" FontSize="11" FontWeight="Bold" Foreground="#15803D"/>
                                             </Border>
                                         </DockPanel>
-                                        <TextBlock Grid.Row="1" Text="Hiểu rồi" FontSize="16" FontWeight="Bold" Foreground="#15803D" Margin="0,10,0,4"/>
-                                        <DockPanel Grid.Row="2" VerticalAlignment="Bottom">
-                                            <TextBlock x:Name="txtYes" Text="0" FontSize="38" FontWeight="ExtraBold" Foreground="#16A34A" VerticalAlignment="Bottom"/>
-                                            <TextBlock Text="lượt" FontSize="13" Foreground="#4ADE80" FontWeight="SemiBold" Margin="6,0,0,6" VerticalAlignment="Bottom"/>
-                                        </DockPanel>
-                                    </Grid>
+                                        <TextBlock Text="Mức độ hiểu bài" FontSize="16" FontWeight="Bold" Foreground="#14532D" Margin="0,10,0,4"/>
+                                        <TextBlock Text="A. Đã hiểu rõ • B. Hiểu sơ bộ • C. Cần giảng lại" FontSize="12" Foreground="#166534" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="txtYes" Text="0" Visibility="Collapsed"/>
+                                    </StackPanel>
                                 </Border>
 
-                                <!-- Card 2: Chưa hiểu (no) -->
-                                <Border Background="#FEF2F2" CornerRadius="14" Padding="16,18" Margin="0,0,0,12" Cursor="Hand"
-                                        BorderBrush="#FCA5A5" BorderThickness="1.5" Effect="{StaticResource CardShadow}"
-                                        MouseLeftButtonDown="QuickPoll_Click" Tag="no">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <DockPanel Grid.Row="0">
-                                            <TextBlock Text="👎" FontSize="36" VerticalAlignment="Center"/>
-                                            <Border Background="#FEE2E2" CornerRadius="6" Padding="8,3" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                                <TextBlock Text="+ Chạm để tăng" FontSize="11" FontWeight="Bold" Foreground="#B91C1C"/>
+                                <!-- Card 2: Chọn nhanh A / B / C / D -->
+                                <Border Background="#EFF6FF" CornerRadius="14" Padding="18" Margin="0,0,0,12" Cursor="Hand"
+                                        BorderBrush="#93C5FD" BorderThickness="1.5" Effect="{StaticResource CardShadow}"
+                                        MouseLeftButtonDown="QuickPoll_Click" Tag="abcd">
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <TextBlock Text="🅰️" FontSize="30" VerticalAlignment="Center"/>
+                                            <Border Background="#DBEAFE" CornerRadius="6" Padding="8,3" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                                <TextBlock Text="📤 Chạm để phát" FontSize="11" FontWeight="Bold" Foreground="#1D4ED8"/>
                                             </Border>
                                         </DockPanel>
-                                        <TextBlock Grid.Row="1" Text="Chưa hiểu" FontSize="16" FontWeight="Bold" Foreground="#B91C1C" Margin="0,10,0,4"/>
-                                        <DockPanel Grid.Row="2" VerticalAlignment="Bottom">
-                                            <TextBlock x:Name="txtNo" Text="0" FontSize="38" FontWeight="ExtraBold" Foreground="#DC2626" VerticalAlignment="Bottom"/>
-                                            <TextBlock Text="lượt" FontSize="13" Foreground="#F87171" FontWeight="SemiBold" Margin="6,0,0,6" VerticalAlignment="Bottom"/>
-                                        </DockPanel>
-                                    </Grid>
+                                        <TextBlock Text="Trắc nghiệm nhanh A / B / C / D" FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,10,0,4"/>
+                                        <TextBlock Text="GV đọc câu hỏi miệng/trên bảng — HS bấm chọn A, B, C hoặc D" FontSize="12" Foreground="#1E40AF" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="txtNo" Text="0" Visibility="Collapsed"/>
+                                    </StackPanel>
                                 </Border>
 
-                                <!-- Card 3: Hơi chậm (slow) -->
-                                <Border Background="#FFFBEB" CornerRadius="14" Padding="16,18" Margin="0,0,10,0" Cursor="Hand"
+                                <!-- Card 3: Đúng / Sai -->
+                                <Border Background="#FFFBEB" CornerRadius="14" Padding="18" Margin="0,0,10,0" Cursor="Hand"
                                         BorderBrush="#FCD34D" BorderThickness="1.5" Effect="{StaticResource CardShadow}"
-                                        MouseLeftButtonDown="QuickPoll_Click" Tag="slow">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <DockPanel Grid.Row="0">
-                                            <TextBlock Text="🐢" FontSize="36" VerticalAlignment="Center"/>
+                                        MouseLeftButtonDown="QuickPoll_Click" Tag="truefalse">
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <TextBlock Text="✅" FontSize="30" VerticalAlignment="Center"/>
                                             <Border Background="#FEF3C7" CornerRadius="6" Padding="8,3" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                                <TextBlock Text="+ Chạm để tăng" FontSize="11" FontWeight="Bold" Foreground="#B45309"/>
+                                                <TextBlock Text="📤 Chạm để phát" FontSize="11" FontWeight="Bold" Foreground="#B45309"/>
                                             </Border>
                                         </DockPanel>
-                                        <TextBlock Grid.Row="1" Text="Hơi chậm" FontSize="16" FontWeight="Bold" Foreground="#B45309" Margin="0,10,0,4"/>
-                                        <DockPanel Grid.Row="2" VerticalAlignment="Bottom">
-                                            <TextBlock x:Name="txtSlow" Text="0" FontSize="38" FontWeight="ExtraBold" Foreground="#D97706" VerticalAlignment="Bottom"/>
-                                            <TextBlock Text="lượt" FontSize="13" Foreground="#FBBF24" FontWeight="SemiBold" Margin="6,0,0,6" VerticalAlignment="Bottom"/>
-                                        </DockPanel>
-                                    </Grid>
+                                        <TextBlock Text="Biểu quyết Đúng / Sai" FontSize="16" FontWeight="Bold" Foreground="#78350F" Margin="0,10,0,4"/>
+                                        <TextBlock Text="A. Đúng / Đồng ý • B. Sai / Không đồng ý" FontSize="12" Foreground="#92400E" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="txtSlow" Text="0" Visibility="Collapsed"/>
+                                    </StackPanel>
                                 </Border>
 
-                                <!-- Card 4: Quá dễ (fast) -->
-                                <Border Background="#F0F9FF" CornerRadius="14" Padding="16,18" Cursor="Hand"
+                                <!-- Card 4: Nhịp độ bài giảng -->
+                                <Border Background="#F0F9FF" CornerRadius="14" Padding="18" Cursor="Hand"
                                         BorderBrush="#7DD3FC" BorderThickness="1.5" Effect="{StaticResource CardShadow}"
-                                        MouseLeftButtonDown="QuickPoll_Click" Tag="fast">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <DockPanel Grid.Row="0">
-                                            <TextBlock Text="🚀" FontSize="36" VerticalAlignment="Center"/>
+                                        MouseLeftButtonDown="QuickPoll_Click" Tag="pace">
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <TextBlock Text="⏱️" FontSize="30" VerticalAlignment="Center"/>
                                             <Border Background="#E0F2FE" CornerRadius="6" Padding="8,3" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                                <TextBlock Text="+ Chạm để tăng" FontSize="11" FontWeight="Bold" Foreground="#0369A1"/>
+                                                <TextBlock Text="📤 Chạm để phát" FontSize="11" FontWeight="Bold" Foreground="#0369A1"/>
                                             </Border>
                                         </DockPanel>
-                                        <TextBlock Grid.Row="1" Text="Quá dễ / Nhanh" FontSize="16" FontWeight="Bold" Foreground="#0369A1" Margin="0,10,0,4"/>
-                                        <DockPanel Grid.Row="2" VerticalAlignment="Bottom">
-                                            <TextBlock x:Name="txtFast" Text="0" FontSize="38" FontWeight="ExtraBold" Foreground="#0284C7" VerticalAlignment="Bottom"/>
-                                            <TextBlock Text="lượt" FontSize="13" Foreground="#38BDF8" FontWeight="SemiBold" Margin="6,0,0,6" VerticalAlignment="Bottom"/>
-                                        </DockPanel>
-                                    </Grid>
+                                        <TextBlock Text="Nhịp độ bài giảng" FontSize="16" FontWeight="Bold" Foreground="#0C4A6E" Margin="0,10,0,4"/>
+                                        <TextBlock Text="A. Vừa phải • B. Hơi nhanh • C. Hơi chậm" FontSize="12" Foreground="#0369A1" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="txtFast" Text="0" Visibility="Collapsed"/>
+                                    </StackPanel>
                                 </Border>
                             </UniformGrid>
 
                             <!-- Quick Poll Tips Footer -->
                             <Border Background="#F8FAFC" CornerRadius="10" Padding="14,10" BorderBrush="#E2E8F0" BorderThickness="1">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="💡" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Hỗ trợ cảm ứng đa điểm trên Smart Touch: GV hoặc HS có thể chạm trực tiếp trên bảng tương tác để bình chọn."
+                                    <TextBlock Text="🛡️" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Chế độ 100% RAM trong lớp: Dữ liệu chỉ hiển thị trực tiếp khi khảo sát đang bật. Khi bấm Kết thúc khảo sát hoặc đóng lớp, mọi dữ liệu tự động xóa trắng."
                                                FontSize="12" Foreground="#64748B" TextWrapping="Wrap" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
@@ -321,9 +290,9 @@
                                 </StackPanel>
                             </DockPanel>
 
-                            <!-- Saved Templates Selection -->
-                            <TextBlock Text="📋 Chọn câu hỏi mẫu có sẵn:" FontSize="13" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <ComboBox x:Name="cboSavedTemplates" FontSize="13" Padding="10,8" Margin="0,0,0,14" 
+                            <!-- [MYTHWARE_LITE] Ẩn lưu/chọn câu hỏi mẫu từ SQLite DB -->
+                            <TextBlock Text="📋 Chọn câu hỏi mẫu có sẵn:" Visibility="Collapsed" FontSize="13" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <ComboBox x:Name="cboSavedTemplates" Visibility="Collapsed" FontSize="13" Padding="10,8" Margin="0,0,0,14" 
                                       SelectionChanged="SavedTemplates_SelectionChanged"/>
 
                             <!-- Question -->
@@ -382,11 +351,12 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Content="📤 Gửi khảo sát tới HS" Padding="0,13" Margin="0,0,10,0"
+                                <Button Grid.Column="0" Content="📤 Phát khảo sát tới Học sinh trong lớp" Padding="0,13"
                                         Background="#2563EB" Foreground="White" FontSize="14" FontWeight="Bold"
                                         BorderThickness="0" Cursor="Hand" Click="SendCustomSurvey_Click"
                                         Template="{StaticResource RoundBtn}"/>
-                                <Button Grid.Column="1" Content="💾 Lưu thành mẫu" Padding="18,13"
+                                <!-- [MYTHWARE_LITE] Không lưu mẫu câu hỏi vào SQLite DB -->
+                                <Button Grid.Column="1" Visibility="Collapsed" Content="💾 Lưu thành mẫu" Padding="18,13" Margin="10,0,0,0"
                                         Background="#059669" Foreground="White" FontSize="14" FontWeight="Bold"
                                         BorderThickness="0" Cursor="Hand" Click="SaveTemplate_Click"
                                         Template="{StaticResource RoundBtn}"/>
@@ -506,13 +476,19 @@
                                         </TextBlock>
                                     </Border>
                                     <!-- Total Responses Badge -->
-                                    <Border Background="#DBEAFE" CornerRadius="12" Padding="10,5" BorderBrush="#BFDBFE" BorderThickness="1">
+                                    <Border Background="#DBEAFE" CornerRadius="12" Padding="10,5" Margin="0,0,8,0" BorderBrush="#BFDBFE" BorderThickness="1">
                                         <TextBlock FontSize="12">
                                             <Run Text="Tổng: " Foreground="#1E40AF"/>
                                             <Run x:Name="txtTotalVotes" Text="0" FontWeight="Bold" Foreground="#1D4ED8"/>
                                             <Run Text=" phản hồi" Foreground="#1E40AF"/>
                                         </TextBlock>
                                     </Border>
+                                    <!-- End & Wipe Survey Button -->
+                                    <Button x:Name="btnEndSurvey" Content="⏹ Kết thúc khảo sát" Padding="12,5"
+                                            Background="#DC2626" Foreground="White" FontSize="12" FontWeight="Bold"
+                                            BorderThickness="0" Cursor="Hand" Click="EndActiveSurvey_Click"
+                                            ToolTip="Đóng khảo sát trên toàn bộ máy Học sinh và xóa sạch kết quả tạm trên RAM"
+                                            Template="{StaticResource RoundBtn}"/>
                                 </StackPanel>
                             </DockPanel>
 
@@ -586,8 +562,8 @@
                                         <TextBlock Text="⚡" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1">
-                                        <TextBlock Text="1. Khảo sát nhanh (Quick Poll)" FontSize="13" FontWeight="Bold" Foreground="#0F172A"/>
-                                        <TextBlock Text="Dành cho việc thăm dò tức thì sau khi giảng xong một khái niệm. Giáo viên có thể hỏi và chạm trực tiếp vào thẻ số trên màn hình để kiểm đếm."
+                                        <TextBlock Text="1. Mẫu 1 chạm (Instant Quick Poll)" FontSize="13" FontWeight="Bold" Foreground="#0F172A"/>
+                                        <TextBlock Text="Bấm 1 chạm để phát ngay câu hỏi thăm dò mức độ hiểu bài, A/B/C/D, Đúng/Sai hoặc tốc độ bài giảng tới toàn bộ máy Học sinh trong lớp."
                                                    FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                     </StackPanel>
                                 </Grid>
@@ -604,26 +580,26 @@
                                         <TextBlock Text="📝" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1">
-                                        <TextBlock Text="2. Câu hỏi tùy chỉnh (Custom Poll)" FontSize="13" FontWeight="Bold" Foreground="#0F172A"/>
-                                        <TextBlock Text="Phát câu trắc nghiệm A/B/C/D tới máy học sinh. Biểu đồ phần trăm phản hồi sẽ hiển thị trực tiếp ngay khi học sinh nhấn chọn."
+                                        <TextBlock Text="2. Tự nhập câu hỏi nhanh (Custom Poll)" FontSize="13" FontWeight="Bold" Foreground="#0F172A"/>
+                                        <TextBlock Text="Nhập câu hỏi và các đáp án A/B/C/D tùy ý. Biểu đồ phần trăm phản hồi hiển thị trực tiếp ngay khi học sinh bấm chọn."
                                                    FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
 
-                            <!-- Feature 3: Satisfaction Guide -->
+                            <!-- Feature 3: Ephemeral RAM Privacy Guide -->
                             <Border Background="#F8FAFC" CornerRadius="12" Padding="14,12" Margin="0,0,0,14" BorderBrush="#E2E8F0" BorderThickness="1">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Background="#FEF9C3" CornerRadius="10" Width="40" Height="40" Margin="0,0,12,0" VerticalAlignment="Top">
-                                        <TextBlock Text="⭐" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Border Grid.Column="0" Background="#DCFCE7" CornerRadius="10" Width="40" Height="40" Margin="0,0,12,0" VerticalAlignment="Top">
+                                        <TextBlock Text="🧹" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1">
-                                        <TextBlock Text="3. Đo lường sự hài lòng (Satisfaction)" FontSize="13" FontWeight="Bold" Foreground="#0F172A"/>
-                                        <TextBlock Text="Đánh giá 5 sao cuối buổi học giúp giáo viên ghi nhận cảm nhận chân thực của học sinh và cải thiện phương pháp giảng dạy."
+                                        <TextBlock Text="3. Chỉ lưu tạm lúc khảo sát (Không ghi Database)" FontSize="13" FontWeight="Bold" Foreground="#0F172A"/>
+                                        <TextBlock Text="Khi bấm Kết thúc khảo sát hoặc thoát lớp, toàn bộ câu hỏi và số phiếu tự xóa sạch trên cả máy Giáo viên và Học sinh."
                                                    FontSize="12" Foreground="#64748B" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                     </StackPanel>
                                 </Grid>

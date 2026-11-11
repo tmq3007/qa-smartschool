@@ -1,788 +1,364 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using QASmartClass.Data;
 using Serilog;
 
 namespace QASmartClass.StudentClient.Views
 {
     public partial class StudentSurveyPage : Page
     {
+        private readonly List<string> _activeOptions = new();
+        private string _activeQuestion = string.Empty;
+        private string _activeTitle = "KHẢO SÁT NHANH TRONG LỚP";
+        private string _renderedPollId = string.Empty;
+        private int _selectedOptionIdx = -1;
         private bool _isSubmittingSurvey = false;
-        private bool _isSubmittingStar = false;
-        private DateTime _pageLoadedTime = DateTime.MinValue;
 
         public StudentSurveyPage()
         {
             InitializeComponent();
-            Loaded += (_, _) => {
-                _pageLoadedTime = DateTime.Now;
-                LoadSurveyHistory();
-                RegisterNetworkEvents();
-                StartOfflineSync();
-            };
-            Unloaded += (_, _) => {
-                StopConfettiAnimation();
-                UnregisterNetworkEvents();
-            };
+            Loaded += OnPageLoaded;
+            Unloaded += OnPageUnloaded;
         }
 
-        /// <summary>Load lịch sử khảo sát đã tham gia từ DB</summary>
-        private void LoadSurveyHistory()
+        private void OnPageLoaded(object sender, RoutedEventArgs e)
+        {
+            QASmartTouch.App.AssessmentState.StateChanged -= OnAssessmentStateChanged;
+            QASmartTouch.App.AssessmentState.StateChanged += OnAssessmentStateChanged;
+            RefreshFromEphemeralState();
+        }
+
+        private void OnPageUnloaded(object sender, RoutedEventArgs e)
+        {
+            QASmartTouch.App.AssessmentState.StateChanged -= OnAssessmentStateChanged;
+            StopConfettiAnimation();
+        }
+
+        private void OnAssessmentStateChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(RefreshFromEphemeralState));
+        }
+
+        /// <summary>
+        /// Đọc 100% từ trạng thái RAM tạm thời của phiên lớp học hiện tại (QASmartTouch.App.AssessmentState).
+        /// Tuyệt đối không đọc hay ghi SQLite Database. Khi GV kết thúc khảo sát hoặc rời lớp -> tự xóa sạch.
+        /// </summary>
+        public void RefreshFromEphemeralState()
         {
             try
             {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app?.Database == null) return;
+                var app = Application.Current as QASmartTouch.App;
+                var state = QASmartTouch.App.AssessmentState;
+                string rawSurvey = state.ActiveSurveyQuestion?.Trim() ?? string.Empty;
+                bool isConnected = app?.StudentNetwork?.IsConnected == true;
 
-                // Resolve student identity via StudentIdentityService
-                var identityService = new QASmartClass.StudentClient.Services.StudentIdentityService(app.Database);
-                var (_, currentCode, currentName) = identityService.GetCurrentStudent();
-
-                // Get all responses from the local database
-                var localResponses = app.Database.SurveyResponses.ToList();
-                
-                // Filter in-memory for current student's responses (including their anonymous ones using salted hash)
-                var myResponses = localResponses
-                    .Where(r => r.StudentCode == currentCode || r.StudentCode == ComputeSha256Hash(currentCode + r.SurveyId + GetLocalSalt()))
-                    .OrderByDescending(r => r.SubmittedAt)
-                    .Take(10)
-                    .ToList();
-
-                if (myResponses.Any())
+                // Nếu không có khảo sát nào đang mở trên RAM
+                if (string.IsNullOrWhiteSpace(rawSurvey))
                 {
-                    txtCompletedCount.Text = myResponses.Count.ToString();
+                    _renderedPollId = string.Empty;
+                    _activeQuestion = string.Empty;
+                    _activeOptions.Clear();
+                    _selectedOptionIdx = -1;
+                    _isSubmittingSurvey = false;
 
-                    // Show last survey
-                    var last = myResponses.First();
-                    txtLastSurvey.Text = $"{last.SelectedOptionText} — Hoàn thành lúc {last.SubmittedAt}";
-                }
-                else
-                {
-                    txtCompletedCount.Text = "0";
-                    txtLastSurvey.Text = "Chưa có khảo sát nào được hoàn thành";
-                }
+                    activeSurveyPanel.Visibility = Visibility.Collapsed;
+                    thankYouPanel.Visibility = Visibility.Collapsed;
+                    badgeLiveStatus.Visibility = Visibility.Collapsed;
+                    emptyState.Visibility = Visibility.Visible;
 
-                // Check if they already rated the lecture today
-                string todayStarRatingId = "LECTURE_STAR_RATING_" + DateTime.Today.ToString("yyyyMMdd");
-                var todayStarResponse = app.Database.SurveyResponses
-                    .FirstOrDefault(r => r.SurveyId == todayStarRatingId && r.StudentCode == currentCode);
-
-                if (todayStarResponse != null)
-                {
-                    int stars = todayStarResponse.SelectedOptionIndex;
-                    _isSubmittingStar = true;
-                    star1.Foreground = stars >= 1 ? new SolidColorBrush(Color.FromRgb(255, 193, 7)) : new SolidColorBrush(Color.FromRgb(223, 228, 234));
-                    star2.Foreground = stars >= 2 ? new SolidColorBrush(Color.FromRgb(255, 193, 7)) : new SolidColorBrush(Color.FromRgb(223, 228, 234));
-                    star3.Foreground = stars >= 3 ? new SolidColorBrush(Color.FromRgb(255, 193, 7)) : new SolidColorBrush(Color.FromRgb(223, 228, 234));
-                    star4.Foreground = stars >= 4 ? new SolidColorBrush(Color.FromRgb(255, 193, 7)) : new SolidColorBrush(Color.FromRgb(223, 228, 234));
-                    star5.Foreground = stars >= 5 ? new SolidColorBrush(Color.FromRgb(255, 193, 7)) : new SolidColorBrush(Color.FromRgb(223, 228, 234));
-                    
-                    ScaleStar(star1, stars >= 1 ? 1.1 : 1.0);
-                    ScaleStar(star2, stars >= 2 ? 1.1 : 1.0);
-                    ScaleStar(star3, stars >= 3 ? 1.1 : 1.0);
-                    ScaleStar(star4, stars >= 4 ? 1.1 : 1.0);
-                    ScaleStar(star5, stars >= 5 ? 1.1 : 1.0);
-                    
-                    txtStarResult.Text = $"✅ Đã đánh giá {stars}/5 — Cảm ơn em!";
-                }
-                else
-                {
-                    _isSubmittingStar = false;
-                    ResetStarsVisual();
-                }
-
-                // Check for pending survey from teacher
-                var pendingSurvey = app.Database.EventLogs
-                    .Where(e => e.EventType == "SURVEY" && e.Actor == "GV")
-                    .OrderByDescending(e => e.Timestamp)
-                    .FirstOrDefault();
-
-                if (pendingSurvey != null)
-                {
-                    // Check if the survey is older than 30 minutes (expired)
-                    bool isExpired = (DateTime.Now - pendingSurvey.Timestamp).TotalMinutes > 30.0;
-
-                    if (isExpired)
+                    if (!isConnected)
                     {
-                        emptyState.Visibility = Visibility.Visible;
-                        activeSurveyPanel.Visibility = Visibility.Collapsed;
-                        thankYouPanel.Visibility = Visibility.Collapsed;
+                        txtEmptyIcon.Text = "🔌";
+                        txtEmptyTitle.Text = "Chưa vào lớp học trực tiếp";
+                        txtEmptyDesc.Text = "Khảo sát nhanh chỉ hoạt động khi máy Học sinh đang kết nối trực tiếp vào lớp của Giáo viên.";
+                        txtHeaderSubtitle.Text = "Hãy kết nối vào lớp học để nhận khảo sát trực tiếp";
                     }
                     else
                     {
-                        string targetSurveyId = pendingSurvey.Id.ToString();
-                        bool isAnonymousSurvey = false;
+                        txtEmptyIcon.Text = "📋";
+                        txtEmptyTitle.Text = "Hiện chưa có khảo sát nào đang mở";
+                        txtEmptyDesc.Text = "Khi Giáo viên phát khảo sát nhanh trên lớp, câu hỏi và các phương án lựa chọn sẽ hiển thị ngay tại đây.";
+                        txtHeaderSubtitle.Text = $"Đang kết nối lớp {app?.StudentNetwork?.ClassName} — dữ liệu tự xóa sạch khi đóng khảo sát";
+                    }
+                    return;
+                }
 
-                        if (pendingSurvey.Details.Trim().StartsWith("{"))
+                // Giải mã thông tin khảo sát đang mở trên RAM
+                string pollId = state.ActivePollId ?? rawSurvey;
+                string parsedTitle = "KHẢO SÁT NHANH TỪ GIÁO VIÊN";
+                string parsedQuestion = string.Empty;
+                var parsedOptions = new List<string>();
+
+                if (rawSurvey.StartsWith("{"))
+                {
+                    try
+                    {
+                        var jsonOpts = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                        var msg = System.Text.Json.JsonSerializer.Deserialize<StudentShell.JsonNetworkMessage>(rawSurvey, jsonOpts);
+                        if (msg != null && msg.Action == "SURVEY_START")
                         {
-                            try
+                            var payload = System.Text.Json.JsonSerializer.Deserialize<StudentShell.SurveyStartPayload>(msg.Payload.GetRawText(), jsonOpts);
+                            if (payload != null)
                             {
-                                var optionsObj = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                                var msg = System.Text.Json.JsonSerializer.Deserialize<StudentShell.JsonNetworkMessage>(pendingSurvey.Details, optionsObj);
-                                if (msg != null && msg.Action == "SURVEY_START")
-                                {
-                                     var payload = System.Text.Json.JsonSerializer.Deserialize<StudentShell.SurveyStartPayload>(msg.Payload.GetRawText(), optionsObj);
-                                     if (payload != null)
-                                     {
-                                         targetSurveyId = payload.SurveyId;
-                                         isAnonymousSurvey = payload.IsAnonymous;
-                                     }
-                                }
+                                if (!string.IsNullOrWhiteSpace(payload.SurveyId))
+                                    pollId = payload.SurveyId;
+                                if (!string.IsNullOrWhiteSpace(payload.Title))
+                                    parsedTitle = payload.Title.ToUpperInvariant();
+                                parsedQuestion = payload.QuestionText ?? string.Empty;
+                                if (payload.Options != null)
+                                    parsedOptions.AddRange(payload.Options);
                             }
-                            catch { }
-                        }
-
-                        // Check if student has already voted (using hashed code check for anonymity, normal code check for public)
-                        string checkStudentCode = isAnonymousSurvey ? ComputeSha256Hash(currentCode + targetSurveyId + GetLocalSalt()) : currentCode;
-                        bool alreadyVoted = app.Database.SurveyResponses
-                            .Any(r => r.SurveyId == targetSurveyId && r.StudentCode == checkStudentCode);
-
-                        if (alreadyVoted)
-                        {
-                            emptyState.Visibility = Visibility.Collapsed;
-                            activeSurveyPanel.Visibility = Visibility.Collapsed;
-                            thankYouPanel.Visibility = Visibility.Visible;
-                        }
-                        else
-                        {
-                            var question = pendingSurvey.Details?.Replace("Câu hỏi khảo sát: ", "") ?? "Em nghĩ sao về bài giảng?";
-                            ShowActiveSurvey(question, pendingSurvey.Id);
                         }
                     }
+                    catch (Exception exJson)
+                    {
+                        Log.Warning("RefreshFromEphemeralState JSON parse error: {Err}", exJson.Message);
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(parsedQuestion))
+                {
+                    parsedQuestion = rawSurvey;
+                    if (state.ActivePollOptions != null && state.ActivePollOptions.Length > 0)
+                        parsedOptions.AddRange(state.ActivePollOptions);
+                    else
+                        parsedOptions.AddRange(new[] { "Đồng ý", "Không đồng ý" });
+                }
+
+                // Nếu là khảo sát mới khác với khảo sát đang chọn dở -> reset lựa chọn
+                if (_renderedPollId != pollId)
+                {
+                    _renderedPollId = pollId;
+                    _selectedOptionIdx = state.SurveyAnswered ? state.SelectedSurveyOptionIndex : -1;
+                    _isSubmittingSurvey = false;
+                }
+                else if (state.SurveyAnswered && state.SelectedSurveyOptionIndex >= 0)
+                {
+                    _selectedOptionIdx = state.SelectedSurveyOptionIndex;
+                }
+
+                _activeTitle = parsedTitle;
+                _activeQuestion = parsedQuestion;
+                _activeOptions.Clear();
+                _activeOptions.AddRange(parsedOptions);
+
+                emptyState.Visibility = Visibility.Collapsed;
+                activeSurveyPanel.Visibility = Visibility.Visible;
+                badgeLiveStatus.Visibility = Visibility.Visible;
+
+                txtSurveyTitle.Text = _activeTitle;
+                txtSurveyQuestion.Text = _activeQuestion;
+
+                bool answered = state.SurveyAnswered;
+                if (answered)
+                {
+                    txtLiveStatus.Text = "✓ ĐÃ PHẢN HỒI";
+                    txtLiveStatus.Foreground = new SolidColorBrush(Color.FromRgb(5, 150, 105));
+                    badgeLiveStatus.Background = new SolidColorBrush(Color.FromRgb(236, 253, 245));
+                    badgeLiveStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(167, 243, 208));
+
+                    btnSubmitSurvey.Content = "Đã gửi phản hồi tới Giáo viên";
+                    btnSubmitSurvey.Background = new SolidColorBrush(Color.FromRgb(100, 116, 139));
+                    btnSubmitSurvey.IsEnabled = false;
+
+                    thankYouPanel.Visibility = Visibility.Visible;
+                    txtSelectedSummary.Text = !string.IsNullOrWhiteSpace(state.SelectedSurveyOptionText)
+                        ? $"Phương án bạn đã chọn: {state.SelectedSurveyOptionText}"
+                        : "Phản hồi của bạn đã được ghi nhận trong phiên khảo sát này.";
                 }
                 else
                 {
-                    emptyState.Visibility = Visibility.Visible;
-                    activeSurveyPanel.Visibility = Visibility.Collapsed;
+                    txtLiveStatus.Text = "● ĐANG DIỄN RA";
+                    txtLiveStatus.Foreground = new SolidColorBrush(Color.FromRgb(26, 115, 232));
+                    badgeLiveStatus.Background = new SolidColorBrush(Color.FromRgb(232, 240, 254));
+                    badgeLiveStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(191, 219, 254));
+
+                    btnSubmitSurvey.Content = "Gửi phản hồi khảo sát";
+                    btnSubmitSurvey.Background = new SolidColorBrush(Color.FromRgb(26, 115, 232));
+                    btnSubmitSurvey.IsEnabled = true;
+
                     thankYouPanel.Visibility = Visibility.Collapsed;
                 }
 
-                Log.Information("Survey page loaded: {Count} completed", myResponses.Count);
+                RenderOptionCards(answered);
             }
-            catch (Exception ex) { Log.Warning("LoadSurveyHistory error: {Err}", ex.Message); }
+            catch (Exception ex)
+            {
+                Log.Warning("RefreshFromEphemeralState error: {Err}", ex.Message);
+            }
         }
 
-        private string _activeSurveyId = "";
-        private System.Collections.Generic.List<string> _activeOptions = new();
-        private bool _activeIsAnonymous = false;
-
-        private void ShowActiveSurvey(string details, int logId)
+        private void RenderOptionCards(bool isLocked)
         {
-            emptyState.Visibility = Visibility.Collapsed;
-            activeSurveyPanel.Visibility = Visibility.Visible;
             panelSurveyOptions.Children.Clear();
-            _activeOptions.Clear();
+            string[] badgeLetters = { "A", "B", "C", "D", "E", "F" };
 
-            string question = "";
-
-            if (details.Trim().StartsWith("{"))
+            for (int i = 0; i < _activeOptions.Count; i++)
             {
-                try
+                int idx = i;
+                string optText = _activeOptions[i];
+                bool isSelected = (_selectedOptionIdx == idx);
+
+                var card = new Border
                 {
-                    var optionsObj = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                    var msg = System.Text.Json.JsonSerializer.Deserialize<StudentShell.JsonNetworkMessage>(details, optionsObj);
-                    if (msg != null && msg.Action == "SURVEY_START")
+                    Background = isSelected
+                        ? new SolidColorBrush(Color.FromRgb(232, 240, 254))
+                        : Brushes.White,
+                    BorderBrush = isSelected
+                        ? new SolidColorBrush(Color.FromRgb(26, 115, 232))
+                        : new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                    BorderThickness = new Thickness(isSelected ? 2 : 1.5),
+                    CornerRadius = new CornerRadius(12),
+                    Padding = new Thickness(16, 13, 16, 13),
+                    Margin = new Thickness(0, 0, 0, 10),
+                    Cursor = isLocked ? Cursors.Arrow : Cursors.Hand
+                };
+
+                var row = new DockPanel();
+
+                var letterBadge = new Border
+                {
+                    Width = 30,
+                    Height = 30,
+                    CornerRadius = new CornerRadius(15),
+                    Background = isSelected
+                        ? new SolidColorBrush(Color.FromRgb(26, 115, 232))
+                        : new SolidColorBrush(Color.FromRgb(241, 245, 249)),
+                    Margin = new Thickness(0, 0, 12, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                letterBadge.Child = new TextBlock
+                {
+                    Text = badgeLetters[idx % badgeLetters.Length],
+                    FontSize = 13,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = isSelected
+                        ? Brushes.White
+                        : new SolidColorBrush(Color.FromRgb(51, 65, 85)),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                row.Children.Add(letterBadge);
+
+                if (isSelected)
+                {
+                    var checkIcon = new TextBlock
                     {
-                        var payload = System.Text.Json.JsonSerializer.Deserialize<StudentShell.SurveyStartPayload>(msg.Payload.GetRawText(), optionsObj);
-                        if (payload != null)
-                        {
-                            question = payload.QuestionText;
-                            _activeSurveyId = payload.SurveyId;
-                            _activeOptions = payload.Options;
-                            _activeIsAnonymous = payload.IsAnonymous;
-
-                            string[] btnColors = { "#4CAF50", "#1976D2", "#FF9800", "#EF5350", "#9C27B0" };
-                            for (int i = 0; i < payload.Options.Count; i++)
-                            {
-                                int idx = i;
-                                string optionText = payload.Options[i];
-                                var color = (Color)ColorConverter.ConvertFromString(btnColors[i % btnColors.Length]);
-
-                                var btn = new Button
-                                {
-                                    Content = optionText,
-                                    Tag = $"opt{idx}",
-                                    Padding = new Thickness(16, 10, 16, 10),
-                                    FontSize = 15,
-                                    FontWeight = FontWeights.Bold,
-                                    Margin = new Thickness(0, 0, 8, 6),
-                                    Background = new SolidColorBrush(color),
-                                    Foreground = Brushes.White,
-                                    BorderThickness = new Thickness(0),
-                                    Cursor = Cursors.Hand
-                                };
-
-                                var template = new ControlTemplate(typeof(Button));
-                                var borderFactory = new FrameworkElementFactory(typeof(Border));
-                                borderFactory.Name = "b";
-                                borderFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-                                borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(8));
-                                borderFactory.SetValue(Border.PaddingProperty, new TemplateBindingExtension(Button.PaddingProperty));
-
-                                var contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
-                                contentPresenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-                                contentPresenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-                                borderFactory.AppendChild(contentPresenterFactory);
-                                template.VisualTree = borderFactory;
-
-                                var trigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
-                                trigger.Setters.Add(new Setter(Border.OpacityProperty, 0.85, "b"));
-                                template.Triggers.Add(trigger);
-
-                                btn.Template = template;
-                                btn.Click += VoteDynamic_Click;
-                                panelSurveyOptions.Children.Add(btn);
-                            }
-                        }
-                    }
+                        Text = "✓",
+                        FontSize = 16,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = new SolidColorBrush(Color.FromRgb(26, 115, 232)),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(8, 0, 0, 0)
+                    };
+                    DockPanel.SetDock(checkIcon, Dock.Right);
+                    row.Children.Add(checkIcon);
                 }
-                catch (Exception ex)
+
+                var lbl = new TextBlock
                 {
-                    Log.Warning("ShowActiveSurvey JSON parse error: {Err}", ex.Message);
+                    Text = optText,
+                    FontSize = 15,
+                    FontWeight = isSelected ? FontWeights.Bold : FontWeights.Medium,
+                    Foreground = isSelected
+                        ? new SolidColorBrush(Color.FromRgb(23, 78, 166))
+                        : new SolidColorBrush(Color.FromRgb(30, 41, 59)),
+                    TextWrapping = TextWrapping.Wrap,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                row.Children.Add(lbl);
+
+                card.Child = row;
+
+                if (!isLocked)
+                {
+                    card.MouseLeftButtonDown += (_, _) =>
+                    {
+                        _selectedOptionIdx = idx;
+                        RenderOptionCards(false);
+                    };
                 }
+
+                panelSurveyOptions.Children.Add(card);
+            }
+        }
+
+        private void SubmitSurvey_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isSubmittingSurvey || QASmartTouch.App.AssessmentState.SurveyAnswered)
+                return;
+
+            if (_selectedOptionIdx < 0 || _selectedOptionIdx >= _activeOptions.Count)
+            {
+                MessageBox.Show("Vui lòng chạm chọn một phương án phản hồi trước khi gửi!", "Khảo sát nhanh", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
             }
 
-            if (string.IsNullOrEmpty(question))
+            _isSubmittingSurvey = true;
+            string selectedText = _activeOptions[_selectedOptionIdx];
+
+            try
             {
-                if (details.Contains(" | "))
+                if (Window.GetWindow(this) is StudentShell shell)
                 {
-                    var parts = details.Split(new[] { " | " }, StringSplitOptions.None);
-                    question = parts[0].Replace("Khảo sát (custom): ", "").Replace("Khảo sát (satisfaction): ", "");
+                    shell.SubmitSurveyVoteFromPage(_selectedOptionIdx, _activeQuestion, selectedText);
                 }
                 else
                 {
-                    question = details.Replace("Câu hỏi khảo sát: ", "") ?? "Em nghĩ sao về bài giảng?";
-                }
+                    var app = Application.Current as QASmartTouch.App;
+                    string studentName = !string.IsNullOrWhiteSpace(app?.StudentNetwork?.StudentName)
+                        ? app.StudentNetwork.StudentName.Trim()
+                        : Environment.MachineName;
 
-                _activeSurveyId = logId.ToString();
-                _activeOptions = new System.Collections.Generic.List<string> { "👍 Đồng ý", "👎 Không đồng ý", "🤔 Có thể" };
-                _activeIsAnonymous = false;
-                string[] tags = { "yes", "no", "maybe" };
-                string[] btnColors = { "#4CAF50", "#EF5350", "#FFB300" };
+                    QASmartTouch.App.AssessmentState.SurveyAnswered = true;
+                    QASmartTouch.App.AssessmentState.SelectedSurveyOptionIndex = _selectedOptionIdx;
+                    QASmartTouch.App.AssessmentState.SelectedSurveyOptionText = selectedText;
+                    QASmartTouch.App.AssessmentState.NotifyChanged();
 
-                for (int i = 0; i < _activeOptions.Count; i++)
-                {
-                    var btn = new Button
+                    string voteMsg = $"SURVEY_RESPONSE|opt{_selectedOptionIdx}|{studentName}";
+                    if (app?.StudentNetwork?.IsConnected == true)
                     {
-                        Content = _activeOptions[i],
-                        Tag = tags[i],
-                        Padding = new Thickness(16, 10, 16, 10),
-                        FontSize = 15,
-                        FontWeight = FontWeights.Bold,
-                        Margin = new Thickness(0, 0, 8, 6),
-                        Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(btnColors[i])),
-                        Foreground = Brushes.White,
-                        BorderThickness = new Thickness(0),
-                        Cursor = Cursors.Hand
-                    };
-
-                    var template = new ControlTemplate(typeof(Button));
-                    var borderFactory = new FrameworkElementFactory(typeof(Border));
-                    borderFactory.Name = "b";
-                    borderFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-                    borderFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(8));
-                    borderFactory.SetValue(Border.PaddingProperty, new TemplateBindingExtension(Button.PaddingProperty));
-
-                    var contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
-                    contentPresenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-                    contentPresenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-                    borderFactory.AppendChild(contentPresenterFactory);
-                    template.VisualTree = borderFactory;
-
-                    var trigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
-                    trigger.Setters.Add(new Setter(Border.OpacityProperty, 0.85, "b"));
-                    template.Triggers.Add(trigger);
-
-                    btn.Template = template;
-                    btn.Click += Vote_Click;
-                    panelSurveyOptions.Children.Add(btn);
-                }
-            }
-
-            txtSurveyQuestion.Text = question;
-            activeSurveyPanel.Tag = logId;
-        }
-
-        private void VoteDynamic_Click(object sender, RoutedEventArgs e)
-        {
-            if (_isSubmittingSurvey) return;
-            if (sender is Button btn && btn.Tag is string voteKey)
-            {
-                _isSubmittingSurvey = true;
-
-                foreach (var child in panelSurveyOptions.Children)
-                {
-                    if (child is Button b) b.IsEnabled = false;
-                }
-
-                try
-                {
-                    var app = (QASmartTouch.App)Application.Current;
-                    if (app?.Database == null)
-                    {
-                        _isSubmittingSurvey = false;
-                        return;
-                    }
-
-                    var identityService = new QASmartClass.StudentClient.Services.StudentIdentityService(app.Database);
-                    var (_, currentCode, currentName) = identityService.GetCurrentStudent();
-                    string optionText = btn.Content?.ToString() ?? "";
-
-                    // Safe Response Time Calculation
-                    var activeTime = QASmartTouch.App.AssessmentState.ActiveSurveyTime;
-                    int responseSeconds = 0;
-                    if (activeTime > DateTime.MinValue && DateTime.Now > activeTime)
-                    {
-                        double diff = (DateTime.Now - activeTime).TotalSeconds;
-                        responseSeconds = diff > int.MaxValue ? int.MaxValue : (int)diff;
-                    }
-
-                    string finalStudentCode = currentCode;
-                    string finalStudentName = currentName;
-                    
-                    // True Anonymity - remove identity fields for network
-                    string netStudentCode = currentCode;
-                    string netStudentName = currentName;
-
-                    if (_activeIsAnonymous)
-                    {
-                        finalStudentCode = ComputeSha256Hash(currentCode + _activeSurveyId + GetLocalSalt());
-                        finalStudentName = "Ẩn danh";
-                        netStudentCode = ""; // Omit for security
-                        netStudentName = "Ẩn danh";
-                    }
-
-                    var newResponse = new SurveyResponse
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        SurveyId = _activeSurveyId,
-                        StudentCode = finalStudentCode,
-                        StudentName = finalStudentName,
-                        SelectedOptionIndex = int.TryParse(voteKey.Replace("opt", ""), out int idx) ? idx : 0,
-                        SelectedOptionText = optionText,
-                        ResponseTimeSeconds = responseSeconds,
-                        SubmittedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                        IsSynced = 0 // Will set to 1 if network succeeds
-                    };
-
-                    var newEvent = new EventLog
-                    {
-                        EventType = "SURVEY_RESPONSE",
-                        Actor = _activeIsAnonymous ? "Student" : currentCode,
-                        Details = $"Trả lời khảo sát: {voteKey} — Câu hỏi: {txtSurveyQuestion.Text}",
-                        Timestamp = DateTime.Now
-                    };
-
-                    var client = app.StudentNetwork;
-                    if (client != null && client.IsConnected)
-                    {
-                        var votePayload = new
-                        {
-                            SurveyId = _activeSurveyId,
-                            StudentCode = netStudentCode,
-                            StudentName = netStudentName,
-                            SelectedOptionIndex = newResponse.SelectedOptionIndex,
-                            SelectedOptionText = optionText
-                        };
-                        var voteMsg = new
-                        {
-                            Action = "SURVEY_VOTE",
-                            Payload = votePayload
-                        };
-                        string jsonVote = System.Text.Json.JsonSerializer.Serialize(voteMsg);
-
-                        _ = System.Threading.Tasks.Task.Run(async () =>
-                        {
-                            int retryCount = 0;
-                            bool sent = false;
-                            while (retryCount < 3 && !sent)
-                            {
-                                try
-                                {
-                                    await client.SendAsync(jsonVote);
-                                    sent = true;
-                                }
-                                catch (Exception ex)
-                                {
-                                    retryCount++;
-                                    Log.Warning("Failed to send survey vote JSON, retry {Count}/3: {Err}", retryCount, ex.Message);
-                                    if (retryCount < 3) await System.Threading.Tasks.Task.Delay(1000);
-                                }
-                            }
-
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                if (sent)
-                                {
-                                    newResponse.IsSynced = 1;
-                                }
-                                else
-                                {
-                                    Log.Information("Survey vote offline-saved (will sync later)");
-                                }
-
-                                try
-                                {
-                                    app.Database.SurveyResponses.Add(newResponse);
-                                    app.Database.EventLogs.Add(newEvent);
-                                    app.Database.SaveChanges();
-                                }
-                                catch (Exception dbEx) { Log.Error(dbEx, "Failed to save response to DB"); }
-
-                                activeSurveyPanel.Visibility = Visibility.Collapsed;
-                                thankYouPanel.Visibility = Visibility.Visible;
-                                StartConfettiAnimation();
-                                _isSubmittingSurvey = false;
-                            });
-                        });
+                        _ = app.StudentNetwork.SendAsync(voteMsg);
                     }
                     else
                     {
-                        // Offline mode
-                        Log.Information("Survey vote offline-saved (no active network connection)");
-                        try
-                        {
-                            app.Database.SurveyResponses.Add(newResponse);
-                            app.Database.EventLogs.Add(newEvent);
-                            app.Database.SaveChanges();
-                        }
-                        catch (Exception dbEx) { Log.Error(dbEx, "Failed to save offline response to DB"); }
-
-                        activeSurveyPanel.Visibility = Visibility.Collapsed;
-                        thankYouPanel.Visibility = Visibility.Visible;
-                        StartConfettiAnimation();
-                        _isSubmittingSurvey = false;
-                    }
-
-                    Log.Information("Survey dynamic vote processed: {VoteKey} - {Text}", voteKey, optionText);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning("VoteDynamic error: {Err}", ex.Message);
-                    _isSubmittingSurvey = false;
-                    foreach (var child in panelSurveyOptions.Children)
-                    {
-                        if (child is Button b) b.IsEnabled = true;
+                        app?.RaiseLocalCommand("CMD|" + voteMsg);
                     }
                 }
+
+                StartConfettiAnimation();
+                RefreshFromEphemeralState();
             }
-        }
-
-        private void Vote_Click(object sender, RoutedEventArgs e)
-        {
-            if (_isSubmittingSurvey) return;
-            if (sender is Button btn && btn.Tag is string vote)
+            catch (Exception ex)
             {
-                _isSubmittingSurvey = true;
-                foreach (var child in panelSurveyOptions.Children)
-                {
-                    if (child is Button b) b.IsEnabled = false;
-                }
-                try
-                {
-                    var app = (QASmartTouch.App)Application.Current;
-                    if (app?.Database == null)
-                    {
-                        _isSubmittingSurvey = false;
-                        foreach (var child in panelSurveyOptions.Children)
-                        {
-                            if (child is Button b) b.IsEnabled = true;
-                        }
-                        return;
-                    }
-
-                    var identityService = new QASmartClass.StudentClient.Services.StudentIdentityService(app.Database);
-                    var (_, currentCode, currentName) = identityService.GetCurrentStudent();
-                    string optionText = btn.Content?.ToString() ?? vote;
-
-                    // Safe Response Time Calculation
-                    var activeTime = QASmartTouch.App.AssessmentState.ActiveSurveyTime;
-                    int responseSeconds = 0;
-                    if (activeTime > DateTime.MinValue && DateTime.Now > activeTime)
-                    {
-                        double diff = (DateTime.Now - activeTime).TotalSeconds;
-                        responseSeconds = diff > int.MaxValue ? int.MaxValue : (int)diff;
-                    }
-
-                    string finalStudentCode = currentCode;
-                    string finalStudentName = currentName;
-                    string netStudentName = currentName;
-
-                    if (_activeIsAnonymous)
-                    {
-                        finalStudentCode = ComputeSha256Hash(currentCode + _activeSurveyId + GetLocalSalt());
-                        finalStudentName = "Ẩn danh";
-                        netStudentName = "Ẩn danh";
-                    }
-
-                    // Map vote to SelectedOptionIndex
-                    int optionIdx = 0;
-                    if (vote == "no") optionIdx = 1;
-                    else if (vote == "maybe") optionIdx = 2;
-
-                    var newResponse = new SurveyResponse
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        SurveyId = _activeSurveyId,
-                        StudentCode = finalStudentCode,
-                        StudentName = finalStudentName,
-                        SelectedOptionIndex = optionIdx,
-                        SelectedOptionText = optionText,
-                        ResponseTimeSeconds = responseSeconds,
-                        SubmittedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                        IsSynced = 0
-                    };
-
-                    var newEvent = new EventLog
-                    {
-                        EventType = "SURVEY_RESPONSE",
-                        Actor = _activeIsAnonymous ? "Student" : currentCode,
-                        Details = $"Trả lời khảo sát: {vote} — Câu hỏi: {txtSurveyQuestion.Text}",
-                        Timestamp = DateTime.Now
-                    };
-
-                    var client = app.StudentNetwork;
-                    if (client != null && client.IsConnected)
-                    {
-                        // Fix the legacy network protocol bug: SURVEY_RESPONSE|vote|studentName
-                        string netMessage = $"SURVEY_RESPONSE|{vote}|{netStudentName}";
-
-                        _ = System.Threading.Tasks.Task.Run(async () =>
-                        {
-                            int retryCount = 0;
-                            bool sent = false;
-                            while (retryCount < 3 && !sent)
-                            {
-                                try
-                                {
-                                    await client.SendAsync(netMessage);
-                                    sent = true;
-                                }
-                                catch (Exception ex)
-                                {
-                                    retryCount++;
-                                    Log.Warning("Failed to send survey response, retry {Count}/3: {Err}", retryCount, ex.Message);
-                                    if (retryCount < 3) await System.Threading.Tasks.Task.Delay(1000);
-                                }
-                            }
-
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                if (sent)
-                                {
-                                    newResponse.IsSynced = 1;
-                                }
-                                else
-                                {
-                                    Log.Information("Survey legacy response offline-saved (will sync later)");
-                                }
-
-                                try
-                                {
-                                    app.Database.SurveyResponses.Add(newResponse);
-                                    app.Database.EventLogs.Add(newEvent);
-                                    app.Database.SaveChanges();
-                                }
-                                catch (Exception dbEx) { Log.Error(dbEx, "Failed to save legacy response to DB"); }
-
-                                activeSurveyPanel.Visibility = Visibility.Collapsed;
-                                thankYouPanel.Visibility = Visibility.Visible;
-                                StartConfettiAnimation();
-                                _isSubmittingSurvey = false;
-                            });
-                        });
-                    }
-                    else
-                    {
-                        // Offline mode for legacy survey
-                        Log.Information("Survey legacy response offline-saved (no network connection)");
-                        try
-                        {
-                            app.Database.SurveyResponses.Add(newResponse);
-                            app.Database.EventLogs.Add(newEvent);
-                            app.Database.SaveChanges();
-                        }
-                        catch (Exception dbEx) { Log.Error(dbEx, "Failed to save offline legacy response to DB"); }
-
-                        activeSurveyPanel.Visibility = Visibility.Collapsed;
-                        thankYouPanel.Visibility = Visibility.Visible;
-                        StartConfettiAnimation();
-                        _isSubmittingSurvey = false;
-                    }
-
-                    Log.Information("Survey vote processed: {Vote}", vote);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning("Vote error: {Err}", ex.Message);
-                    _isSubmittingSurvey = false;
-                    foreach (var child in panelSurveyOptions.Children)
-                    {
-                        if (child is Button b) b.IsEnabled = true;
-                    }
-                }
+                Log.Warning("SubmitSurvey_Click error: {Err}", ex.Message);
             }
-        }
-
-        private void StarRate_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (_isSubmittingStar) return;
-            if (sender is FrameworkElement fe && fe.Tag is string tag && int.TryParse(tag, out int stars))
+            finally
             {
-                _isSubmittingStar = true;
-                try
-                {
-                    var app = (QASmartTouch.App)Application.Current;
-                    if (app?.Database == null)
-                    {
-                        _isSubmittingStar = false;
-                        return;
-                    }
-
-                    var identityService = new QASmartClass.StudentClient.Services.StudentIdentityService(app.Database);
-                    var (_, currentCode, _) = identityService.GetCurrentStudent();
-
-                    // Update star colors visually immediately to provide snappy feedback
-                    star1.Foreground = stars >= 1 ? new SolidColorBrush(Color.FromRgb(255, 193, 7)) : new SolidColorBrush(Color.FromRgb(223, 228, 234));
-                    star2.Foreground = stars >= 2 ? new SolidColorBrush(Color.FromRgb(255, 193, 7)) : new SolidColorBrush(Color.FromRgb(223, 228, 234));
-                    star3.Foreground = stars >= 3 ? new SolidColorBrush(Color.FromRgb(255, 193, 7)) : new SolidColorBrush(Color.FromRgb(223, 228, 234));
-                    star4.Foreground = stars >= 4 ? new SolidColorBrush(Color.FromRgb(255, 193, 7)) : new SolidColorBrush(Color.FromRgb(223, 228, 234));
-                    star5.Foreground = stars >= 5 ? new SolidColorBrush(Color.FromRgb(255, 193, 7)) : new SolidColorBrush(Color.FromRgb(223, 228, 234));
-
-                    ScaleStar(star1, stars >= 1 ? 1.1 : 1.0);
-                    ScaleStar(star2, stars >= 2 ? 1.1 : 1.0);
-                    ScaleStar(star3, stars >= 3 ? 1.1 : 1.0);
-                    ScaleStar(star4, stars >= 4 ? 1.1 : 1.0);
-                    ScaleStar(star5, stars >= 5 ? 1.1 : 1.0);
-
-                    // Safe Response Time Calculation
-                    int responseSeconds = 0;
-                    if (_pageLoadedTime > DateTime.MinValue && DateTime.Now > _pageLoadedTime)
-                    {
-                        double diff = (DateTime.Now - _pageLoadedTime).TotalSeconds;
-                        responseSeconds = diff > int.MaxValue ? int.MaxValue : (int)diff;
-                    }
-
-                    var newEvent = new EventLog
-                    {
-                        EventType = "SURVEY_RESPONSE",
-                        Actor = currentCode,
-                        Details = $"Đánh giá sao: {stars}/5",
-                        Timestamp = DateTime.Now
-                    };
-
-                    // Create a survey response for daily star rating
-                    var newResponse = new SurveyResponse
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        SurveyId = "LECTURE_STAR_RATING_" + DateTime.Today.ToString("yyyyMMdd"),
-                        StudentCode = currentCode,
-                        StudentName = currentCode,
-                        SelectedOptionIndex = stars,
-                        SelectedOptionText = $"Đánh giá sao: {stars}/5",
-                        ResponseTimeSeconds = responseSeconds,
-                        SubmittedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                        IsSynced = 0
-                    };
-
-                    var client = app.StudentNetwork;
-                    if (client != null && client.IsConnected)
-                    {
-                        _ = System.Threading.Tasks.Task.Run(async () =>
-                        {
-                            int retryCount = 0;
-                            bool sent = false;
-                            while (retryCount < 3 && !sent)
-                            {
-                                try
-                                {
-                                    await client.SendAsync($"SURVEY_STAR|{stars}");
-                                    sent = true;
-                                }
-                                catch (Exception ex)
-                                {
-                                    retryCount++;
-                                    Log.Warning("Failed to send survey star, retry {Count}/3: {Err}", retryCount, ex.Message);
-                                    if (retryCount < 3) await System.Threading.Tasks.Task.Delay(1000);
-                                }
-                            }
-
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                if (sent)
-                                {
-                                    newResponse.IsSynced = 1;
-                                    txtStarResult.Text = $"✅ Đã đánh giá {stars}/5 — Cảm ơn em!";
-                                }
-                                else
-                                {
-                                    // Keep star visuals but tell them it's saved locally
-                                    txtStarResult.Text = $"✅ Đã đánh giá {stars}/5 (Đã ghi nhận offline)";
-                                }
-
-                                try
-                                {
-                                    app.Database.SurveyResponses.Add(newResponse);
-                                    app.Database.EventLogs.Add(newEvent);
-                                    app.Database.SaveChanges();
-                                }
-                                catch (Exception dbEx) { Log.Error(dbEx, "Failed to save star rating to DB"); }
-                            });
-                        });
-                    }
-                    else
-                    {
-                        // Offline mode for star rate
-                        txtStarResult.Text = $"✅ Đã đánh giá {stars}/5 (Đã ghi nhận offline)";
-                        try
-                        {
-                            app.Database.SurveyResponses.Add(newResponse);
-                            app.Database.EventLogs.Add(newEvent);
-                            app.Database.SaveChanges();
-                        }
-                        catch (Exception dbEx) { Log.Error(dbEx, "Failed to save offline star rating to DB"); }
-                    }
-
-                    Log.Information("Star rating: {Stars}/5", stars);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning("Star rate error: {Err}", ex.Message);
-                    _isSubmittingStar = false;
-                    ResetStarsVisual();
-                }
+                _isSubmittingSurvey = false;
             }
         }
 
-        private string ComputeSha256Hash(string rawData)
+        #if false // [MYTHWARE_LITE] Giữ nguyên mã nguồn cũ (lưu DB SQLite, đánh giá sao theo ngày, đồng bộ Offline) để tham khảo khi cần khôi phục
+        private void LoadSurveyHistory()
         {
-            using (var sha256Hash = System.Security.Cryptography.SHA256.Create())
-            {
-                byte[] bytes = sha256Hash.ComputeHash(System.Text.Encoding.UTF8.GetBytes(rawData));
-                var builder = new System.Text.StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    builder.Append(bytes[i].ToString("x2"));
-                }
-                return builder.ToString();
-            }
+            var app = (QASmartTouch.App)Application.Current;
+            if (app?.Database == null) return;
+            var localResponses = app.Database.SurveyResponses.ToList();
+            var pendingSurvey = app.Database.EventLogs
+                .Where(e => e.EventType == "SURVEY" && e.Actor == "GV")
+                .OrderByDescending(e => e.Timestamp)
+                .FirstOrDefault();
         }
-
-        private void ResetStarsVisual()
-        {
-            var greyBrush = new SolidColorBrush(Color.FromRgb(223, 228, 234));
-            star1.Foreground = greyBrush;
-            star2.Foreground = greyBrush;
-            star3.Foreground = greyBrush;
-            star4.Foreground = greyBrush;
-            star5.Foreground = greyBrush;
-            txtStarResult.Text = "";
-        }
+        private void StarRate_Click(object sender, MouseButtonEventArgs e) { }
+        private void Star_MouseEnter(object sender, MouseEventArgs e) { }
+        private void Star_MouseLeave(object sender, MouseEventArgs e) { }
+        private void StartOfflineSync() { }
+        #endif
 
         private class ConfettiParticle
         {
@@ -795,7 +371,7 @@ namespace QASmartClass.StudentClient.Views
             public double RotationSpeed { get; set; }
         }
 
-        private System.Collections.Generic.List<ConfettiParticle> _confettiParticles = new();
+        private readonly List<ConfettiParticle> _confettiParticles = new();
         private DispatcherTimer? _confettiCleanupTimer;
         private bool _isConfettiRunning = false;
 
@@ -810,17 +386,17 @@ namespace QASmartClass.StudentClient.Views
                 _confettiParticles.Clear();
 
                 var rand = new Random();
-                var colors = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Yellow, Brushes.Orange, Brushes.Purple, Brushes.DeepPink, Brushes.Cyan };
+                var colors = new[] { Brushes.Red, Brushes.Blue, Brushes.Green, Brushes.Orange, Brushes.Purple, Brushes.DeepPink, Brushes.Cyan };
 
                 double width = canvasConfetti.ActualWidth;
-                if (width <= 0) width = 800; // Realistic default for full-screen overlay
+                if (width <= 0) width = 800;
 
-                for (int i = 0; i < 80; i++) // Increased from 40 to 80 for whole screen coverage
+                for (int i = 0; i < 60; i++)
                 {
                     var rect = new System.Windows.Shapes.Rectangle
                     {
-                        Width = rand.Next(6, 12),
-                        Height = rand.Next(6, 12),
+                        Width = rand.Next(6, 11),
+                        Height = rand.Next(6, 11),
                         Fill = colors[rand.Next(colors.Length)],
                         RenderTransformOrigin = new Point(0.5, 0.5)
                     };
@@ -829,7 +405,7 @@ namespace QASmartClass.StudentClient.Views
                     {
                         Shape = rect,
                         X = rand.NextDouble() * width,
-                        Y = -rand.Next(10, 80), // Spawn higher and spread out vertically
+                        Y = -rand.Next(10, 80),
                         SpeedY = rand.NextDouble() * 3 + 2,
                         SpeedX = (rand.NextDouble() - 0.5) * 2,
                         Rotation = rand.NextDouble() * 360,
@@ -842,11 +418,8 @@ namespace QASmartClass.StudentClient.Views
 
                 CompositionTarget.Rendering += OnConfettiRendering;
 
-                _confettiCleanupTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
-                _confettiCleanupTimer.Tick += (s, e) =>
-                {
-                    StopConfettiAnimation();
-                };
+                _confettiCleanupTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2.5) };
+                _confettiCleanupTimer.Tick += (_, _) => StopConfettiAnimation();
                 _confettiCleanupTimer.Start();
             }
             catch (Exception ex)
@@ -860,9 +433,9 @@ namespace QASmartClass.StudentClient.Views
             if (!_isConfettiRunning) return;
 
             double canvasHeight = canvasConfetti.ActualHeight;
-            if (canvasHeight <= 0) canvasHeight = 600; // Realistic default for full-screen overlay
+            if (canvasHeight <= 0) canvasHeight = 600;
             double canvasWidth = canvasConfetti.ActualWidth;
-            if (canvasWidth <= 0) canvasWidth = 800; // Realistic default for full-screen overlay
+            if (canvasWidth <= 0) canvasWidth = 800;
 
             var rand = new Random();
 
@@ -877,7 +450,7 @@ namespace QASmartClass.StudentClient.Views
 
                 if (p.Y > canvasHeight)
                 {
-                    p.Y = -50; // Restart from top of screen
+                    p.Y = -50;
                     p.X = rand.NextDouble() * canvasWidth;
                     p.SpeedY = rand.NextDouble() * 3 + 2;
                 }
@@ -902,189 +475,8 @@ namespace QASmartClass.StudentClient.Views
                 _confettiCleanupTimer = null;
             }
 
-            if (canvasConfetti != null)
-            {
-                canvasConfetti.Children.Clear();
-            }
+            canvasConfetti?.Children.Clear();
             _confettiParticles.Clear();
-        }
-
-        // ═══ CUSTOM UI/UX HOVER EVENTS FOR STAR RATING ═══
-        private void Star_MouseEnter(object sender, MouseEventArgs e)
-        {
-            if (_isSubmittingStar) return;
-            if (sender is FrameworkElement fe && int.TryParse(fe.Tag?.ToString(), out int hoveredStar))
-            {
-                var yellowBrush = new SolidColorBrush(Color.FromRgb(255, 193, 7));
-                var greyBrush = new SolidColorBrush(Color.FromRgb(223, 228, 234));
-
-                star1.Foreground = hoveredStar >= 1 ? yellowBrush : greyBrush;
-                star2.Foreground = hoveredStar >= 2 ? yellowBrush : greyBrush;
-                star3.Foreground = hoveredStar >= 3 ? yellowBrush : greyBrush;
-                star4.Foreground = hoveredStar >= 4 ? yellowBrush : greyBrush;
-                star5.Foreground = hoveredStar >= 5 ? yellowBrush : greyBrush;
-
-                // Scale up hovered stars and those before it
-                ScaleStar(star1, hoveredStar >= 1 ? 1.25 : 1.0);
-                ScaleStar(star2, hoveredStar >= 2 ? 1.25 : 1.0);
-                ScaleStar(star3, hoveredStar >= 3 ? 1.25 : 1.0);
-                ScaleStar(star4, hoveredStar >= 4 ? 1.25 : 1.0);
-                ScaleStar(star5, hoveredStar >= 5 ? 1.25 : 1.0);
-            }
-        }
-
-        private void Star_MouseLeave(object sender, MouseEventArgs e)
-        {
-            if (_isSubmittingStar) return;
-            ResetStarsVisual();
-            ScaleStar(star1, 1.0);
-            ScaleStar(star2, 1.0);
-            ScaleStar(star3, 1.0);
-            ScaleStar(star4, 1.0);
-            ScaleStar(star5, 1.0);
-        }
-
-        // ═══ OFFLINE SYNCHRONIZATION LOGIC (THREAD-SAFE via UI Dispatcher) ═══
-        private void RegisterNetworkEvents()
-        {
-            try
-            {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app?.StudentNetwork != null)
-                {
-                    app.StudentNetwork.Connected += Network_Connected;
-                }
-            }
-            catch (Exception ex) { Log.Warning("RegisterNetworkEvents error: {Err}", ex.Message); }
-        }
-
-        private void UnregisterNetworkEvents()
-        {
-            try
-            {
-                var app = (QASmartTouch.App)Application.Current;
-                if (app?.StudentNetwork != null)
-                {
-                    app.StudentNetwork.Connected -= Network_Connected;
-                }
-            }
-            catch (Exception ex) { Log.Warning("UnregisterNetworkEvents error: {Err}", ex.Message); }
-        }
-
-        private void Network_Connected(object? sender, EventArgs e)
-        {
-            Dispatcher.BeginInvoke(new Action(StartOfflineSync));
-        }
-
-        private void StartOfflineSync()
-        {
-            var app = (QASmartTouch.App)Application.Current;
-            if (app?.Database == null || app.StudentNetwork == null || !app.StudentNetwork.IsConnected) return;
-
-            // Fetch unsynced responses on the UI thread to ensure EF DbContext thread safety
-            var unsynced = app.Database.SurveyResponses.Where(r => r.IsSynced == 0).ToList();
-            if (!unsynced.Any()) return;
-
-            Log.Information("[OfflineSync] Found {Count} unsynced survey responses. Syncing...", unsynced.Count);
-
-            System.Threading.Tasks.Task.Run(async () =>
-            {
-                var client = app.StudentNetwork;
-                var syncedResponses = new System.Collections.Generic.List<SurveyResponse>();
-                
-                foreach (var response in unsynced)
-                {
-                    string msgToSend = "";
-                    if (response.SurveyId.StartsWith("LECTURE_STAR_RATING"))
-                    {
-                        msgToSend = $"SURVEY_STAR|{response.SelectedOptionIndex}";
-                    }
-                    else if (response.SurveyId.StartsWith("STAR_RATING"))
-                    {
-                        msgToSend = $"SURVEY_STAR|{response.SelectedOptionIndex}";
-                    }
-                    else if (int.TryParse(response.SurveyId, out _)) // Legacy survey ID is integer
-                    {
-                        msgToSend = $"SURVEY_RESPONSE|{(response.SelectedOptionIndex == 0 ? "yes" : response.SelectedOptionIndex == 1 ? "no" : "maybe")}|{response.StudentName}";
-                    }
-                    else // Dynamic JSON survey
-                    {
-                        var votePayload = new
-                        {
-                            SurveyId = response.SurveyId,
-                            StudentCode = response.StudentCode,
-                            StudentName = response.StudentName,
-                            SelectedOptionIndex = response.SelectedOptionIndex,
-                            SelectedOptionText = response.SelectedOptionText
-                        };
-                        var voteMsg = new
-                        {
-                            Action = "SURVEY_VOTE",
-                            Payload = votePayload
-                        };
-                        msgToSend = System.Text.Json.JsonSerializer.Serialize(voteMsg);
-                    }
-
-                    try
-                    {
-                        await client.SendAsync(msgToSend);
-                        syncedResponses.Add(response);
-                        Log.Information("[OfflineSync] Successfully synced survey response for survey {SurveyId}", response.SurveyId);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Warning("[OfflineSync] Failed to sync survey response for survey {SurveyId}: {Err}", response.SurveyId, ex.Message);
-                        break; // Stop sync if connection failed again
-                    }
-                }
-
-                if (syncedResponses.Any())
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        foreach (var response in syncedResponses)
-                        {
-                            response.IsSynced = 1;
-                        }
-                        try
-                        {
-                            app.Database.SaveChanges();
-                            Log.Information("[OfflineSync] Batched SaveChanges complete for {Count} synced responses.", syncedResponses.Count);
-                        }
-                        catch (Exception dbEx)
-                        {
-                            Log.Error(dbEx, "[OfflineSync] Batched SaveChanges failed");
-                        }
-                    });
-                }
-            });
-        }
-
-        private string GetLocalSalt()
-        {
-            try
-            {
-                string machineId = Environment.MachineName;
-                string userSid = System.Security.Principal.WindowsIdentity.GetCurrent().User?.Value ?? "DefaultUser";
-                return $"QASmartClass_Salt_2026_{machineId}_{userSid}";
-            }
-            catch { return "QASmartClass_Fallback_Salt_2026_Secure"; }
-        }
-
-        private void ScaleStar(TextBlock star, double scale)
-        {
-            if (star == null) return;
-            if (star.RenderTransform is ScaleTransform st)
-            {
-                st.ScaleX = scale;
-                st.ScaleY = scale;
-            }
-            else
-            {
-                var newScale = new ScaleTransform(scale, scale);
-                star.RenderTransformOrigin = new Point(0.5, 0.5);
-                star.RenderTransform = newScale;
-            }
         }
     }
 }
