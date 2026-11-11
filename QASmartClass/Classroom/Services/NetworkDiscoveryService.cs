@@ -64,6 +64,13 @@ namespace QASmartClass.Classroom.Services
         [ObservableProperty] private string _serverIP = string.Empty;
         [ObservableProperty] private int _connectedCount;
 
+        // ─── Mythware Multi-Channel & Room Configuration ────────────
+        public int ChannelId { get; set; } = 1;
+        public string CurrentClassName { get; set; } = "Phòng máy 01";
+        public string CurrentTeacherName { get; set; } = "Giáo viên";
+        public bool RequireRoomPin { get; set; } = false;
+        public string RoomPin { get; set; } = "1234";
+
         private static long _commandCounter = 100;
         public static string AppendCommandId(string command)
         {
@@ -97,10 +104,10 @@ namespace QASmartClass.Classroom.Services
             IsBroadcasting = true;
             ServerIP     = GetLocalIPAddress();
 
-            Log.Information("NetworkDiscovery: Starting on {IP} — Class: {Class}", ServerIP, className);
+            Log.Information("NetworkDiscovery: Starting on {IP} — Class: {Class} (Ch.{Ch})", ServerIP, className, ChannelId);
 
-            var beacon = $"{BEACON_PREFIX}{className}|{teacherName}|{ServerIP}|{TCP_PORT}";
-            _ = RunUdpBroadcastAsync(beacon, _cts.Token);
+            UpdateBeaconInfo(ChannelId, className, teacherName, RequireRoomPin, RoomPin);
+            _ = RunUdpBroadcastAsync(_currentBeacon, _cts.Token);
             _ = RunTcpListenerAsync(_cts.Token);
             _ = RunHeartbeatWatchdogAsync(_cts.Token);
             _ = RunQosRetryLoopAsync(_cts.Token);
@@ -235,6 +242,45 @@ namespace QASmartClass.Classroom.Services
                 string password = p.Length > 7 ? p[7] : "";
                 string submittedClassCode = p.Length > 8 ? p[8].Trim() : "";
 
+                // ═══ [MYTHWARE_LITE] Kết nối tự động 100% chuẩn Mythware (Zero-Auth Auto-Connect) ═══
+                // Chỉ kiểm tra Mã PIN phòng khi Giáo viên chủ động gạt bật "Khóa PIN Phòng" (RequireRoomPin = true)
+                string activeClassCode = RequireRoomPin ? RoomPin : (QASmartClass.Classroom.Helpers.ClassroomAppContext.Session?.ClassCode ?? string.Empty);
+                if (RequireRoomPin && !string.IsNullOrWhiteSpace(RoomPin))
+                {
+                    if (!string.Equals(submittedClassCode, RoomPin.Trim(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log.Warning("[MythwarePin] Từ chối kết nối từ {IP}: Mã PIN phòng chưa khớp ('{Submitted}' != '{Pin}').", remoteIP, submittedClassCode, RoomPin);
+                        byte[] errBytes = Encoding.UTF8.GetBytes($"ERR|INVALID_CLASS_CODE|Phòng học đang bật Khóa PIN ({RoomPin}). Vui lòng nhập đúng Mã PIN hiển thị trên màn hình Giáo viên!\n");
+                        await stream.WriteAsync(errBytes, ct);
+                        await stream.FlushAsync(ct);
+                        tcp.Close();
+                        return;
+                    }
+                }
+
+                // Tự động định danh duy nhất cho từng máy tính (PC) và thiết bị Android mà không cần tra cứu SQLite
+                string ipSuffix = remoteIP.Split('.').LastOrDefault() ?? "0";
+                bool isAndroidDevice = pcName.Contains("Android", StringComparison.OrdinalIgnoreCase) ||
+                                       version.Contains("Android", StringComparison.OrdinalIgnoreCase) ||
+                                       studentCode.StartsWith("AND", StringComparison.OrdinalIgnoreCase);
+
+                if (string.IsNullOrWhiteSpace(pcName) || pcName == "?")
+                {
+                    pcName = isAndroidDevice ? $"Android-{ipSuffix}" : $"PC-{ipSuffix}";
+                }
+
+                if (string.IsNullOrWhiteSpace(studentCode) || studentCode == "???" || studentCode.Equals("HS001", StringComparison.OrdinalIgnoreCase))
+                {
+                    string cleanPc = pcName.Replace(" ", "_").Replace("|", "_");
+                    studentCode = $"{cleanPc}_{ipSuffix}";
+                }
+
+                if (string.IsNullOrWhiteSpace(studentName) || studentName == "Unknown" || studentName == "Học sinh")
+                {
+                    studentName = isAndroidDevice ? $"Android ({ipSuffix})" : pcName;
+                }
+
+                /* // [MYTHWARE_LITE] Tạm ẩn 3 lớp kiểm tra ClassCode bắt buộc + Tài khoản & Mật khẩu SQLite cũ
                 // ── Kiểm tra Mã vào lớp (Class Code) của phiên học hiện tại ──
                 string activeClassCode = QASmartClass.Classroom.Helpers.ClassroomAppContext.Session?.ClassCode ?? string.Empty;
                 if (string.IsNullOrWhiteSpace(activeClassCode) && QASmartClass.Classroom.Helpers.ClassroomAppContext.Session != null)
@@ -340,6 +386,7 @@ namespace QASmartClass.Classroom.Services
                 {
                     Log.Error(exAuth, "[Auth] Lỗi kiểm tra tài khoản học sinh {Code}", studentCode);
                 }
+                */
 
                 // CSPRNG SessionKey generation (32 hex characters)
                 byte[] keyBytes = new byte[16];
@@ -680,6 +727,19 @@ namespace QASmartClass.Classroom.Services
             else if (line.StartsWith("SCREENSHOT|"))
             {
                 Log.Debug("Screenshot received from {Code}: {Len} chars", info.Code, line.Length);
+                var parts = line.Split('|', 3);
+                if (parts.Length >= 2)
+                {
+                    info.LastScreenshotBase64 = parts[parts.Length - 1];
+                }
+                MessageReceived?.Invoke(this, new StudentMessageEventArgs
+                {
+                    StudentCode = info.Code, Message = line
+                });
+            }
+            else if (line.StartsWith("HAND|"))
+            {
+                info.IsHandRaised = !line.Contains("DOWN", StringComparison.OrdinalIgnoreCase);
                 MessageReceived?.Invoke(this, new StudentMessageEventArgs
                 {
                     StudentCode = info.Code, Message = line
@@ -692,6 +752,33 @@ namespace QASmartClass.Classroom.Services
                 {
                     StudentCode = info.Code, Message = line
                 });
+            }
+        }
+
+        /// <summary>
+        /// Mời học sinh ra khỏi lớp (Kick) khi học sinh kết nối nhầm lớp.
+        /// Tự động gửi lệnh mở khóa màn hình & tắt trình chiếu trước khi ngắt kết nối.
+        /// </summary>
+        public async Task KickStudentAsync(string studentCode, string? reason = null)
+        {
+            string kickReason = string.IsNullOrWhiteSpace(reason)
+                ? $"Bạn vừa được Giáo viên đưa ra khỏi {CurrentClassName}. Vui lòng chọn đúng lớp học của mình!"
+                : reason;
+
+            try
+            {
+                await SendToStudentAsync(studentCode, "CMD|UNLOCK|ALL");
+                await SendToStudentAsync(studentCode, "CMD|SCREEN_BROADCAST_STOP");
+                await SendToStudentAsync(studentCode, $"CMD|KICK|{ServerIP}|{ChannelId}|{kickReason}");
+                await Task.Delay(150);
+            }
+            catch { }
+
+            if (_clients.TryRemove(studentCode, out var removed))
+            {
+                try { removed.TcpClient?.Close(); } catch { }
+                ConnectedCount = _clients.Count;
+                StudentDisconnected?.Invoke(this, studentCode);
             }
         }
 
@@ -829,6 +916,16 @@ namespace QASmartClass.Classroom.Services
         public Task StartQuizAsync(int quizId) => SendCommandAsync($"CMD|QUIZ_START|{quizId}");
         public Task EndQuizAsync()          => SendCommandAsync("CMD|QUIZ_END|0");
         public Task BroadcastMessage(string text) => SendCommandAsync($"MSG|{text}");
+
+        /// <summary>Chuyển tiếp tin nhắn từ giao diện Học sinh chạy trên cùng máy tính sang Giáo viên</summary>
+        public void SimulateStudentMessage(string studentCode, string message)
+        {
+            MessageReceived?.Invoke(this, new StudentMessageEventArgs
+            {
+                StudentCode = string.IsNullOrWhiteSpace(studentCode) ? "HS001" : studentCode,
+                Message = message
+            });
+        }
 
         public Task SendCheckIntegrityAsync(string targetStudentCode)
         {
@@ -1349,6 +1446,10 @@ namespace QASmartClass.Classroom.Services
         public DateTime LastSeen       { get; set; }
         public string SessionKey       { get; set; } = string.Empty;
         public string MacAddress       { get; set; } = string.Empty;
+        public string LastScreenshotBase64 { get; set; } = string.Empty;
+        public bool IsHandRaised       { get; set; }
+        public bool IsLocked           { get; set; }
+        public bool IsAndroid          => PCName.Contains("Android", StringComparison.OrdinalIgnoreCase) || Version.Contains("Android", StringComparison.OrdinalIgnoreCase) || Code.StartsWith("AND", StringComparison.OrdinalIgnoreCase);
 
         private static readonly Random _rng = new Random();
         private int _latencyMs = -1;

@@ -3853,6 +3853,48 @@ namespace QASmartClass.StudentClient.Views
 
 			{
 
+			// ═══ MYTHWARE_LITE: Xử lý lệnh Mời ra khỏi lớp (Kick khi học sinh vào nhầm lớp) ═══
+			case "KICK":
+				{
+					string kickedIp = parts.Length >= 3 ? parts[2] : "";
+					string kickReason = parts.Length >= 5 ? parts[4] : "Giáo viên đã mời máy này ra khỏi lớp để bạn chọn lại đúng phòng học.";
+					base.Dispatcher.Invoke(async () =>
+					{
+						try
+						{
+							if (Application.Current is App appKick)
+							{
+								App.ClassControl.IsScreenLocked = false;
+								App.ClassControl.ScreenLockType = "";
+								App.ClassControl.IsSilenceActive = false;
+								CloseScreenLockOverlay();
+								CloseScreenBroadcast();
+								CloseVncBroadcast();
+
+								var net = appKick.StudentNetwork;
+								if (net != null)
+								{
+									string ipToIgnore = !string.IsNullOrWhiteSpace(kickedIp) ? kickedIp : net.ServerIP;
+									if (!string.IsNullOrWhiteSpace(ipToIgnore))
+									{
+										net.IgnoredTeacherIps.Add(ipToIgnore);
+									}
+									net.ServerIP = "";
+									net.Stop();
+									await net.StartAsync();
+								}
+							}
+							ShowNotification("🚫 Đã rời lớp học", kickReason, "#D97706");
+							ShowMythwareRoomPickerDialog(kickReason);
+						}
+						catch (Exception exKick)
+						{
+							Log.Warning("KICK handler error: {Err}", exKick.Message);
+						}
+					});
+				}
+				break;
+
 			// ═══ LOI_VID_21 FIX: Xử lý lệnh đồng bộ phiên mới từ GV ═══
 
 			case "UPDATE_SESSION":
@@ -4946,11 +4988,12 @@ namespace QASmartClass.StudentClient.Views
 					string customKey = "";
 					int customTtl = -1;
 
+					string presenterCode = "";
 					foreach (var part in activeParts2)
 					{
 						if (part.Contains('='))
 						{
-							var kv = part.Split('=');
+							var kv = part.Split('=', 2);
 							if (kv.Length == 2)
 							{
 								string key = kv[0];
@@ -4959,8 +5002,24 @@ namespace QASmartClass.StudentClient.Views
 								else if (key == "PORT" && int.TryParse(val, out int p)) customPort = p;
 								else if (key == "KEY") customKey = val;
 								else if (key == "TTL" && int.TryParse(val, out int t)) customTtl = t;
+								else if (key == "PRESENTER") presenterCode = val.Trim();
 							}
 						}
+						else if (part.StartsWith("TK_", StringComparison.Ordinal))
+						{
+							token = part;
+						}
+						else if (int.TryParse(part, out int parsedPort) && parsedPort >= 1024 && parsedPort <= 65535)
+						{
+							_currentTeacherWebPort = parsedPort;
+						}
+					}
+
+					// Nếu chính máy học sinh này đang là người trình bày trước lớp (Student Demo Presenter) thì KHÔNG tự bật màn hình phủ lên máy mình!
+					if (_isPresentingStudentDemo || IsMatchingLocalStudentCode(presenterCode))
+					{
+						Log.Information("[StudentShell] Bỏ qua SCREEN_BROADCAST_START vì máy này đang là người trình bày (Presenter={Presenter})", presenterCode);
+						break;
 					}
 
 					_currentBroadcastProtocol = protocol;
@@ -4984,36 +5043,21 @@ namespace QASmartClass.StudentClient.Views
 						QASmartClass.Services.UdpScreenBroadcastService.MulticastTTL = customTtl;
 					}
 
-					if (activeParts2.Length >= 4)
-
+					if (string.IsNullOrEmpty(token) && activeParts2.Length >= 4)
 					{
-
 						if (int.TryParse(activeParts2[activeParts2.Length - 1], out int portVal))
-
 						{
-
 							_currentTeacherWebPort = portVal;
-
 							token = "";
-
 						}
-
-						else
-
+						else if (!activeParts2[activeParts2.Length - 1].Contains('='))
 						{
-
 							token = activeParts2[activeParts2.Length - 1];
-
 							if (int.TryParse(activeParts2[activeParts2.Length - 2], out int portVal2))
-
 							{
-
 								_currentTeacherWebPort = portVal2;
-
 							}
-
 						}
-
 					}
 
 					bool isForce = cmd.Contains("FORCE_WATCH");
@@ -5103,37 +5147,26 @@ namespace QASmartClass.StudentClient.Views
 					string imagePath = activePartsUpdate[2];
 
 					string token = "";
-
-					if (activePartsUpdate.Length >= 4)
-
+					string presenterCodeUpdate = "";
+					foreach (var part in activePartsUpdate)
 					{
-
-						if (int.TryParse(activePartsUpdate[activePartsUpdate.Length - 1], out int portVal))
-
+						if (part.StartsWith("PRESENTER=", StringComparison.OrdinalIgnoreCase))
 						{
-
-							_currentTeacherWebPort = portVal;
-
-							token = "";
-
+							presenterCodeUpdate = part.Substring("PRESENTER=".Length).Trim();
 						}
-
-						else
-
+						else if (part.StartsWith("TK_", StringComparison.Ordinal))
 						{
-
-							token = activePartsUpdate[activePartsUpdate.Length - 1];
-
-							if (int.TryParse(activePartsUpdate[activePartsUpdate.Length - 2], out int portVal2))
-
-							{
-
-								_currentTeacherWebPort = portVal2;
-
-							}
-
+							token = part;
 						}
+						else if (!part.Contains('=') && int.TryParse(part, out int parsedPort) && parsedPort >= 1024 && parsedPort <= 65535)
+						{
+							_currentTeacherWebPort = parsedPort;
+						}
+					}
 
+					if (_isPresentingStudentDemo || IsMatchingLocalStudentCode(presenterCodeUpdate))
+					{
+						break;
 					}
 
 					if (_broadcastOverlay == null)
@@ -5191,6 +5224,7 @@ namespace QASmartClass.StudentClient.Views
 			case "SCREEN_BROADCAST_STOP":
 
 				_userDismissedBroadcast = false; // PHASE6-GD2
+				StopStudentDemoPresentationLoop();
 
 				CloseScreenBroadcast();
 
@@ -6356,6 +6390,82 @@ namespace QASmartClass.StudentClient.Views
 
 				Log.Information("KILL_APPS command received");
 
+				break;
+
+			case "START_APP":
+				if (parts.Length >= 3 && !string.IsNullOrWhiteSpace(parts[2]))
+				{
+					string appTarget = parts[2].Trim();
+					string launchTarget = appTarget.ToLowerInvariant() switch
+					{
+						"youtube" => "https://www.youtube.com",
+						"chrome" => "https://www.google.com",
+						"settings" => "ms-settings:",
+						_ => appTarget
+					};
+					try
+					{
+						Process.Start(new ProcessStartInfo
+						{
+							FileName = launchTarget,
+							UseShellExecute = true
+						});
+						ShowNotification("🚀 Mở phần mềm", $"Giáo viên đã khởi chạy: {appTarget}", "#0284C7");
+					}
+					catch (Exception exStartApp)
+					{
+						Log.Warning("START_APP failed for {App}: {Err}", appTarget, exStartApp.Message);
+					}
+				}
+				break;
+
+			case "STUDENT_DEMO_START":
+				{
+					string targetDemoCode = (parts.Length >= 3 && !parts[2].StartsWith("id=")) ? parts[2].Trim() : "";
+					if (string.IsNullOrEmpty(targetDemoCode) || IsMatchingLocalStudentCode(targetDemoCode))
+					{
+						StartStudentDemoPresentationLoop();
+						ShowNotification("👨‍🎓 Học sinh trình bày", "Giáo viên đang chiếu màn hình của bạn cho tất cả các bạn trong lớp cùng xem!", "#059669");
+					}
+				}
+				break;
+
+			case "STUDENT_DEMO_STOP":
+			case "REMOTE_VIEW_STOP":
+			case "REMOTE_CONTROL_STOP":
+				StopStudentDemoPresentationLoop();
+				break;
+
+			case "REMOTE_VIEW_START":
+			case "REMOTE_CONTROL_START":
+				Task.Run(delegate { CaptureAndSendScreenshot(); });
+				break;
+
+			case "REBOOT_PC":
+				try
+				{
+					ShowNotification("🔄 Khởi động lại máy", "Giáo viên đã gửi lệnh khởi động lại máy tính sau 5 giây...", "#D97706");
+					Process.Start(new ProcessStartInfo("shutdown", "/r /t 5 /c \"Giao vien khoi dong lai may tinh\"") { CreateNoWindow = true, UseShellExecute = false });
+				}
+				catch (Exception exReboot) { Log.Warning("REBOOT_PC failed: {Err}", exReboot.Message); }
+				break;
+
+			case "SHUTDOWN_PC":
+				try
+				{
+					ShowNotification("🔌 Tắt máy tính", "Giáo viên đã gửi lệnh tắt máy tính sau 5 giây...", "#DC2626");
+					Process.Start(new ProcessStartInfo("shutdown", "/s /t 5 /c \"Giao vien tat may tinh\"") { CreateNoWindow = true, UseShellExecute = false });
+				}
+				catch (Exception exShut) { Log.Warning("SHUTDOWN_PC failed: {Err}", exShut.Message); }
+				break;
+
+			case "LOGOFF_PC":
+				try
+				{
+					ShowNotification("🚪 Đăng xuất", "Giáo viên đã gửi lệnh đăng xuất phiên làm việc...", "#475569");
+					Process.Start(new ProcessStartInfo("shutdown", "/l") { CreateNoWindow = true, UseShellExecute = false });
+				}
+				catch (Exception exLogoff) { Log.Warning("LOGOFF_PC failed: {Err}", exLogoff.Message); }
 				break;
 
 			case "TEACHER_WARNING":
@@ -9000,7 +9110,7 @@ namespace QASmartClass.StudentClient.Views
 					source = bitmap;
 				}
 
-				if (source != null && source.CanFreeze) source.Freeze(); // MUST freeze for cross-thread
+			if (source != null && source.CanFreeze) source.Freeze(); // MUST freeze for cross-thread
 			}
 			catch (Exception exDecode)
 			{
@@ -9008,34 +9118,234 @@ namespace QASmartClass.StudentClient.Views
 				return;
 			}
 
-			// Only marshal the UI assignment to the dispatcher asynchronously to prevent blocking
-			base.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
-			{
-				try
-				{
-					if (_broadcastImage != null)
-					{
-						_broadcastImage.Source = source;
-						_lastUdpFrameTime = DateTime.UtcNow;
-						_lastBroadcastUpdateTime = DateTime.UtcNow;
-						_consecutiveHttpPullFailures = 0;
+			EnqueueBroadcastFrameForSmoothPlayout(source, "UDP");
+		}
 
-						if (_broadcastConnectionStatus != null && _broadcastConnectionStatus.Visibility == Visibility.Visible)
+		private readonly System.Collections.Concurrent.ConcurrentQueue<(BitmapSource Frame, string ModeTag)> _playoutFrameQueue = new();
+		private CancellationTokenSource? _continuousStreamCts = null;
+
+		private void EnqueueBroadcastFrameForSmoothPlayout(BitmapSource? source, string modeTag)
+		{
+			if (source == null) return;
+			if (modeTag == "UDP") _lastUdpFrameTime = DateTime.UtcNow;
+			_lastBroadcastUpdateTime = DateTime.UtcNow;
+
+			// Giữ tối đa ~64 khung hình (đáp ứng 60-120 FPS) để không bao giờ tràn RAM
+			while (_playoutFrameQueue.Count >= 64)
+			{
+				_playoutFrameQueue.TryDequeue(out _);
+			}
+			_playoutFrameQueue.Enqueue((source, modeTag));
+		}
+
+		private void StartContinuousBroadcastStreamReader()
+		{
+			try
+			{
+				_continuousStreamCts?.Cancel();
+				_continuousStreamCts?.Dispose();
+			}
+			catch { }
+
+			while (_playoutFrameQueue.TryDequeue(out _)) { }
+			_continuousStreamCts = new CancellationTokenSource();
+			var token = _continuousStreamCts.Token;
+
+			// 1. Luồng Playout mượt 60-120 FPS: phát tuần tự TỪNG khung hình theo nhịp đều đặn (Jitter Buffer ~50-80ms) để nét vẽ liền mạch như video, không nhảy cóc
+			_ = Task.Run(async () =>
+			{
+				bool buffering = true;
+				while (!token.IsCancellationRequested && _broadcastOverlay != null)
+				{
+					try
+					{
+						int qCount = _playoutFrameQueue.Count;
+						if (buffering)
 						{
-							_broadcastConnectionStatus.Visibility = Visibility.Collapsed;
+							// Đợi gom đủ 3 khung (~45-60ms) trước khi bắt đầu chạy để chống giật mạng
+							if (qCount < 3)
+							{
+								await Task.Delay(12, token);
+								if (_playoutFrameQueue.Count == 0) continue;
+							}
+							buffering = false;
 						}
 
-						if (_broadcastTimeText != null)
+						if (_playoutFrameQueue.TryDequeue(out var item))
 						{
-							_broadcastTimeText.Text = $"Giờ: {DateTime.Now:HH:mm:ss} (UDP)";
+							base.Dispatcher.Invoke(() =>
+							{
+								if (_broadcastImage != null)
+								{
+									_broadcastImage.Source = item.Frame;
+									_lastBroadcastUpdateTime = DateTime.UtcNow;
+									_consecutiveHttpPullFailures = 0;
+
+									if (_broadcastConnectionStatus != null && _broadcastConnectionStatus.Visibility == Visibility.Visible)
+									{
+										_broadcastConnectionStatus.Visibility = Visibility.Collapsed;
+									}
+									if (_broadcastTimeText != null)
+									{
+										_broadcastTimeText.Text = $"Giờ: {DateTime.Now:HH:mm:ss} ({item.ModeTag})";
+									}
+								}
+							}, System.Windows.Threading.DispatcherPriority.Render, token);
+
+							// Điều nhịp thông minh hỗ trợ 60 FPS (15ms) và 120 FPS (8ms) mà KHÔNG bỏ sót bất kỳ frame nào
+							int delayMs = qCount > 14 ? 7 : (qCount > 6 ? 11 : 15);
+							await Task.Delay(delayMs, token);
+						}
+						else
+						{
+							buffering = true;
+							await Task.Delay(8, token);
 						}
 					}
+					catch (OperationCanceledException)
+					{
+						break;
+					}
+					catch
+					{
+						try { await Task.Delay(25, token); } catch { break; }
+					}
 				}
-				catch (Exception ex)
+			}, token);
+
+			// 2. Luồng thu nhận tuần tự từ RAM RingBuffer (nếu cùng máy) hoặc HTTP Push Stream (/api/broadcast_stream)
+			_ = Task.Run(async () =>
+			{
+				long lastLocalVersion = -1;
+				using var httpClient = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+
+				while (!token.IsCancellationRequested && _broadcastOverlay != null)
 				{
-					Log.Warning("Failed to display UDP multicast frame: {Err}", ex.Message);
+					try
+					{
+						// Fast path: nếu chạy cùng tiến trình với máy Giáo viên, lấy TUẦN TỰ từng frame từ Ring Buffer trong RAM
+						var localState = QASmartClass.Services.BroadcastStateService.Instance;
+						if (localState.IsScreenBroadcastActive && localState.TryGetNextSequentialFrame(ref lastLocalVersion, out byte[] ramBytes))
+						{
+							if (ramBytes != null && ramBytes.Length > 0)
+							{
+								var bmp = DecodeBroadcastBytesFast(ramBytes);
+								if (bmp != null)
+								{
+									EnqueueBroadcastFrameForSmoothPlayout(bmp, "RAM-LIVE");
+								}
+								await Task.Delay(10, token);
+								continue;
+							}
+						}
+						else if (localState.IsScreenBroadcastActive)
+						{
+							await Task.Delay(12, token);
+							continue;
+						}
+
+						// Nếu UDP Multicast đang hoạt động tốt (< 500ms), nhường cho UDP đẩy vào _playoutFrameQueue
+						if ((DateTime.UtcNow - _lastUdpFrameTime).TotalMilliseconds < 500 && _currentBroadcastProtocol != "HTTP_PULL")
+						{
+							await Task.Delay(120, token);
+							continue;
+						}
+
+						// Continuous HTTP Push Stream (/api/broadcast_stream) đọc tuần tự mọi frame
+						string? teacherIP = (((App)Application.Current)?.StudentNetwork)?.ServerIP;
+						if (string.IsNullOrEmpty(teacherIP))
+						{
+							await Task.Delay(200, token);
+							continue;
+						}
+
+						string tokenQuery = !string.IsNullOrEmpty(_currentBroadcastToken) ? $"&token={_currentBroadcastToken}" : "";
+						string streamUrl = $"http://{teacherIP}:{_currentTeacherWebPort}/api/broadcast_stream?t={DateTime.UtcNow.Ticks}{tokenQuery}";
+
+						using var response = await httpClient.GetAsync(streamUrl, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, token);
+						if (!response.IsSuccessStatusCode)
+						{
+							await Task.Delay(250, token);
+							continue;
+						}
+
+						using var netStream = await response.Content.ReadAsStreamAsync(token);
+						byte[] lenBuf = new byte[4];
+						while (!token.IsCancellationRequested && _broadcastOverlay != null)
+						{
+							if ((DateTime.UtcNow - _lastUdpFrameTime).TotalMilliseconds < 400 && _currentBroadcastProtocol != "HTTP_PULL")
+							{
+								break;
+							}
+
+							int readHeader = 0;
+							while (readHeader < 4)
+							{
+								int r = await netStream.ReadAsync(lenBuf, readHeader, 4 - readHeader, token);
+								if (r <= 0) throw new EndOfStreamException();
+								readHeader += r;
+							}
+
+							int frameLen = (lenBuf[0] << 24) | (lenBuf[1] << 16) | (lenBuf[2] << 8) | lenBuf[3];
+							if (frameLen <= 0 || frameLen > 20_000_000) throw new InvalidDataException($"Invalid frame length: {frameLen}");
+
+							byte[] frameBytes = new byte[frameLen];
+							int readPayload = 0;
+							while (readPayload < frameLen)
+							{
+								int r = await netStream.ReadAsync(frameBytes, readPayload, frameLen - readPayload, token);
+								if (r <= 0) throw new EndOfStreamException();
+								readPayload += r;
+							}
+
+							var bmp = DecodeBroadcastBytesFast(frameBytes);
+							if (bmp != null)
+							{
+								EnqueueBroadcastFrameForSmoothPlayout(bmp, "STREAM");
+							}
+						}
+					}
+					catch (OperationCanceledException)
+					{
+						break;
+					}
+					catch (Exception ex)
+					{
+						Log.Debug("[StudentBroadcast] Continuous stream reconnect: {Msg}", ex.Message);
+						try { await Task.Delay(200, token); } catch { break; }
+					}
 				}
-			}));
+			}, token);
+		}
+
+		private BitmapSource? DecodeBroadcastBytesFast(byte[] imgBytes)
+		{
+			try
+			{
+				if (_isOpenCvAvailable && IsWebPImage(imgBytes))
+				{
+					using var mat = OpenCvSharp.Cv2.ImDecode(imgBytes, OpenCvSharp.ImreadModes.Color);
+					using var bmp = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(mat);
+					var src = ConvertBitmapToBitmapSource(bmp);
+					if (src != null && src.CanFreeze) src.Freeze();
+					return src;
+				}
+
+				var bitmap = new BitmapImage();
+				using (var ms = new MemoryStream(imgBytes))
+				{
+					bitmap.BeginInit();
+					bitmap.CacheOption = BitmapCacheOption.OnLoad;
+					bitmap.StreamSource = ms;
+					bitmap.EndInit();
+				}
+				bitmap.Freeze();
+				return bitmap;
+			}
+			catch
+			{
+				return null;
+			}
 		}
 
 
@@ -9968,6 +10278,7 @@ namespace QASmartClass.StudentClient.Views
 				};
 
 				Log.Information("Screen broadcast overlay OPENED: {Path}", imagePath);
+				StartContinuousBroadcastStreamReader();
 
 				
 
@@ -10069,14 +10380,10 @@ namespace QASmartClass.StudentClient.Views
 
 
 
-				// If UDP is active, bypass HTTP updates to save bandwidth
-
-				if ((DateTime.UtcNow - _lastUdpFrameTime).TotalSeconds < 2.0)
-
+				// If continuous stream or UDP is active, bypass single-image HTTP pull so out-of-order frames never cause jitter
+				if ((DateTime.UtcNow - _lastBroadcastUpdateTime).TotalSeconds < 2.5 || (DateTime.UtcNow - _lastUdpFrameTime).TotalSeconds < 2.5)
 				{
-
 					return;
-
 				}
 
 				if (!File.Exists(imagePath))
@@ -10257,6 +10564,14 @@ namespace QASmartClass.StudentClient.Views
 
 
 				if (_pulseStoryboard != null) { _pulseStoryboard.Stop(); _pulseStoryboard = null; }
+
+				try
+				{
+					_continuousStreamCts?.Cancel();
+					_continuousStreamCts?.Dispose();
+					_continuousStreamCts = null;
+				}
+				catch { }
 
 
 
@@ -16625,11 +16940,32 @@ namespace QASmartClass.StudentClient.Views
 
 				string channel = "ALL";
 
+				string actorName = "GV";
+
+				bool isFromClassmate = false;
+
 				bool isHistory = msg.StartsWith("MSG_HISTORY|");
 
 
 
-				if (msg.StartsWith("\ud83d\udce8 ["))
+				if (msg.StartsWith("👥 ["))
+				{
+					channel = "ALL";
+					isFromClassmate = true;
+					int endBracket = msg.IndexOf("]: ");
+					if (endBracket > 4)
+					{
+						actorName = msg.Substring(4, endBracket - 4).Trim();
+						cleanText = msg.Substring(endBracket + 3);
+					}
+					else
+					{
+						cleanText = msg.Substring(3).Trim();
+					}
+					text = $"💬 Cả lớp — {actorName}";
+				}
+
+				else if (msg.StartsWith("\ud83d\udce8 ["))
 
 				{
 
@@ -16703,7 +17039,25 @@ namespace QASmartClass.StudentClient.Views
 
 					var colIdx = msg.IndexOf("] GV: ");
 
-					cleanText = colIdx > 0 ? msg.Substring(colIdx + 6) : msg;
+					if (colIdx > 0)
+					{
+						cleanText = msg.Substring(colIdx + 6);
+					}
+					else
+					{
+						var endBrk = msg.IndexOf("] ");
+						var colonIdx = endBrk > 0 ? msg.IndexOf(": ", endBrk + 2) : -1;
+						if (endBrk > 0 && colonIdx > endBrk + 2)
+						{
+							actorName = msg.Substring(endBrk + 2, colonIdx - (endBrk + 2)).Trim();
+							isFromClassmate = actorName != "GV";
+							cleanText = msg.Substring(colonIdx + 2);
+						}
+						else
+						{
+							cleanText = msg;
+						}
+					}
 
 				}
 
@@ -16745,7 +17099,25 @@ namespace QASmartClass.StudentClient.Views
 
 					var colIdx = msg.IndexOf("] GV: ");
 
-					cleanText = colIdx > 0 ? msg.Substring(colIdx + 6) : msg;
+					if (colIdx > 0)
+					{
+						cleanText = msg.Substring(colIdx + 6);
+					}
+					else
+					{
+						var endBrk = msg.IndexOf("] ");
+						var colonIdx = endBrk > 0 ? msg.IndexOf(": ", endBrk + 2) : -1;
+						if (endBrk > 0 && colonIdx > endBrk + 2)
+						{
+							actorName = msg.Substring(endBrk + 2, colonIdx - (endBrk + 2)).Trim();
+							isFromClassmate = actorName != "GV";
+							cleanText = msg.Substring(colonIdx + 2);
+						}
+						else
+						{
+							cleanText = msg;
+						}
+					}
 
 				}
 
@@ -16851,7 +17223,7 @@ namespace QASmartClass.StudentClient.Views
 
 
 
-					string dbEventType = "TEACHER_CHAT";
+					string dbEventType = isFromClassmate ? "CHAT" : "TEACHER_CHAT";
 
 					string dbChannel = "ALL";
 
@@ -16869,7 +17241,7 @@ namespace QASmartClass.StudentClient.Views
 
 					{
 
-						dbEventType = "GROUP_CHAT";
+						dbEventType = isFromClassmate ? "CHAT" : "GROUP_CHAT";
 
 						dbChannel = channel;
 
@@ -16899,7 +17271,7 @@ namespace QASmartClass.StudentClient.Views
 
 										EventType = dbEventType,
 
-										Actor = "GV",
+										Actor = isFromClassmate ? actorName : "GV",
 
 										Details = $"Tin nhắn: {cleanText} [CH:{dbChannel}]",
 
@@ -17308,6 +17680,69 @@ namespace QASmartClass.StudentClient.Views
 		}
 
 
+
+		private volatile bool _isPresentingStudentDemo = false;
+		private System.Threading.CancellationTokenSource? _studentDemoLoopCts;
+
+		private bool IsMatchingLocalStudentCode(string? targetCode)
+		{
+			if (string.IsNullOrWhiteSpace(targetCode)) return false;
+			string tc = targetCode.Trim();
+			try
+			{
+				if (Application.Current is App { StudentNetwork: not null } app)
+				{
+					if (!string.IsNullOrWhiteSpace(app.StudentNetwork.StudentCode) &&
+						string.Equals(app.StudentNetwork.StudentCode.Trim(), tc, StringComparison.OrdinalIgnoreCase))
+						return true;
+				}
+				if (string.Equals(Environment.MachineName, tc, StringComparison.OrdinalIgnoreCase))
+					return true;
+			}
+			catch { }
+			return false;
+		}
+
+		private void StartStudentDemoPresentationLoop()
+		{
+			_isPresentingStudentDemo = true;
+			base.Dispatcher.Invoke(() =>
+			{
+				// Đóng lớp phủ xem bài giảng (nếu có) để học sinh trình bày thao tác thoải mái trên màn hình của mình
+				CloseScreenBroadcast();
+			});
+
+			try { _studentDemoLoopCts?.Cancel(); } catch { }
+			var cts = new System.Threading.CancellationTokenSource();
+			_studentDemoLoopCts = cts;
+
+			Task.Run(async () =>
+			{
+				while (!cts.Token.IsCancellationRequested && _isPresentingStudentDemo)
+				{
+					CaptureAndSendScreenshot();
+					try
+					{
+						await Task.Delay(80, cts.Token);
+					}
+					catch
+					{
+						break;
+					}
+				}
+			}, cts.Token);
+		}
+
+		private void StopStudentDemoPresentationLoop()
+		{
+			_isPresentingStudentDemo = false;
+			try
+			{
+				_studentDemoLoopCts?.Cancel();
+				_studentDemoLoopCts = null;
+			}
+			catch { }
+		}
 
 		private void CaptureAndSendScreenshot()
 
@@ -18177,6 +18612,279 @@ namespace QASmartClass.StudentClient.Views
 				Log.Warning("[Student-VNC] Safety Auto-Unlock triggered: No VNC signal for {Sec}s.", timeSinceLastUpdate);
 				CloseVncBroadcast();
 				ShowNotification("⚠️ Kết nối gián đoạn", "Mất tín hiệu từ giáo viên quá 15 giây. Hệ thống tự động mở khóa.", "#C62828");
+			}
+		}
+
+		// ═══ MYTHWARE STUDENT TOP BAR & MULTI-CHANNEL ROOM PICKER ═══
+		private void MythwareNavHome_Click(object sender, RoutedEventArgs e) => NavigateTo("S1");
+		private void MythwareNavChat_Click(object sender, RoutedEventArgs e) => NavigateTo("S6");
+		private void MythwareNavFiles_Click(object sender, RoutedEventArgs e) => NavigateTo("S4");
+		private void MythwareNavWhiteboard_Click(object sender, RoutedEventArgs e) => NavigateTo("S12");
+
+		private void SwitchClassroom_Click(object sender, RoutedEventArgs e)
+		{
+			ShowMythwareRoomPickerDialog(null);
+		}
+
+		private void ShowMythwareRoomPickerDialog(string? noticeMessage)
+		{
+			try
+			{
+				var app = Application.Current as App;
+				var client = app?.StudentNetwork;
+				if (client == null) return;
+
+				var win = new Window
+				{
+					Title = "🔄 Đổi Lớp / Chọn Phòng Học (Mythware Multi-Channel)",
+					Width = 560,
+					Height = 480,
+					WindowStartupLocation = WindowStartupLocation.CenterOwner,
+					Owner = this,
+					ResizeMode = ResizeMode.NoResize,
+					Background = new SolidColorBrush(Color.FromRgb(248, 250, 252)),
+					Topmost = true
+				};
+
+				var root = new StackPanel { Margin = new Thickness(20) };
+
+				root.Children.Add(new TextBlock
+				{
+					Text = "🔄 Chọn Phòng Học / Kênh Kết Nối",
+					FontSize = 18,
+					FontWeight = FontWeights.Bold,
+					Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59)),
+					Margin = new Thickness(0, 0, 0, 6)
+				});
+
+				if (!string.IsNullOrWhiteSpace(noticeMessage))
+				{
+					var alertBorder = new Border
+					{
+						Background = new SolidColorBrush(Color.FromRgb(254, 243, 199)),
+						BorderBrush = new SolidColorBrush(Color.FromRgb(245, 158, 11)),
+						BorderThickness = new Thickness(1),
+						CornerRadius = new CornerRadius(8),
+						Padding = new Thickness(10, 8, 10, 8),
+						Margin = new Thickness(0, 0, 0, 10)
+					};
+					alertBorder.Child = new TextBlock
+					{
+						Text = "⚠️ " + noticeMessage,
+						FontSize = 12.5,
+						FontWeight = FontWeights.SemiBold,
+						Foreground = new SolidColorBrush(Color.FromRgb(180, 83, 9)),
+						TextWrapping = TextWrapping.Wrap
+					};
+					root.Children.Add(alertBorder);
+				}
+
+				string currentStatus = client.IsConnected
+					? $"Đang kết nối: [Kênh {client.CurrentChannelId}] {client.ClassName} — GV: {client.TeacherName} ({client.ServerIP})"
+					: "Trạng thái: Đang tìm lớp học trên mạng LAN...";
+				root.Children.Add(new TextBlock
+				{
+					Text = currentStatus,
+					FontSize = 12.5,
+					Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)),
+					Margin = new Thickness(0, 0, 0, 10)
+				});
+
+				root.Children.Add(new TextBlock
+				{
+					Text = "📡 Các lớp học đang phát sóng trên mạng LAN (Chọn 1 lớp):",
+					FontSize = 13,
+					FontWeight = FontWeights.SemiBold,
+					Foreground = new SolidColorBrush(Color.FromRgb(51, 65, 85)),
+					Margin = new Thickness(0, 0, 0, 6)
+				});
+
+				var listBox = new ListBox
+				{
+					Height = 145,
+					FontSize = 13,
+					BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+					BorderThickness = new Thickness(1),
+					Margin = new Thickness(0, 0, 0, 12)
+				};
+
+				var txtManualIp = new TextBox
+				{
+					Text = client.ServerIP,
+					Height = 32,
+					VerticalContentAlignment = VerticalAlignment.Center,
+					Padding = new Thickness(8, 0, 8, 0),
+					FontSize = 13
+				};
+
+				var txtRoomPin = new TextBox
+				{
+					Text = client.RoomPin,
+					Width = 120,
+					Height = 32,
+					VerticalContentAlignment = VerticalAlignment.Center,
+					Padding = new Thickness(8, 0, 8, 0),
+					FontSize = 13,
+					MaxLength = 8
+				};
+
+				void RefreshRoomsList()
+				{
+					listBox.Items.Clear();
+					foreach (var room in client.DiscoveredClassrooms.Values.OrderBy(r => r.ChannelId))
+					{
+						var item = new ListBoxItem
+						{
+							Content = room.DisplayLabel,
+							Tag = room,
+							Padding = new Thickness(6, 5, 6, 5)
+						};
+						listBox.Items.Add(item);
+					}
+					if (listBox.Items.Count == 0)
+					{
+						listBox.Items.Add(new ListBoxItem
+						{
+							Content = "⏳ Đang quét tín hiệu UDP :29876... (Hoặc nhập trực tiếp IP Giáo viên bên dưới)",
+							IsEnabled = false
+						});
+					}
+				}
+
+				RefreshRoomsList();
+				listBox.SelectionChanged += (s, ev) =>
+				{
+					if (listBox.SelectedItem is ListBoxItem lbi && lbi.Tag is DiscoveredClassroom room)
+					{
+						txtManualIp.Text = room.ServerIP;
+					}
+				};
+
+				root.Children.Add(listBox);
+
+				var manualGrid = new Grid { Margin = new Thickness(0, 0, 0, 14) };
+				manualGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+				manualGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(12) });
+				manualGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+				var ipStack = new StackPanel();
+				ipStack.Children.Add(new TextBlock { Text = "Hoặc nhập IP Máy Giáo Viên:", FontSize = 12, Foreground = Brushes.DimGray, Margin = new Thickness(0, 0, 0, 4) });
+				ipStack.Children.Add(txtManualIp);
+				Grid.SetColumn(ipStack, 0);
+				manualGrid.Children.Add(ipStack);
+
+				var pinStack = new StackPanel();
+				pinStack.Children.Add(new TextBlock { Text = "Mã PIN (nếu lớp khóa):", FontSize = 12, Foreground = Brushes.DimGray, Margin = new Thickness(0, 0, 0, 4) });
+				pinStack.Children.Add(txtRoomPin);
+				Grid.SetColumn(pinStack, 2);
+				manualGrid.Children.Add(pinStack);
+
+				root.Children.Add(manualGrid);
+
+				var btnRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+
+				var btnRefresh = new Button
+				{
+					Content = "🔍 Quét lại mạng LAN",
+					Padding = new Thickness(12, 7, 12, 7),
+					Margin = new Thickness(0, 0, 8, 0),
+					Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+					Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59)),
+					BorderThickness = new Thickness(0),
+					Cursor = Cursors.Hand,
+					FontWeight = FontWeights.SemiBold
+				};
+				btnRefresh.Click += async (s, ev) =>
+				{
+					if (!string.IsNullOrWhiteSpace(client.ServerIP))
+					{
+						client.IgnoredTeacherIps.Add(client.ServerIP);
+					}
+					client.Stop();
+					await client.StartAsync();
+					RefreshRoomsList();
+				};
+
+				var btnConnect = new Button
+				{
+					Content = "✅ Kết nối vào Lớp này",
+					Padding = new Thickness(16, 7, 16, 7),
+					Margin = new Thickness(0, 0, 8, 0),
+					Background = new SolidColorBrush(Color.FromRgb(37, 99, 235)),
+					Foreground = Brushes.White,
+					BorderThickness = new Thickness(0),
+					Cursor = Cursors.Hand,
+					FontWeight = FontWeights.Bold
+				};
+				btnConnect.Click += async (s, ev) =>
+				{
+					string targetIp = txtManualIp.Text.Trim();
+					int targetPort = StudentNetworkClient.TCP_PORT;
+
+					if (listBox.SelectedItem is ListBoxItem selectedItem && selectedItem.Tag is DiscoveredClassroom selectedRoom)
+					{
+						targetIp = selectedRoom.ServerIP;
+						targetPort = selectedRoom.Port;
+						client.PreferredChannelId = selectedRoom.ChannelId;
+						client.CurrentChannelId = selectedRoom.ChannelId;
+						client.ClassName = selectedRoom.ClassName;
+						client.TeacherName = selectedRoom.TeacherName;
+					}
+
+					if (string.IsNullOrWhiteSpace(targetIp))
+					{
+						MessageBox.Show("Vui lòng chọn 1 lớp học trong danh sách hoặc nhập địa chỉ IP máy Giáo viên!", "Chưa chọn lớp", MessageBoxButton.OK, MessageBoxImage.Warning);
+						return;
+					}
+
+					// Nếu đang kết nối lớp cũ khác IP, thêm lớp cũ vào danh sách bỏ qua để không tự nhảy về lớp cũ
+					if (!string.IsNullOrWhiteSpace(client.ServerIP) && !client.ServerIP.Equals(targetIp, StringComparison.OrdinalIgnoreCase))
+					{
+						client.IgnoredTeacherIps.Add(client.ServerIP);
+					}
+					client.IgnoredTeacherIps.Remove(targetIp);
+					client.RoomPin = txtRoomPin.Text.Trim();
+
+					win.Close();
+					await client.ConnectDirectAsync(targetIp, targetPort);
+					if (!client.IsConnected)
+					{
+						await client.StartAsync();
+						if (!string.IsNullOrWhiteSpace(client.LastErrorReason))
+						{
+							ShowNotification("⚠️ Không thể vào lớp", client.LastErrorReason, "#C62828");
+						}
+					}
+					else
+					{
+						txtConnectionStatus.Text = $"Đã kết nối — [Kênh {client.CurrentChannelId}] {client.ClassName}";
+						txtTeacherInfo.Text = "GV: " + client.TeacherName;
+						ShowNotification("✅ Đã đổi lớp thành công", $"Đã vào {client.ClassName} (GV: {client.TeacherName})", "#16A34A");
+					}
+				};
+
+				var btnCancel = new Button
+				{
+					Content = "Đóng",
+					Padding = new Thickness(14, 7, 14, 7),
+					Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+					Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)),
+					BorderThickness = new Thickness(0),
+					Cursor = Cursors.Hand
+				};
+				btnCancel.Click += (s, ev) => win.Close();
+
+				btnRow.Children.Add(btnRefresh);
+				btnRow.Children.Add(btnConnect);
+				btnRow.Children.Add(btnCancel);
+				root.Children.Add(btnRow);
+
+				win.Content = root;
+				win.ShowDialog();
+			}
+			catch (Exception ex)
+			{
+				Log.Warning("ShowMythwareRoomPickerDialog error: {Err}", ex.Message);
 			}
 		}
 	}

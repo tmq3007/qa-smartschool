@@ -322,21 +322,75 @@ namespace QASmartClass.StudentClient.Views
             {
                 string channel = "ALL";
                 string text = msg;
+                string author = "GV";
+                bool isTeacher = true;
 
-                if (msg.StartsWith("📨 ["))
+                if (msg.StartsWith("👥 ["))
                 {
-                    // Custom group: 📨 [Nhóm 1] GV: text
+                    // Whole-class message from another student: 👥 [Student Name]: text
+                    channel = "ALL";
+                    isTeacher = false;
+                    int endBrk = msg.IndexOf("]: ");
+                    if (endBrk > 4)
+                    {
+                        author = msg.Substring(4, endBrk - 4).Trim();
+                        text = msg.Substring(endBrk + 3);
+                    }
+                    else
+                    {
+                        author = "Học sinh";
+                        text = msg.Substring(3).Trim();
+                    }
+                }
+                else if (msg.StartsWith("📨 ["))
+                {
+                    // Custom group: 📨 [Nhóm 1] GV: text OR 📨 [Nhóm 1] Student Name: text
                     channel = DetectGroupChannel(msg);
-                    // Clean text
                     var colIdx = msg.IndexOf("] GV: ");
-                    text = colIdx > 0 ? msg.Substring(colIdx + 6) : msg;
+                    if (colIdx > 0)
+                    {
+                        text = msg.Substring(colIdx + 6);
+                    }
+                    else
+                    {
+                        var endBrk = msg.IndexOf("] ");
+                        var colonIdx = endBrk > 0 ? msg.IndexOf(": ", endBrk + 2) : -1;
+                        if (endBrk > 0 && colonIdx > endBrk + 2)
+                        {
+                            author = msg.Substring(endBrk + 2, colonIdx - (endBrk + 2)).Trim();
+                            isTeacher = author == "GV";
+                            text = msg.Substring(colonIdx + 2);
+                        }
+                        else
+                        {
+                            text = msg;
+                        }
+                    }
                 }
                 else if (msg.StartsWith("📚 ["))
                 {
                     // Study group: 📚 [Sư Tử] GV: text
                     channel = DetectStudyGroupChannel(msg);
                     var colIdx = msg.IndexOf("] GV: ");
-                    text = colIdx > 0 ? msg.Substring(colIdx + 6) : msg;
+                    if (colIdx > 0)
+                    {
+                        text = msg.Substring(colIdx + 6);
+                    }
+                    else
+                    {
+                        var endBrk = msg.IndexOf("] ");
+                        var colonIdx = endBrk > 0 ? msg.IndexOf(": ", endBrk + 2) : -1;
+                        if (endBrk > 0 && colonIdx > endBrk + 2)
+                        {
+                            author = msg.Substring(endBrk + 2, colonIdx - (endBrk + 2)).Trim();
+                            isTeacher = author == "GV";
+                            text = msg.Substring(colonIdx + 2);
+                        }
+                        else
+                        {
+                            text = msg;
+                        }
+                    }
                 }
                 else if (msg.StartsWith("🔒"))
                 {
@@ -379,10 +433,10 @@ namespace QASmartClass.StudentClient.Views
 
                 var chatMsg = new StudentChatMsg
                 {
-                    Author = "GV",
+                    Author = author,
                     Text = text,
                     Time = DateTime.Now,
-                    IsTeacher = true,
+                    IsTeacher = isTeacher,
                     IsMe = false,
                     Channel = channel
                 };
@@ -1218,7 +1272,7 @@ namespace QASmartClass.StudentClient.Views
                     var net = app.NetworkService;
                     if (net != null && net.IsBroadcasting)
                     {
-                        await net.BroadcastMessage($"💬 HS: {cleanText}");
+                        net.SimulateStudentMessage(_myCode, $"CHAT|{_myCode}|{_activeChannel}|{cleanText}");
                         sendSuccess = true;
                     }
                 }

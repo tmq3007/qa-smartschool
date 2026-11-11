@@ -126,7 +126,7 @@ namespace QASmartClass.Classroom.Views
 
         private bool _isSelectMode = false;
 
-        private string _displayMode = "all_class";  // "connected" or "all_class"
+        private string _displayMode = "connected";  // [MYTHWARE_LITE] Mặc định hiển thị các thiết bị PC & Android đang kết nối thực tế
 
         private DateTime _lastToastTime = DateTime.MinValue;  // Toast throttle
 
@@ -354,8 +354,8 @@ namespace QASmartClass.Classroom.Views
 
                     net.StudentConnected     += OnWebStudentConnected;     // relays WS too
 
-                    net.StudentDisconnected  += OnWebStudentDisconnected;  // relays WS too
-                    ScreenShareController.Instance.LiveChanged -= OnScreenShareLiveChanged;
+                    net.StudentDisconnected  += OnWebStudentDisconnected;  // relays WS too
+                    ScreenShareController.Instance.LiveChanged -= OnScreenShareLiveChanged;
                     ScreenShareController.Instance.LiveChanged += OnScreenShareLiveChanged;  // hết chiếu → lấy lại preview HS
 
 
@@ -410,7 +410,7 @@ namespace QASmartClass.Classroom.Views
 
                     net.StudentConnected    -= OnWebStudentConnected;
 
-                    net.StudentDisconnected -= OnWebStudentDisconnected;
+                    net.StudentDisconnected -= OnWebStudentDisconnected;
                     ScreenShareController.Instance.LiveChanged -= OnScreenShareLiveChanged;
 
                     if (net.WebBridge != null)
@@ -641,7 +641,7 @@ namespace QASmartClass.Classroom.Views
 
                 UpdateStats();
 
-                AddLog("Kết nối", $"{e.StudentName} • {e.IPAddress}", "#E3F2FD", "#1565C0");
+                AddLog("Kết nối", $"{e.StudentName} • {e.IPAddress}", "#E3F2FD", "#1565C0");
                 RequestScreenshotFromStudent(student); // lấy preview ngay khi HS (kết nối lại) vào lớp
 
             });
@@ -662,8 +662,8 @@ namespace QASmartClass.Classroom.Views
 
             {
 
-                // Học sinh TCP (app native) không nằm trong _webCodeMap → tra thêm theo StudentCode chính xác để xóa preview khi rời lớp
-                var student = _webCodeMap.TryGetValue(code, out var webSt) ? webSt : _allStudents.FirstOrDefault(s => s.StudentCode != null && s.StudentCode.Equals(code, StringComparison.OrdinalIgnoreCase));
+                // Học sinh TCP (app native) không nằm trong _webCodeMap → tra thêm theo StudentCode chính xác để xóa preview khi rời lớp
+                var student = _webCodeMap.TryGetValue(code, out var webSt) ? webSt : _allStudents.FirstOrDefault(s => s.StudentCode != null && s.StudentCode.Equals(code, StringComparison.OrdinalIgnoreCase));
                 if (student != null)
 
                 {
@@ -945,8 +945,7 @@ namespace QASmartClass.Classroom.Views
 
 
                 var code = e.StudentCode;
-
-
+                bool isDemoPresenter = IsActiveDemoPresenter(code);
 
                 // Giải mã hoàn toàn ảnh JPEG sang mảng pixel BGRA32 trên ThreadPool để không khóa UI Thread khi có 40-50 máy
                 _ = System.Threading.Tasks.Task.Run(() =>
@@ -954,6 +953,14 @@ namespace QASmartClass.Classroom.Views
                     byte[]? bytes;
                     try { bytes = Convert.FromBase64String(b64); }
                     catch { return; }
+
+                    // [MYTHWARE STUDENT DEMO RELAY] Nếu học sinh này đang được chọn trình bày trước lớp:
+                    // Đẩy ngay khung hình JPEG vào Ring Buffer 64-frame và UDP Multicast để TẤT CẢ các máy học sinh khác (PC & Android) cùng xem trực tiếp!
+                    if (isDemoPresenter && bytes != null && bytes.Length > 0)
+                    {
+                        QASmartClass.Services.BroadcastStateService.Instance.ScreenCaptureBytes = bytes;
+                        _ = QASmartClass.Services.UdpScreenBroadcastService.Instance.SendFrameAsync(bytes);
+                    }
 
                     int pixelW = 0, pixelH = 0, stride = 0;
                     byte[]? bgraPixels = null;
@@ -978,7 +985,11 @@ namespace QASmartClass.Classroom.Views
                         return;
                     }
 
-                    _ = Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                    var priority = isDemoPresenter
+                        ? System.Windows.Threading.DispatcherPriority.Render
+                        : System.Windows.Threading.DispatcherPriority.Background;
+
+                    _ = Dispatcher.BeginInvoke(priority, new Action(() =>
                     {
                         var student = FindStudentByCode(code);
 
@@ -1007,7 +1018,8 @@ namespace QASmartClass.Classroom.Views
 
                         student.IsOnline = true; // UPGRADE_06: Consolidate status on screenshot receipt
 
-                        if ((DateTime.Now - student.LastScreenshotTime).TotalMilliseconds < 800)
+                        // Nếu đang là học sinh trình bày trước lớp (isDemoPresenter) thì KHÔNG bóp băng thông 800ms để hình ảnh mượt mà theo thời gian thực
+                        if (!isDemoPresenter && !IsActiveDemoPresenter(student) && (DateTime.Now - student.LastScreenshotTime).TotalMilliseconds < 800)
                         {
                             return; // Ignore updates if less than 800ms elapsed since last update (Frame Rate Throttle)
                         }
@@ -1101,106 +1113,32 @@ namespace QASmartClass.Classroom.Views
 
                 _allStudents.Clear();
 
-                // Ensure at least 35 students for full grid display
-
+                /* // [MYTHWARE_LITE] Không tự động chèn 35 học sinh ảo (demoNames) khi chưa tạo danh sách lớp trong SQLite.
+                   // Trong chế độ Mythware Zero-DB, lưới màn hình tự động hiển thị trực tiếp các máy PC & Android đang kết nối mạng LAN/Wi-Fi.
                 var demoNames = new[]
-
                 {
-
                     "Nguyễn Văn An","Trần Thị Bình","Lê Hoàng Cường","Phạm Thị Dung","Hoàng Văn Em",
-
                     "Ngô Thị Phương","Đỗ Quang Hải","Vũ Thị Hoa","Bùi Đức Khang","Lý Thị Lan",
-
                     "Mai Văn Minh","Đinh Thị Ngọc","Trương Quốc Phong","Đặng Thị Quỳnh","Hà Sĩ Ren",
-
                     "Cao Thị Sen","Tô Văn Tuấn","Phan Thị Uyên","Lương Văn Vũ","Châu Thị Xuân",
-
                     "Dương Thị Yến","Trịnh Văn Anh","Lưu Thị Bé","Kiều Văn Chiến","Mạc Thị Diệp",
-
                     "Nghiêm Văn Giao","Đoàn Thị Hà","Tống Văn Ích","Hồ Thị Kim","Đỗ Văn Long",
-
                     "Trần Minh Nhật","Lê Thị Oanh","Phạm Văn Phú","Nguyễn Quốc Sơn","Vũ Thị Tâm"
-
                 };
-
-
+                */
 
                 if (rosterStudents.Any())
-
                 {
-
                     foreach (var s in rosterStudents)
-
                         _allStudents.Add(new ConnectedStudent
-
                         {
-
                             Name      = s.FullName,
-
                             PCName    = string.IsNullOrWhiteSpace(s.PCName) ? $"PC-{s.Id:D2}" : s.PCName,
-
                             IPAddress = string.IsNullOrWhiteSpace(s.IPAddress) ? $"192.168.1.{100+s.Id}" : s.IPAddress,
-
                             IsOnline  = false,
-
                             StudentCode = s.StudentCode,
-
                             FocusPct  = 0  // Will be updated by real HB_UPDATE or SyncFromNetworkService
-
                         });
-
-
-
-                    // Pad remaining slots with demo students (NOT connected)
-
-                    int startIdx = _allStudents.Count;
-
-                    for (int i = startIdx; i < 35; i++)
-
-                        _allStudents.Add(new ConnectedStudent
-
-                        {
-
-                            Name      = demoNames[i % demoNames.Length],
-
-                            PCName    = $"PC-{i + 1:D2}",
-
-                            IPAddress = $"192.168.1.{100 + i}",
-
-                            IsOnline  = false,
-
-                            FocusPct  = 0
-
-                        });
-
-                }
-
-                else
-
-                {
-
-                    // Full demo: 35 students — all offline by default
-
-                    // Status will be updated by SyncFromNetworkService()
-
-                    for (int i = 0; i < demoNames.Length; i++)
-
-                        _allStudents.Add(new ConnectedStudent
-
-                        {
-
-                            Name      = demoNames[i],
-
-                            PCName    = $"PC-{i + 1:D2}",
-
-                            IPAddress = $"192.168.1.{100 + i}",
-
-                            IsOnline  = false,  // Real status from network sync
-
-                            FocusPct  = 0
-
-                        });
-
                 }
 
 
@@ -1465,18 +1403,36 @@ namespace QASmartClass.Classroom.Views
 
                 // This is the student running in the same process as the teacher app (demo/dev mode)
 
-                var localStudent = _allStudents.FirstOrDefault(s => s.IsOnline);
+                var localStudent = _allStudents.FirstOrDefault(s => s.IsOnline && !s.IsAndroidDevice)
+                                ?? _allStudents.FirstOrDefault(s => s.IsOnline);
 
                 if (localStudent != null)
-
                 {
-
                     localStudent.ScreenshotSource = rtb;
-
                     localStudent.OnPropertyChanged(nameof(localStudent.ScreenshotSource));
-
                     localStudent.OnPropertyChanged(nameof(localStudent.PlaceholderVisibility));
 
+                    // Nếu học sinh local đang trình bày trước lớp, đẩy luôn khung hình này sang luồng Broadcast cho tất cả các máy khác xem
+                    if (IsActiveDemoPresenter(localStudent))
+                    {
+                        _ = System.Threading.Tasks.Task.Run(() =>
+                        {
+                            try
+                            {
+                                var enc = new JpegBitmapEncoder { QualityLevel = 65 };
+                                enc.Frames.Add(BitmapFrame.Create(rtb));
+                                using var ms = new System.IO.MemoryStream(65536);
+                                enc.Save(ms);
+                                var jpgBytes = ms.ToArray();
+                                if (jpgBytes.Length > 0)
+                                {
+                                    QASmartClass.Services.BroadcastStateService.Instance.ScreenCaptureBytes = jpgBytes;
+                                    _ = QASmartClass.Services.UdpScreenBroadcastService.Instance.SendFrameAsync(jpgBytes);
+                                }
+                            }
+                            catch { }
+                        });
+                    }
                 }
 
             }
@@ -1689,7 +1645,7 @@ namespace QASmartClass.Classroom.Views
             int online  = _allStudents.Count(s => s.IsOnline);
 
             int alerts  = _allStudents.Count(s => s.HasAlert);
-            SyncHandRaiseAndChips();
+            SyncHandRaiseAndChips();
 
             double cpuAvg = online > 0 ? _allStudents.Where(s => s.IsOnline).Average(s => s.CpuUsage) : 0;
 
@@ -1793,6 +1749,31 @@ namespace QASmartClass.Classroom.Views
                     StringComparer.OrdinalIgnoreCase);
 
 
+
+                // [MYTHWARE_LITE] Tự động bổ sung các thiết bị PC & Android mới kết nối chưa có trong _allStudents (Zero-DB Dependency)
+                foreach (var client in connectedClients)
+                {
+                    bool exists = _allStudents.Any(st =>
+                        (!string.IsNullOrEmpty(st.StudentCode) && client.Code.Equals(st.StudentCode, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(st.PCName) && client.PCName.Equals(st.PCName, StringComparison.OrdinalIgnoreCase)) ||
+                        IsNameMatch(client.Name, st.Name));
+
+                    if (!exists)
+                    {
+                        var dyn = new ConnectedStudent
+                        {
+                            Name        = string.IsNullOrWhiteSpace(client.Name) ? client.Code : client.Name,
+                            StudentCode = client.Code,
+                            PCName      = string.IsNullOrWhiteSpace(client.PCName) ? $"PC-{client.Code}" : client.PCName,
+                            IPAddress   = client.IPAddress,
+                            IsOnline    = true,
+                            CpuUsage    = client.CpuUsage,
+                            FocusPct    = 85
+                        };
+                        _allStudents.Add(dyn);
+                        _webCodeMap[client.Code] = dyn;
+                    }
+                }
 
                 foreach (var st in _allStudents)
 
@@ -2010,15 +1991,15 @@ namespace QASmartClass.Classroom.Views
 
 
 
-        // Khi dừng chiếu màn hình: yêu cầu HS gửi lại ảnh preview ngay (tránh chờ chu kỳ 10s / mất preview)
-        private void OnScreenShareLiveChanged(object? sender, EventArgs e)
-        {
-            Dispatcher.BeginInvoke(() =>
-            {
-                if (!ScreenShareController.Instance.IsLive) RequestScreenshots();
-            });
-        }
-
+        // Khi dừng chiếu màn hình: yêu cầu HS gửi lại ảnh preview ngay (tránh chờ chu kỳ 10s / mất preview)
+        private void OnScreenShareLiveChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (!ScreenShareController.Instance.IsLive) RequestScreenshots();
+            });
+        }
+
         private int _isScreenshotSweepInProgress = 0;
 
         /// <summary>Gửi lệnh REQUEST_SCREENSHOT tới tất cả HS (chia lô lệch pha 8 máy/lần để chống bão mạng LAN khi có 40-50 máy)</summary>
@@ -2105,25 +2086,434 @@ namespace QASmartClass.Classroom.Views
 
 
         private void GridSize_Changed(object sender, SelectionChangedEventArgs e)
-
         {
-
             if (cmbGrid?.SelectedItem is ComboBoxItem item && monitorGrid != null)
-
             {
-
                 _gridColumns = item.Content?.ToString()?.StartsWith("3") == true ? 3 :
-
                                item.Content?.ToString()?.StartsWith("5") == true ? 5 :
-
                                item.Content?.ToString()?.StartsWith("6") == true ? 6 : 4;
 
-
-
                 ApplyFilter();
+            }
+        }
 
+        private void VeyonZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            int cols = Math.Clamp((int)Math.Round(e.NewValue), 2, 8);
+            if (_gridColumns == cols) return;
+            _gridColumns = cols;
+            if (txtVeyonGridCols != null)
+            {
+                txtVeyonGridCols.Text = $"{cols} cột";
+            }
+            if (monitorGrid != null)
+            {
+                ApplyFilter();
+            }
+        }
+
+        private void ToggleVeyonPanel_Changed(object sender, RoutedEventArgs e)
+        {
+            if (veyonLeftPanel == null || btnToggleVeyonPanel == null) return;
+            veyonLeftPanel.Visibility = btnToggleVeyonPanel.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private ConnectedStudent? GetTargetStudentForVeyonAction()
+        {
+            var selected = _allStudents.FirstOrDefault(s => s.IsSelected && s.IsOnline)
+                           ?? _allStudents.FirstOrDefault(s => s.IsSelected)
+                           ?? _allStudents.FirstOrDefault(s => s.IsOnline)
+                           ?? _allStudents.FirstOrDefault();
+            return selected;
+        }
+
+        private ConnectedStudent? _activeDemoStudent;
+        private string? _activeDemoStudentCode;
+        private DispatcherTimer? _studentDemoRelayTimer;
+        private DateTime _lastDemoBroadcastCmdUtc = DateTime.MinValue;
+
+        private bool IsActiveDemoPresenter(string? codeOrPc)
+        {
+            if (string.IsNullOrWhiteSpace(codeOrPc)) return false;
+            if (!string.IsNullOrWhiteSpace(_activeDemoStudentCode) &&
+                string.Equals(_activeDemoStudentCode.Trim(), codeOrPc.Trim(), StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (_activeDemoStudent != null)
+            {
+                if (!string.IsNullOrWhiteSpace(_activeDemoStudent.StudentCode) &&
+                    string.Equals(_activeDemoStudent.StudentCode.Trim(), codeOrPc.Trim(), StringComparison.OrdinalIgnoreCase))
+                    return true;
+                if (!string.IsNullOrWhiteSpace(_activeDemoStudent.PCName) &&
+                    string.Equals(_activeDemoStudent.PCName.Trim(), codeOrPc.Trim(), StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
+
+        private bool IsActiveDemoPresenter(ConnectedStudent? st)
+        {
+            if (st == null || _activeDemoStudent == null) return false;
+            if (ReferenceEquals(st, _activeDemoStudent)) return true;
+            return IsActiveDemoPresenter(st.StudentCode) || IsActiveDemoPresenter(st.PCName);
+        }
+
+        private string BuildStudentDemoBroadcastCmd(string cmdType, ConnectedStudent st)
+        {
+            int webPort = ClassroomAppContext.Network?.WebBridge?.WebPort ?? 8080;
+            if (string.IsNullOrEmpty(QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken))
+            {
+                QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken = "TK_" + Guid.NewGuid().ToString("N").Substring(0, 16);
+            }
+            string token = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
+            string key = token.Length > 3 ? token.Substring(3) : "QASmartClass2026";
+            QASmartClass.Services.UdpScreenBroadcastService.EncryptionKey = key;
+            int multicastPort = QASmartClass.Services.UdpScreenBroadcastService.MulticastPort;
+            int ttl = QASmartClass.Services.UdpScreenBroadcastService.MulticastTTL;
+
+            string presenterCode = !string.IsNullOrWhiteSpace(st.StudentCode) ? st.StudentCode.Trim() : st.PCName.Trim();
+            string title = Uri.EscapeDataString($"👨‍🎓 Học sinh trình bày: {st.Name} ({st.DisplayPCName})");
+
+            return $"CMD|{cmdType}|student_demo.jpg|PROTOCOL=UDP_MULTICAST|PORT={multicastPort}|KEY={key}|TTL={ttl}|FORCE_WATCH|PRESENTER={presenterCode}|TITLE={title}|{webPort}|{token}";
+        }
+
+        public void StartStudentDemoRelay(ConnectedStudent st)
+        {
+            if (st == null) return;
+
+            // Nếu đang phát màn hình của học sinh khác thì dừng học sinh cũ trước
+            if (_activeDemoStudent != null && !IsActiveDemoPresenter(st))
+            {
+                SendCommandToStudent(_activeDemoStudent, "CMD|STUDENT_DEMO_STOP");
             }
 
+            _activeDemoStudent = st;
+            _activeDemoStudentCode = !string.IsNullOrWhiteSpace(st.StudentCode) ? st.StudentCode.Trim() : st.PCName.Trim();
+
+            if (string.IsNullOrEmpty(QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken))
+            {
+                QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken = "TK_" + Guid.NewGuid().ToString("N").Substring(0, 16);
+            }
+            string token = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
+            QASmartClass.Services.UdpScreenBroadcastService.EncryptionKey = token.Length > 3 ? token.Substring(3) : "QASmartClass2026";
+            QASmartClass.Services.BroadcastStateService.Instance.IsScreenBroadcastActive = true;
+
+            // Khởi tạo ngay khung hình đầu tiên từ ảnh chụp hiện có của học sinh (nếu có) để các máy học sinh khác hiển thị tức thì
+            if (st.ScreenshotSource is BitmapSource existingBmp)
+            {
+                try
+                {
+                    var enc = new JpegBitmapEncoder { QualityLevel = 65 };
+                    enc.Frames.Add(BitmapFrame.Create(existingBmp));
+                    using var ms = new System.IO.MemoryStream(65536);
+                    enc.Save(ms);
+                    var seedBytes = ms.ToArray();
+                    if (seedBytes.Length > 0)
+                    {
+                        QASmartClass.Services.BroadcastStateService.Instance.ScreenCaptureBytes = seedBytes;
+                        _ = QASmartClass.Services.UdpScreenBroadcastService.Instance.SendFrameAsync(seedBytes);
+                    }
+                }
+                catch { }
+            }
+
+            // 1. Gửi lệnh cho máy Học sinh được chọn trình bày: đóng mọi lớp phủ bài giảng và đẩy luồng màn hình tốc độ cao về máy Giáo viên
+            SendCommandToStudent(st, $"CMD|STUDENT_DEMO_START|{_activeDemoStudentCode}");
+            RequestScreenshotFromStudent(st);
+
+            // 2. Gửi lệnh phát màn hình cho TẤT CẢ các máy học sinh khác trong lớp (cả Windows PC & Android) cùng xem màn hình của học sinh này!
+            // (Tham số PRESENTER={code} đảm bảo chính máy học sinh đang trình bày không tự phủ màn hình của chính mình)
+            string broadcastStartCmd = BuildStudentDemoBroadcastCmd("SCREEN_BROADCAST_START", st);
+            _lastDemoBroadcastCmdUtc = DateTime.UtcNow;
+            SendCommand(broadcastStartCmd);
+
+            // 3. Duyệt nhịp yêu cầu khung hình liên tục & đồng bộ trạng thái cho máy học sinh vào sau
+            _studentDemoRelayTimer?.Stop();
+            _studentDemoRelayTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(180) };
+            _studentDemoRelayTimer.Tick += (_, _) =>
+            {
+                if (_activeDemoStudent == null)
+                {
+                    _studentDemoRelayTimer?.Stop();
+                    return;
+                }
+                RequestScreenshotFromStudent(_activeDemoStudent);
+                CaptureStudentScreenLive();
+
+                if ((DateTime.UtcNow - _lastDemoBroadcastCmdUtc).TotalSeconds >= 2.5)
+                {
+                    _lastDemoBroadcastCmdUtc = DateTime.UtcNow;
+                    string updateCmd = BuildStudentDemoBroadcastCmd("SCREEN_BROADCAST_UPDATE", _activeDemoStudent);
+                    SendCommand(updateCmd);
+                }
+            };
+            _studentDemoRelayTimer.Start();
+
+            int otherCount = Math.Max(0, _allStudents.Count(s => s.IsOnline && !IsActiveDemoPresenter(s)));
+            AddLog("Học sinh trình bày", $"Đang chia sẻ màn hình của {st.Name} ({st.DisplayPCName}) cho cả lớp ({otherCount} máy học sinh khác đang xem)", "#ECFDF5", "#047857");
+            ShowToast("👨‍🎓 Học sinh trình bày trước lớp", $"Đang phát trực tiếp màn hình của {st.Name} tới toàn bộ các máy học sinh khác trong lớp!");
+        }
+
+        public void StopStudentDemoRelay()
+        {
+            _studentDemoRelayTimer?.Stop();
+            _studentDemoRelayTimer = null;
+
+            var prevStudent = _activeDemoStudent;
+            _activeDemoStudent = null;
+            _activeDemoStudentCode = null;
+
+            if (prevStudent != null)
+            {
+                SendCommandToStudent(prevStudent, "CMD|STUDENT_DEMO_STOP");
+            }
+            SendCommand("CMD|STUDENT_DEMO_STOP");
+            SendCommand("CMD|SCREEN_BROADCAST_STOP|0");
+            SendCommand("CMD|BROADCAST_STOP|0");
+            QASmartClass.Services.BroadcastStateService.Instance.Reset();
+
+            if (prevStudent != null)
+            {
+                AddLog("Dừng HS trình bày", $"Đã dừng chia sẻ màn hình của {prevStudent.Name} trước lớp", "#FEF2F2", "#DC2626");
+                ShowToast("⏹️ Đã dừng Học sinh trình bày", $"Đã kết thúc chia sẻ màn hình của {prevStudent.Name}.");
+            }
+        }
+
+        public void TriggerVeyonStudentDemo()
+        {
+            var st = GetTargetStudentForVeyonAction();
+            if (st == null)
+            {
+                ClassroomDialog.Warn("Vui lòng chọn 1 máy Học sinh (Windows PC hoặc Android) trên lưới để cho học sinh đó trình bày bài làm trước cả lớp.", "Học sinh trình bày (Student Demo)");
+                return;
+            }
+
+            if (IsActiveDemoPresenter(st))
+            {
+                StopStudentDemoRelay();
+                return;
+            }
+
+            StartStudentDemoRelay(st);
+            ShowStudentDetailView(st);
+        }
+
+        public void TriggerVeyonRemoteView()
+        {
+            var st = GetTargetStudentForVeyonAction();
+            if (st == null)
+            {
+                ClassroomDialog.Warn("Hiện chưa có máy Học sinh nào trong danh sách để quan sát.\n\nHãy đợi máy Học sinh kết nối hoặc nhấp trực tiếp vào 1 ô màn hình Học sinh.", "Quan sát màn hình (Veyon Remote View)");
+                return;
+            }
+            SendCommand("CMD|REMOTE_VIEW_START");
+            ShowStudentDetailView(st);
+        }
+
+        public void TriggerVeyonRemoteControl()
+        {
+            var st = GetTargetStudentForVeyonAction();
+            if (st == null)
+            {
+                ClassroomDialog.Warn("Hiện chưa có máy Học sinh nào đang kết nối để điều khiển từ xa.", "Điều khiển từ xa (Veyon Remote Control)");
+                return;
+            }
+            SendCommand("CMD|REMOTE_CONTROL_START");
+            ShowStudentDetailView(st);
+        }
+
+        public void TriggerVeyonTextMessage()
+        {
+            SendMessage_Click(this, new RoutedEventArgs());
+        }
+
+        public void TriggerVeyonScreenshot()
+        {
+            ScreenshotAll_Click(this, new RoutedEventArgs());
+        }
+
+        public void TriggerVeyonStartApp()
+        {
+            var dlg = new Window
+            {
+                Title = "Khởi chạy phần mềm trên máy Học sinh (Windows PC & Android)",
+                Width = 500,
+                Height = 350,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = Window.GetWindow(this),
+                ResizeMode = ResizeMode.NoResize,
+                Background = new SolidColorBrush(Color.FromRgb(248, 250, 252)),
+                FontFamily = new FontFamily("Segoe UI")
+            };
+
+            var sp = new StackPanel { Margin = new Thickness(20) };
+            sp.Children.Add(new TextBlock
+            {
+                Text = "🚀 Mở đồng loạt ứng dụng trên Học sinh (Windows PC & Android)",
+                FontSize = 15.5,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(Color.FromRgb(15, 23, 42)),
+                Margin = new Thickness(0, 0, 0, 6)
+            });
+            sp.Children.Add(new TextBlock
+            {
+                Text = "Chọn nhanh phần mềm (tương thích cả PC & Android) hoặc nhập tên lệnh / packageName:",
+                FontSize = 12.5,
+                Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)),
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+
+            var tbApp = new TextBox
+            {
+                Text = "calc.exe",
+                FontSize = 13.5,
+                Padding = new Thickness(10, 7, 10, 7),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                BorderThickness = new Thickness(1),
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+
+            var presets = new (string label, string cmd)[]
+            {
+                ("🧮 Máy tính (PC & Android)", "calc.exe"),
+                ("🌐 Trình duyệt Chrome (PC & Android)", "chrome"),
+                ("▶️ YouTube (PC & Android)", "youtube"),
+                ("📝 Notepad / Docs (PC & Android)", "notepad.exe"),
+                ("🎨 MS Paint (PC)", "mspaint.exe"),
+                ("📘 Word (PC & Android)", "winword.exe"),
+                ("⚙️ Cài đặt (PC & Android)", "settings")
+            };
+
+            var wrap = new WrapPanel { Margin = new Thickness(0, 0, 0, 14) };
+            foreach (var (label, cmdVal) in presets)
+            {
+                var b = new Button
+                {
+                    Content = label,
+                    Padding = new Thickness(10, 5, 10, 5),
+                    Margin = new Thickness(0, 0, 6, 6),
+                    FontSize = 12,
+                    FontWeight = FontWeights.SemiBold,
+                    Background = new SolidColorBrush(Color.FromRgb(224, 242, 254)),
+                    Foreground = new SolidColorBrush(Color.FromRgb(3, 105, 161)),
+                    BorderThickness = new Thickness(0),
+                    Cursor = Cursors.Hand
+                };
+                string c = cmdVal;
+                b.Click += (_, _) => tbApp.Text = c;
+                wrap.Children.Add(b);
+            }
+
+            sp.Children.Add(wrap);
+            sp.Children.Add(tbApp);
+
+            var btnRow = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 8, 0, 0) };
+            var btnCancel = new Button
+            {
+                Content = "Hủy",
+                Padding = new Thickness(16, 8, 16, 8),
+                Margin = new Thickness(0, 0, 8, 0),
+                Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+                Foreground = new SolidColorBrush(Color.FromRgb(51, 65, 85)),
+                BorderThickness = new Thickness(0),
+                FontWeight = FontWeights.SemiBold,
+                Cursor = Cursors.Hand
+            };
+            btnCancel.Click += (_, _) => dlg.Close();
+
+            var btnRun = new Button
+            {
+                Content = "🚀 Chạy trên máy Học sinh (PC & Android)",
+                Padding = new Thickness(16, 8, 16, 8),
+                Background = new SolidColorBrush(Color.FromRgb(2, 132, 199)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                FontWeight = FontWeights.Bold,
+                Cursor = Cursors.Hand
+            };
+            btnRun.Click += (_, _) =>
+            {
+                string appCmd = tbApp.Text.Trim();
+                if (!string.IsNullOrEmpty(appCmd))
+                {
+                    SendCommand($"CMD|START_APP|{appCmd}");
+                    AddLog("Chạy phần mềm (Veyon)", $"Đã gửi lệnh mở '{appCmd}' tới các máy Học sinh (PC & Android)", "#E0F2FE", "#0369A1");
+                }
+                dlg.Close();
+            };
+
+            btnRow.Children.Add(btnCancel);
+            btnRow.Children.Add(btnRun);
+            sp.Children.Add(btnRow);
+            dlg.Content = sp;
+            dlg.ShowDialog();
+        }
+
+        public void TriggerVeyonPowerMenu(UIElement? placementTarget)
+        {
+            var menu = new ContextMenu
+            {
+                FontFamily = new FontFamily("Segoe UI"),
+                FontSize = 13
+            };
+
+            var itemReboot = new MenuItem { Header = "🔄 Khởi động lại dàn máy Học sinh (Reboot — PC & Android)" };
+            itemReboot.Click += (_, _) =>
+            {
+                if (MessageBox.Show("Bạn có chắc chắn muốn KHỞI ĐỘNG LẠI các máy tính Học sinh đang kết nối?", "Xác nhận Khởi động lại (Veyon Power)", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                {
+                    SendCommand("CMD|REBOOT_PC");
+                    AddLog("Nguồn máy (Veyon)", "Đã gửi lệnh Khởi động lại (Reboot) tới máy Học sinh", "#FEF3C7", "#B45309");
+                }
+            };
+
+            var itemShutdown = new MenuItem { Header = "🔌 Tắt nguồn dàn máy Học sinh (Power Down — PC & Android)" };
+            itemShutdown.Click += (_, _) =>
+            {
+                if (MessageBox.Show("Bạn có chắc chắn muốn TẮT NGUỒN (Shutdown) các máy tính Học sinh đang kết nối?", "Xác nhận Tắt máy (Veyon Power)", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                {
+                    SendCommand("CMD|SHUTDOWN_PC");
+                    AddLog("Nguồn máy (Veyon)", "Đã gửi lệnh Tắt nguồn (Shutdown) tới máy Học sinh", "#FEE2E2", "#B91C1C");
+                }
+            };
+
+            var itemLogoff = new MenuItem { Header = "🚪 Đăng xuất phiên làm việc máy Học sinh (Log out — PC & Android)" };
+            itemLogoff.Click += (_, _) =>
+            {
+                if (MessageBox.Show("Bạn có chắc chắn muốn ĐĂNG XUẤT các máy Học sinh đang kết nối?", "Xác nhận Đăng xuất", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    SendCommand("CMD|LOGOFF_PC");
+                    AddLog("Nguồn máy (Veyon)", "Đã gửi lệnh Đăng xuất (Logoff) tới máy Học sinh", "#F1F5F9", "#334155");
+                }
+            };
+
+            var itemKick = new MenuItem { Header = "🏫 Mời học sinh vào nhầm lớp chọn lại phòng học (Kick — PC & Android)" };
+            itemKick.Click += (_, _) =>
+            {
+                var st = GetTargetStudentForVeyonAction();
+                string stName = st != null ? $"{st.Name} ({st.DisplayPCName})" : "các máy đang chọn";
+                if (MessageBox.Show($"Mời {stName} rời khỏi phiên lớp hiện tại để chọn lại đúng phòng học?", "Mời chọn lại lớp (Kick)", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    SendCommand("CMD|KICK||0|Giáo viên đã mời thiết bị ra khỏi lớp để bạn chọn lại đúng phòng học.");
+                    AddLog("Quản lý lớp", $"Đã mời {stName} chọn lại phòng học", "#FEF3C7", "#D97706");
+                }
+            };
+
+            var itemKillApps = new MenuItem { Header = "🚫 Đóng toàn bộ Game / Ứng dụng ngoài trên máy HS" };
+            itemKillApps.Click += (_, _) => KillApps_Click(this, new RoutedEventArgs());
+
+            menu.Items.Add(itemReboot);
+            menu.Items.Add(itemShutdown);
+            menu.Items.Add(itemLogoff);
+            menu.Items.Add(new Separator());
+            menu.Items.Add(itemKick);
+            menu.Items.Add(itemKillApps);
+
+            if (placementTarget != null)
+            {
+                menu.PlacementTarget = placementTarget;
+                menu.Placement = PlacementMode.Bottom;
+            }
+            menu.IsOpen = true;
         }
 
 
@@ -2895,7 +3285,7 @@ namespace QASmartClass.Classroom.Views
             var dlg = new Window
             {
                 Title = $"Học sinh: {st.Name} — {st.DisplayPCName}",
-                Width = 420, Height = 460, WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Width = 420, Height = 550, WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = Window.GetWindow(this), ResizeMode = ResizeMode.NoResize,
                 Background = new SolidColorBrush(Color.FromRgb(37, 40, 48))
             };
@@ -2924,13 +3314,21 @@ namespace QASmartClass.Classroom.Views
 
             sp.Children.Add(new TextBlock { Text = "Hành động:", FontSize = 13, FontWeight = FontWeights.Bold, Foreground = Brushes.White, Margin = new Thickness(0, 0, 0, 8) });
 
+            bool isCurrentlyDemo = IsActiveDemoPresenter(st);
             var actions = new (string label, string bg, string fg, string cmd)[]
             {
+                (isCurrentlyDemo ? "⏹️ Dừng chia sẻ màn hình HS này cho cả lớp" : "👨‍🎓 Chia sẻ màn hình HS này cho cả lớp xem",
+                 isCurrentlyDemo ? "#FEE2E2" : "#ECFDF5",
+                 isCurrentlyDemo ? "#DC2626" : "#047857",
+                 isCurrentlyDemo ? "STOP_DEMO" : "START_DEMO"),
+                ("💬 Nhắn tin riêng cho học sinh này", "#EFF6FF", "#1D4ED8", "CHAT"),
                 ("Xem màn hình chi tiết", "#E3F2FD", "#1565C0", "VIEW"),
                 ("Đặt trạng thái IM LẶNG", "#212121", "#FFFFFF", "SILENCE"),
                 ("Tắt ứng dụng chưa tập trung", "#FFEBEE", "#C62828", "KILL_APPS"),
                 ("Gửi cảnh báo cá nhân", "#FFF3E0", "#E65100", "WARNING"),
-                ("Khóa màn hình học sinh", "#FFCDD2", "#B71C1C", "LOCK"),                ("Mở khóa màn hình học sinh", "#E8F5E9", "#2E7D32", "UNLOCK")
+                ("Khóa màn hình học sinh", "#FFCDD2", "#B71C1C", "LOCK"),
+                ("Mở khóa màn hình học sinh", "#E8F5E9", "#2E7D32", "UNLOCK"),
+                ("🚫 Mời ra khỏi lớp (Vào nhầm lớp / Kick)", "#FEF2F2", "#DC2626", "KICK")
             };
 
             foreach (var (label, bg, fg, cmd) in actions)
@@ -2948,10 +3346,27 @@ namespace QASmartClass.Classroom.Views
                 var studentName = st.Name;
                 var targetStudent = st;
 
-                btn.Click += (_, _) =>
+                btn.Click += async (_, _) =>
                 {
                     switch (actionCmd)
                     {
+                        case "START_DEMO":
+                            dlg.Close();
+                            StartStudentDemoRelay(targetStudent);
+                            ShowStudentDetailView(targetStudent);
+                            break;
+                        case "STOP_DEMO":
+                            dlg.Close();
+                            StopStudentDemoRelay();
+                            break;
+                        case "CHAT":
+                            dlg.Close();
+                            string chatCode = !string.IsNullOrWhiteSpace(targetStudent.StudentCode) ? targetStudent.StudentCode : targetStudent.PCName;
+                            if (Window.GetWindow(this) is ClassroomShell cs && cs.contentFrame?.Content is ClassControlHub hub)
+                            {
+                                hub.OpenChatWithStudent(chatCode);
+                            }
+                            break;
                         case "VIEW":
                             dlg.Close();
                             ShowStudentDetailView(targetStudent);
@@ -2979,6 +3394,19 @@ namespace QASmartClass.Classroom.Views
                         case "UNLOCK":
                             SendCommandToStudent(targetStudent, "CMD|UNLOCK_SCREEN");
                             AddLog("Mở khóa", studentName, "#E8F5E9", "#2E7D32");
+                            dlg.Close();
+                            break;
+                        case "KICK":
+                            string kickTarget = !string.IsNullOrEmpty(targetStudent.StudentCode) ? targetStudent.StudentCode : targetStudent.PCName;
+                            if (ClassroomAppContext.Network != null && !string.IsNullOrEmpty(kickTarget))
+                            {
+                                await ClassroomAppContext.Network.KickStudentAsync(kickTarget, "Giáo viên mời ra để chọn lại đúng lớp");
+                            }
+                            _allStudents.Remove(targetStudent);
+                            if (!string.IsNullOrEmpty(targetStudent.StudentCode)) _webCodeMap.Remove(targetStudent.StudentCode);
+                            ApplyFilter();
+                            UpdateStats();
+                            AddLog("Mời ra khỏi lớp", $"{studentName} ({targetStudent.PCName}) đã được ngắt kết nối để chọn lại lớp", "#FEF2F2", "#DC2626");
                             dlg.Close();
                             break;
                     }
@@ -3223,6 +3651,37 @@ namespace QASmartClass.Classroom.Views
 
 
 
+            var btnShareToClass = new Button
+            {
+                Content         = IsActiveDemoPresenter(st) ? "⏹️ Đang chiếu cho cả lớp (Bấm để dừng)" : "👨‍🎓 Chiếu màn hình HS này cho cả lớp",
+                FontSize        = 12,
+                FontWeight      = FontWeights.Bold,
+                Padding         = new Thickness(14, 8, 14, 8),
+                Margin          = new Thickness(0, 0, 6, 0),
+                Background      = new SolidColorBrush((Color)ColorConverter.ConvertFromString(IsActiveDemoPresenter(st) ? "#DC2626" : "#059669")),
+                Foreground      = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor          = Cursors.Hand
+            };
+            btnShareToClass.Click += (_, _) =>
+            {
+                if (IsActiveDemoPresenter(st))
+                {
+                    StopStudentDemoRelay();
+                    btnShareToClass.Content = "👨‍🎓 Chiếu màn hình HS này cho cả lớp";
+                    btnShareToClass.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#059669"));
+                    lblRefresh.Text = "Đã dừng chiếu màn hình học sinh này cho cả lớp.";
+                }
+                else
+                {
+                    StartStudentDemoRelay(st);
+                    btnShareToClass.Content = "⏹️ Đang chiếu cho cả lớp (Bấm để dừng)";
+                    btnShareToClass.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DC2626"));
+                    lblRefresh.Text = "📡 Đang phát trực tiếp màn hình học sinh này tới tất cả các máy khác trong lớp...";
+                }
+            };
+            btnPanel.Children.Add(btnShareToClass);
+
             AddBtn("Chụp màn hình ngay", "#1565C0", "#FFFFFF", () =>
 
             {
@@ -3277,9 +3736,9 @@ namespace QASmartClass.Classroom.Views
 
 
 
-            // ── Auto-refresh: request new screenshot every 2s (propHandler handles display) ──
+            // ── Auto-refresh: request new screenshot every 250ms while detail window is open ──
 
-            var refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+            var refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
 
             refreshTimer.Tick += (_, _) =>
 
@@ -3367,16 +3826,12 @@ namespace QASmartClass.Classroom.Views
 
 
 
-                // V4.1: Tạm dừng yêu cầu chụp màn hình đơn lẻ khi đang phát màn hình bài giảng
-
-                if (QASmartClass.Services.BroadcastStateService.Instance.IsScreenBroadcastActive)
-
+                // V4.1: Tạm dừng yêu cầu chụp màn hình đơn lẻ khi đang phát màn hình bài giảng của Giáo viên,
+                // NHƯNG luôn cho phép chụp nếu học sinh này đang là người trình bày trước lớp (Student Demo Relay)!
+                if (QASmartClass.Services.BroadcastStateService.Instance.IsScreenBroadcastActive && !IsActiveDemoPresenter(st))
                 {
-
                     Log.Debug("[MonitorPage] Screen broadcast is active. Skipping single student screenshot request.");
-
                     return;
-
                 }
 
 
@@ -4158,7 +4613,10 @@ namespace QASmartClass.Classroom.Views
 
 
         // Computed properties for pedagogical theme
-        public string DisplayPCName => MonitorPage.IsPrivacyModeActive ? MonitorPage.ObfuscatePCName(PCName) : PCName;
+        public bool IsAndroidDevice => (PCName?.Contains("Android", StringComparison.OrdinalIgnoreCase) == true)
+                                    || (StudentCode?.StartsWith("AND_", StringComparison.OrdinalIgnoreCase) == true);
+        public string DeviceIcon => IsAndroidDevice ? "🤖" : "🪟";
+        public string DisplayPCName => $"{DeviceIcon} {(MonitorPage.IsPrivacyModeActive ? MonitorPage.ObfuscatePCName(PCName) : PCName)}";
         public string DisplayIP     => MonitorPage.IsPrivacyModeActive ? "***.***.***.***" : IPAddress;
         public string FocusLabel     => IsOnline ? $"{FocusPct}%" : "Ngoại tuyến";
         public string StatusDotColor => IsOnline ? "#10B981" : "#94A3B8";

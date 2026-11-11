@@ -33,6 +33,13 @@ namespace QASmartClass.Classroom.Views
             if (!_isInitialized)
             {
                 _isInitialized = true;
+
+                // Khởi tạo sẵn MessagingPage để lắng nghe và chuyển tiếp tin nhắn Cả lớp / Học sinh ngay từ đầu
+                if (frameMessaging.Content == null)
+                {
+                    frameMessaging.Navigate(new MessagingPage());
+                }
+
                 SelectTab(_currentTab);
 
                 // Đăng ký lắng nghe trạng thái phát màn hình
@@ -85,6 +92,15 @@ namespace QASmartClass.Classroom.Views
                 txtLiveStatus.Foreground = new SolidColorBrush(Color.FromRgb(220, 38, 38)); // #DC2626
                 pillLiveStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(254, 202, 202)); // #FECACA
                 pillLiveStatus.Background = new SolidColorBrush(Color.FromRgb(254, 242, 242)); // #FEF2F2
+
+                if (btnQuickBroadcast != null)
+                {
+                    btnQuickBroadcast.Background = new SolidColorBrush(Color.FromRgb(254, 226, 226)); // #FEE2E2
+                    btnQuickBroadcast.Foreground = new SolidColorBrush(Color.FromRgb(185, 28, 28));  // #B91C1C
+                    btnQuickBroadcast.BorderBrush = new SolidColorBrush(Color.FromRgb(248, 113, 113));
+                    if (iconQuickBroadcast != null) iconQuickBroadcast.Text = "⏹️";
+                    if (txtQuickBroadcast != null) txtQuickBroadcast.Text = "Dừng chiếu";
+                }
             }
             else
             {
@@ -93,12 +109,23 @@ namespace QASmartClass.Classroom.Views
                 txtLiveStatus.Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)); // #475569
                 pillLiveStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)); // #CBD5E1
                 pillLiveStatus.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)); // #F1F5F9
+
+                if (btnQuickBroadcast != null)
+                {
+                    btnQuickBroadcast.Background = Brushes.Transparent;
+                    btnQuickBroadcast.Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59));
+                    btnQuickBroadcast.BorderBrush = Brushes.Transparent;
+                    if (iconQuickBroadcast != null) iconQuickBroadcast.Text = "📺";
+                    if (txtQuickBroadcast != null) txtQuickBroadcast.Text = "Chiếu bài giảng";
+                }
             }
         }
 
         private void UpdateSessionStatusUI()
         {
-            int count = _sessionService.ConnectedStudents?.Count ?? 0;
+            int netCount = ClassroomAppContext.Network?.ConnectedCount ?? 0;
+            int sessCount = _sessionService.ConnectedStudents?.Count ?? 0;
+            int count = Math.Max(netCount, sessCount);
             txtStudentCount.Text = $"👥 {count} Học sinh";
 
             if (_sessionService.IsSilenceActive)
@@ -114,8 +141,8 @@ namespace QASmartClass.Classroom.Views
                 pillSilence.Visibility = Visibility.Collapsed;
                 txtQuickMute.Text = "Im lặng";
                 iconQuickMute.Text = "🔇";
-                btnQuickMute.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249));
-                btnQuickMute.Foreground = new SolidColorBrush(Color.FromRgb(51, 65, 85));
+                btnQuickMute.Background = Brushes.Transparent;
+                btnQuickMute.Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59));
             }
         }
 
@@ -125,11 +152,24 @@ namespace QASmartClass.Classroom.Views
             {
                 "F4" or "F5" or "F12" => "Monitor",
                 "F16" => "Broadcast",
+                "F13" => "Messaging",
                 "F11" => "Files",
                 "F30" => "Web",
                 _ => "Monitor"
             };
             SelectTab(tab);
+        }
+
+        public void OpenChatWithStudent(string studentCode)
+        {
+            SelectTab("Messaging");
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (frameMessaging.Content is MessagingPage mp && !string.IsNullOrWhiteSpace(studentCode))
+                {
+                    mp.SelectChannel(studentCode);
+                }
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         public void SelectTab(string tabKey)
@@ -142,12 +182,15 @@ namespace QASmartClass.Classroom.Views
 
             tabBtnMonitor.Style = tabKey == "Monitor" ? activeStyle : normalStyle;
             tabBtnBroadcast.Style = tabKey == "Broadcast" ? activeStyle : normalStyle;
+            if (tabBtnMessaging != null)
+                tabBtnMessaging.Style = tabKey == "Messaging" ? activeStyle : normalStyle;
             tabBtnFiles.Style = tabKey == "Files" ? activeStyle : normalStyle;
             tabBtnWeb.Style = tabKey == "Web" ? activeStyle : normalStyle;
 
             // Hide all frames
             frameMonitor.Visibility = Visibility.Collapsed;
             frameBroadcast.Visibility = Visibility.Collapsed;
+            frameMessaging.Visibility = Visibility.Collapsed;
             frameFiles.Visibility = Visibility.Collapsed;
             frameWeb.Visibility = Visibility.Collapsed;
 
@@ -164,6 +207,12 @@ namespace QASmartClass.Classroom.Views
                     if (frameBroadcast.Content == null)
                         frameBroadcast.Navigate(new BroadcastPage());
                     frameBroadcast.Visibility = Visibility.Visible;
+                    break;
+
+                case "Messaging":
+                    if (frameMessaging.Content == null)
+                        frameMessaging.Navigate(new MessagingPage());
+                    frameMessaging.Visibility = Visibility.Visible;
                     break;
 
                 case "Files":
@@ -190,17 +239,51 @@ namespace QASmartClass.Classroom.Views
 
         #region Quick Actions
 
+        private void QuickBroadcast_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (frameBroadcast.Content == null)
+                {
+                    frameBroadcast.Navigate(new BroadcastPage());
+                }
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (frameBroadcast.Content is BroadcastPage bp)
+                    {
+                        bp.ToggleMythwareQuickBroadcast();
+                        UpdateLiveBroadcastUI();
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Lỗi khi bật/tắt trình chiếu màn hình nhanh");
+                ClassroomDialog.Error($"Không thể phát màn hình: {ex.Message}", "Lỗi");
+            }
+        }
+
         private async void QuickLock_Click(object sender, RoutedEventArgs e)
         {
+            /* // [MYTHWARE_LITE] Cho phép khóa máy ngay lập tức mà không bắt buộc phải bấm "Bắt đầu phiên học"
             if (!_sessionService.IsSessionActive)
             {
                 ClassroomDialog.Warn("Vui lòng bắt đầu phiên học trước khi thực hiện thao tác!", "Thông báo");
                 return;
             }
+            */
 
             try
             {
-                await _sessionService.LockAllAsync();
+                if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                {
+                    await ClassroomAppContext.Network.SendCommandAsync("CMD|LOCK_SCREEN");
+                }
+                if (_sessionService.IsSessionActive)
+                {
+                    await _sessionService.LockAllAsync();
+                }
                 ClassroomDialog.Info("🔒 Đã gửi lệnh khóa toàn bộ màn hình học sinh thành công!", "Khóa máy");
             }
             catch (Exception ex)
@@ -212,15 +295,24 @@ namespace QASmartClass.Classroom.Views
 
         private async void QuickUnlock_Click(object sender, RoutedEventArgs e)
         {
+            /* // [MYTHWARE_LITE]
             if (!_sessionService.IsSessionActive)
             {
                 ClassroomDialog.Warn("Vui lòng bắt đầu phiên học trước khi thực hiện thao tác!", "Thông báo");
                 return;
             }
+            */
 
             try
             {
-                await _sessionService.UnlockAllAsync();
+                if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                {
+                    await ClassroomAppContext.Network.SendCommandAsync("CMD|UNLOCK_SCREEN");
+                }
+                if (_sessionService.IsSessionActive)
+                {
+                    await _sessionService.UnlockAllAsync();
+                }
                 ClassroomDialog.Info("🔓 Đã mở khóa tất cả máy học sinh thành công!", "Mở khóa máy");
             }
             catch (Exception ex)
@@ -232,23 +324,35 @@ namespace QASmartClass.Classroom.Views
 
         private async void QuickMute_Click(object sender, RoutedEventArgs e)
         {
+            /* // [MYTHWARE_LITE]
             if (!_sessionService.IsSessionActive)
             {
                 ClassroomDialog.Warn("Vui lòng bắt đầu phiên học trước khi thực hiện thao tác!", "Thông báo");
                 return;
             }
+            */
 
             try
             {
                 if (_sessionService.IsSilenceActive)
                 {
+                    if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                    {
+                        await ClassroomAppContext.Network.SendCommandAsync("CMD|CLEAR_SILENCE");
+                        await ClassroomAppContext.Network.SendCommandAsync("CMD|MUTE_AUDIO|0");
+                    }
                     await _sessionService.ClearSilenceAllAsync();
-                    ClassroomDialog.Info("🔊 Đã gỡ bỏ trạng thái im lặng!", "Mở im lặng");
+                    ClassroomDialog.Info("🔊 Đã gỡ bỏ trạng thái im lặng trên toàn bộ máy Học sinh (Windows & Android)!", "Mở im lặng");
                 }
                 else
                 {
+                    if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                    {
+                        await ClassroomAppContext.Network.SendCommandAsync("CMD|SILENCE");
+                        await ClassroomAppContext.Network.SendCommandAsync("CMD|MUTE_AUDIO|1");
+                    }
                     await _sessionService.SilenceAllAsync();
-                    ClassroomDialog.Info("🔇 Đã kích hoạt chế độ im lặng trên các máy học sinh!", "Im lặng");
+                    ClassroomDialog.Info("🔇 Đã kích hoạt chế độ im lặng trên các máy Học sinh (Windows & Android)!", "Im lặng");
                 }
                 UpdateSessionStatusUI();
             }
@@ -257,6 +361,79 @@ namespace QASmartClass.Classroom.Views
                 Log.Error(ex, "Lỗi khi thay đổi chế độ im lặng");
                 ClassroomDialog.Error($"Không thể thực hiện: {ex.Message}", "Lỗi");
             }
+        }
+
+        private MonitorPage? EnsureMonitorPageLoaded()
+        {
+            if (frameMonitor.Content == null)
+            {
+                frameMonitor.Navigate(new MonitorPage());
+            }
+            return frameMonitor.Content as MonitorPage;
+        }
+
+        private void VeyonStudentDemo_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTab("Monitor");
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                EnsureMonitorPageLoaded()?.TriggerVeyonStudentDemo();
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void VeyonRemoteView_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTab("Monitor");
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                EnsureMonitorPageLoaded()?.TriggerVeyonRemoteView();
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void VeyonRemoteControl_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTab("Monitor");
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                EnsureMonitorPageLoaded()?.TriggerVeyonRemoteControl();
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void VeyonTextMessage_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTab("Monitor");
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                EnsureMonitorPageLoaded()?.TriggerVeyonTextMessage();
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void VeyonStartApp_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTab("Monitor");
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                EnsureMonitorPageLoaded()?.TriggerVeyonStartApp();
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void VeyonScreenshot_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTab("Monitor");
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                EnsureMonitorPageLoaded()?.TriggerVeyonScreenshot();
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void VeyonPowerControl_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTab("Monitor");
+            var targetBtn = sender as UIElement;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                EnsureMonitorPageLoaded()?.TriggerVeyonPowerMenu(targetBtn);
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         #endregion

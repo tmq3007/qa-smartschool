@@ -29,6 +29,20 @@ namespace QASmartClass.StudentClient.Services
         ConnectionFailed
     }
 
+    /// <summary>Thông tin một lớp học phát hiện qua UDP Beacon (Mythware Multi-Channel)</summary>
+    public class DiscoveredClassroom
+    {
+        public int ChannelId { get; set; } = 1;
+        public string ClassName { get; set; } = "Phòng Máy 01";
+        public string TeacherName { get; set; } = "Giáo viên";
+        public string ServerIP { get; set; } = "";
+        public int Port { get; set; } = 29877;
+        public bool RequirePin { get; set; } = false;
+        public DateTime LastSeenUtc { get; set; } = DateTime.UtcNow;
+
+        public string DisplayLabel => $"[Kênh {ChannelId}] {ClassName} — GV: {TeacherName} ({ServerIP}) {(RequirePin ? "🔒 Có PIN" : "🔓 Mở")}";
+    }
+
     public partial class StudentNetworkClient : ObservableObject, IDisposable
     {
         public const int DISCOVERY_PORT = 29876;
@@ -69,6 +83,15 @@ namespace QASmartClass.StudentClient.Services
         public long ClockDrift { get; set; } = 0;
         public string LastRaiseReason { get; set; } = "Phát biểu";
         public bool IsExamActive { get; set; } = false;
+
+        // ─── Mythware Multi-Channel & Wrong-Class Recovery ─
+        public int CurrentChannelId { get; set; } = 1;
+        public int PreferredChannelId { get; set; } = 0; // 0 = Tự động vào lớp mở đầu tiên, 1..20 = Ghim cố định kênh
+        public string RoomPin { get; set; } = "";
+        public bool AutoConnectEnabled { get; set; } = true;
+        public System.Collections.Generic.HashSet<string> IgnoredTeacherIps { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public System.Collections.Concurrent.ConcurrentDictionary<string, DiscoveredClassroom> DiscoveredClassrooms { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public event EventHandler? ClassroomsUpdated;
 
         // ─── Events ────────────────────────────────────────
         public event EventHandler<string>? CommandReceived;
@@ -133,7 +156,7 @@ namespace QASmartClass.StudentClient.Services
                     continue;
                 }
 
-                if (!string.IsNullOrEmpty(ServerIP))
+                if (!string.IsNullOrEmpty(ServerIP) && AutoConnectEnabled && !IgnoredTeacherIps.Contains(ServerIP))
                 {
                     int reconnectIntervalSec = 3;
                     try
@@ -329,13 +352,73 @@ namespace QASmartClass.StudentClient.Services
                         var parts = msg.Split('|');
                         if (parts.Length >= 5)
                         {
-                            ClassName = parts[1];
-                            TeacherName = parts[2];
-                            ServerIP = parts[3];
+                            string discoveredClass = parts[1];
+                            string discoveredTeacher = parts[2];
+                            string discoveredIp = parts[3];
                             int port = int.TryParse(parts[4], out var p) ? p : TCP_PORT;
+                            int channelId = 1;
+                            bool requirePin = false;
 
-                            Log.Information("Beacon detected: {Class} — {Teacher} @ {IP}:{Port}",
-                                ClassName, TeacherName, ServerIP, port);
+                            for (int i = 5; i < parts.Length; i++)
+                            {
+                                if (parts[i].StartsWith("CH=", StringComparison.OrdinalIgnoreCase) &&
+                                    int.TryParse(parts[i].Substring(3), out int chVal))
+                                {
+                                    channelId = Math.Clamp(chVal, 1, 250);
+                                }
+                                else if (parts[i].StartsWith("PIN=", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    string pinFlag = parts[i].Substring(4).Trim();
+                                    requirePin = (pinFlag == "1" || pinFlag.Equals("true", StringComparison.OrdinalIgnoreCase));
+                                }
+                            }
+
+                            var roomInfo = new DiscoveredClassroom
+                            {
+                                ChannelId = channelId,
+                                ClassName = discoveredClass,
+                                TeacherName = discoveredTeacher,
+                                ServerIP = discoveredIp,
+                                Port = port,
+                                RequirePin = requirePin,
+                                LastSeenUtc = DateTime.UtcNow
+                            };
+                            DiscoveredClassrooms[discoveredIp] = roomInfo;
+                            try { ClassroomsUpdated?.Invoke(this, EventArgs.Empty); } catch { }
+
+                            if (!AutoConnectEnabled)
+                            {
+                                continue;
+                            }
+
+                            if (IgnoredTeacherIps.Contains(discoveredIp))
+                            {
+                                Log.Debug("[Mythware-Discovery] Bỏ qua lớp {Class} ({IP}) vì nằm trong danh sách IgnoredTeacherIps.", discoveredClass, discoveredIp);
+                                continue;
+                            }
+
+                            if (PreferredChannelId > 0 && channelId != PreferredChannelId)
+                            {
+                                Log.Debug("[Mythware-Discovery] Bỏ qua Kênh {Ch} ({Class}) vì học sinh đang ghim Kênh {Pref}.", channelId, discoveredClass, PreferredChannelId);
+                                continue;
+                            }
+
+                            if (requirePin && string.IsNullOrWhiteSpace(RoomPin))
+                            {
+                                Log.Information("[Mythware-Discovery] Lớp {Class} (Kênh {Ch}) yêu cầu mã PIN. Chờ học sinh chọn phòng & nhập PIN.", discoveredClass, channelId);
+                                continue;
+                            }
+
+                            ClassName = discoveredClass;
+                            TeacherName = discoveredTeacher;
+                            ServerIP = discoveredIp;
+                            CurrentChannelId = channelId;
+
+                            QASmartClass.Services.UdpScreenBroadcastService.MulticastIP = $"239.0.0.{Math.Clamp(channelId, 1, 250)}";
+                            QASmartClass.Services.UdpScreenBroadcastService.MulticastPort = 8087 + Math.Clamp(channelId, 1, 250);
+
+                            Log.Information("Beacon detected: [Kênh {Ch}] {Class} — {Teacher} @ {IP}:{Port}",
+                                channelId, ClassName, TeacherName, ServerIP, port);
 
                             _udpListener?.Close();
                             _udpListener = null;
@@ -374,6 +457,16 @@ namespace QASmartClass.StudentClient.Services
             ConnectionState = StudentConnectionState.ConnectingTcp;
             try
             {
+                if (DiscoveredClassrooms.TryGetValue(ip, out var knownRoom))
+                {
+                    CurrentChannelId = knownRoom.ChannelId;
+                    if (!string.IsNullOrWhiteSpace(knownRoom.ClassName)) ClassName = knownRoom.ClassName;
+                    if (!string.IsNullOrWhiteSpace(knownRoom.TeacherName)) TeacherName = knownRoom.TeacherName;
+                }
+
+                QASmartClass.Services.UdpScreenBroadcastService.MulticastIP = $"239.0.0.{Math.Clamp(CurrentChannelId, 1, 250)}";
+                QASmartClass.Services.UdpScreenBroadcastService.MulticastPort = 8087 + Math.Clamp(CurrentChannelId, 1, 250);
+
                 _tcpClient = new TcpClient();
                 _tcpClient.SendBufferSize = 65536;
                 _tcpClient.ReceiveBufferSize = 65536;
@@ -384,9 +477,13 @@ namespace QASmartClass.StudentClient.Services
                 using var rsa = System.Security.Cryptography.RSA.Create(2048);
                 string pubKeyBase64 = Convert.ToBase64String(rsa.ExportRSAPublicKey());
 
-                // Send JOIN with public key and MAC Address
+                // Send JOIN with public key, MAC Address, and optional Mythware Room PIN
                 var mac = GetMacAddress();
                 var joinMsg = $"JOIN|{StudentName}|{StudentCode}|{PCName}|1.0|{pubKeyBase64}|{mac}";
+                if (!string.IsNullOrWhiteSpace(RoomPin))
+                {
+                    joinMsg += $"|PIN={RoomPin.Trim()}";
+                }
                 await _stream.WriteAsync(Encoding.UTF8.GetBytes(joinMsg), ct);
 
                 // Read ACK

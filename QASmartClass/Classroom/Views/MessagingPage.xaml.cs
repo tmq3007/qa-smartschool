@@ -248,157 +248,168 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                // app → ClassroomAppContext (refactored)
                 var contactsList = new List<ChatContact>();
 
-                using (var db = new AppDbContext())
+                // 1. Calculate unread count for ALL & add "Cả lớp" FIRST so it never disappears
+                int unreadAll = 0;
+                try
                 {
-                    // 1. Calculate unread count for ALL
-                    int unreadAll = 0;
+                    using var db = new AppDbContext();
+                    var lastReadLogAll = db.EventLogs
+                        .Where(e => e.EventType == "CHAT_READ" && e.Details == "ALL")
+                        .OrderByDescending(e => e.Timestamp)
+                        .FirstOrDefault();
+                    DateTime lastReadAll = lastReadLogAll?.Timestamp ?? DateTime.MinValue;
+                    DateTime cutoffAll = lastReadAll > DateTime.Now.AddDays(-7) ? lastReadAll : DateTime.Now.AddDays(-7);
+
+                    unreadAll = db.EventLogs
+                        .Count(e => e.EventType == "CHAT"
+                                    && e.Actor != "GV"
+                                    && e.Actor != _myName
+                                    && e.Timestamp > cutoffAll
+                                    && e.Details != null
+                                    && e.Details.Contains("[CH:ALL]"));
+                }
+                catch { }
+
+                contactsList.Add(new ChatContact
+                {
+                    Code = "ALL",
+                    DisplayName = "👥 Cả lớp",
+                    AvatarText = "🏫",
+                    AvatarBg = CreateFrozenBrush("#1976D2"),
+                    IsGroup = true,
+                    LastMessage = "Nhắn tin chung với toàn bộ lớp",
+                    UnreadCount = unreadAll
+                });
+
+                // 2. Add custom chat groups
+                for (int g = 0; g < _groups.Count; g++)
+                {
+                    var grp = _groups[g];
+                    var color = AvatarColors[(g + 3) % AvatarColors.Length];
+
+                    int unreadGrp = 0;
                     try
                     {
-                        var lastReadLogAll = db.EventLogs
-                            .Where(e => e.EventType == "CHAT_READ" && e.Details == "ALL")
+                        using var db = new AppDbContext();
+                        var lastReadLogGrp = db.EventLogs
+                            .Where(e => e.EventType == "CHAT_READ" && e.Details == $"GROUP_{grp.Id}")
                             .OrderByDescending(e => e.Timestamp)
                             .FirstOrDefault();
-                        DateTime lastReadAll = lastReadLogAll?.Timestamp ?? DateTime.MinValue;
-                        DateTime cutoffAll = lastReadAll > DateTime.Now.AddDays(-7) ? lastReadAll : DateTime.Now.AddDays(-7);
+                        DateTime lastReadGrp = lastReadLogGrp?.Timestamp ?? DateTime.MinValue;
+                        DateTime cutoffGrp = lastReadGrp > DateTime.Now.AddDays(-7) ? lastReadGrp : DateTime.Now.AddDays(-7);
 
-                        unreadAll = db.EventLogs
+                        unreadGrp = db.EventLogs
                             .Count(e => e.EventType == "CHAT"
                                         && e.Actor != "GV"
                                         && e.Actor != _myName
-                                        && e.Timestamp > cutoffAll
+                                        && e.Timestamp > cutoffGrp
                                         && e.Details != null
-                                        && e.Details.Contains("[CH:ALL]"));
+                                        && e.Details.Contains($"[CH:GROUP_{grp.Id}]"));
                     }
                     catch { }
 
                     contactsList.Add(new ChatContact
                     {
-                        Code = "ALL",
-                        DisplayName = "👥 Cả lớp",
-                        AvatarText = "🏫",
-                        AvatarBg = CreateFrozenBrush("#1976D2"),
+                        Code = $"GROUP_{grp.Id}",
+                        DisplayName = $"{grp.Emoji} {grp.Name}",
+                        AvatarText = grp.Emoji,
+                        AvatarBg = CreateFrozenBrush(color),
                         IsGroup = true,
-                        LastMessage = "Nhắn tin chung với toàn bộ lớp",
-                        UnreadCount = unreadAll
+                        LastMessage = $"💬 {grp.MemberCodes.Count} thành viên",
+                        UnreadCount = unreadGrp
                     });
+                }
 
-                    // 2. Add custom chat groups
-                    for (int g = 0; g < _groups.Count; g++)
+                // 3. Load study groups from Nhóm Học Tập (GroupPage)
+                List<GroupVm>? currentGroups = null;
+                try
+                {
+                    Dispatcher.Invoke(() => currentGroups = ClassroomAppContext.CurrentGroups?.ToList());
+                }
+                catch { }
+
+                if (currentGroups?.Count > 0)
+                {
+                    foreach (var sg in currentGroups)
                     {
-                        var grp = _groups[g];
-                        var color = AvatarColors[(g + 3) % AvatarColors.Length];
+                        var sgCode = $"STUDY_{sg.Index}";
+                        if (contactsList.Any(c => c.Code == sgCode)) continue;
 
-                        int unreadGrp = 0;
+                        int unreadSg = 0;
                         try
                         {
-                            var lastReadLogGrp = db.EventLogs
-                                .Where(e => e.EventType == "CHAT_READ" && e.Details == $"GROUP_{grp.Id}")
+                            using var db = new AppDbContext();
+                            var lastReadLogSg = db.EventLogs
+                                .Where(e => e.EventType == "CHAT_READ" && e.Details == sgCode)
                                 .OrderByDescending(e => e.Timestamp)
                                 .FirstOrDefault();
-                            DateTime lastReadGrp = lastReadLogGrp?.Timestamp ?? DateTime.MinValue;
-                            DateTime cutoffGrp = lastReadGrp > DateTime.Now.AddDays(-7) ? lastReadGrp : DateTime.Now.AddDays(-7);
+                            DateTime lastReadSg = lastReadLogSg?.Timestamp ?? DateTime.MinValue;
+                            DateTime cutoffSg = lastReadSg > DateTime.Now.AddDays(-7) ? lastReadSg : DateTime.Now.AddDays(-7);
 
-                            unreadGrp = db.EventLogs
+                            unreadSg = db.EventLogs
                                 .Count(e => e.EventType == "CHAT"
                                             && e.Actor != "GV"
                                             && e.Actor != _myName
-                                            && e.Timestamp > cutoffGrp
+                                            && e.Timestamp > cutoffSg
                                             && e.Details != null
-                                            && e.Details.Contains($"[CH:GROUP_{grp.Id}]"));
+                                            && e.Details.Contains($"[CH:{sgCode}]"));
                         }
                         catch { }
 
                         contactsList.Add(new ChatContact
                         {
-                            Code = $"GROUP_{grp.Id}",
-                            DisplayName = $"{grp.Emoji} {grp.Name}",
-                            AvatarText = grp.Emoji,
-                            AvatarBg = CreateFrozenBrush(color),
+                            Code = sgCode,
+                            DisplayName = $"{sg.Emoji} {sg.Name}",
+                            AvatarText = sg.Emoji,
+                            AvatarBg = CreateFrozenBrush(sg.HeaderColor),
                             IsGroup = true,
-                            LastMessage = $"💬 {grp.MemberCodes.Count} thành viên",
-                            UnreadCount = unreadGrp
+                            LastMessage = $"📚 Nhóm học tập · {sg.Members.Count} HS",
+                            UnreadCount = unreadSg
                         });
                     }
+                }
 
-                    // 3. Load study groups from Nhóm Học Tập (GroupPage)
-                    List<GroupVm> currentGroups = null;
-                    Dispatcher.Invoke(() => currentGroups = ClassroomAppContext.CurrentGroups?.ToList());
-                    if (currentGroups?.Count > 0)
+                // 4. Get active online students from network
+                var networkOnlineCodes = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                try
+                {
+                    var net = ClassroomAppContext.Network;
+                    if (net != null)
                     {
-                        foreach (var sg in currentGroups)
+                        foreach (var client in net.GetConnectedStudents())
                         {
-                            var sgCode = $"STUDY_{sg.Index}";
-                            if (contactsList.Any(c => c.Code == sgCode)) continue;
-
-                            int unreadSg = 0;
-                            try
-                            {
-                                var lastReadLogSg = db.EventLogs
-                                    .Where(e => e.EventType == "CHAT_READ" && e.Details == sgCode)
-                                    .OrderByDescending(e => e.Timestamp)
-                                    .FirstOrDefault();
-                                DateTime lastReadSg = lastReadLogSg?.Timestamp ?? DateTime.MinValue;
-                                DateTime cutoffSg = lastReadSg > DateTime.Now.AddDays(-7) ? lastReadSg : DateTime.Now.AddDays(-7);
-
-                                unreadSg = db.EventLogs
-                                    .Count(e => e.EventType == "CHAT"
-                                                && e.Actor != "GV"
-                                                && e.Actor != _myName
-                                                && e.Timestamp > cutoffSg
-                                                && e.Details != null
-                                                && e.Details.Contains($"[CH:{sgCode}]"));
-                            }
-                            catch { }
-
-                            var colorHex = $"#{sg.HeaderColor.R:X2}{sg.HeaderColor.G:X2}{sg.HeaderColor.B:X2}";
-                            contactsList.Add(new ChatContact
-                            {
-                                Code = sgCode,
-                                DisplayName = $"{sg.Emoji} {sg.Name}",
-                                AvatarText = sg.Emoji,
-                                AvatarBg = CreateFrozenBrush(sg.HeaderColor),
-                                IsGroup = true,
-                                LastMessage = $"📚 Nhóm học tập · {sg.Members.Count} HS",
-                                UnreadCount = unreadSg
-                            });
+                            networkOnlineCodes.Add(client.Code);
                         }
                     }
+                }
+                catch { }
 
-                    // 4. Get active online students from network
-                    var networkOnlineCodes = new System.Collections.Generic.HashSet<string>();
-                    try
-                    {
-                        var net = ClassroomAppContext.Network;
-                        if (net != null)
-                        {
-                            foreach (var client in net.GetConnectedStudents())
-                            {
-                                networkOnlineCodes.Add(client.Code);
-                            }
-                        }
-                    }
-                    catch { }
-
-                    // Sync DB with actual network status
+                // Sync DB with actual network status & load roster students safely
+                List<Student> students = new();
+                try
+                {
+                    using var db = new AppDbContext();
                     var allDbStudents = db.Students.ToList();
+                    bool changed = false;
                     foreach (var s in allDbStudents)
                     {
                         bool actuallyOnline = networkOnlineCodes.Contains(s.StudentCode ?? "");
                         if (s.IsOnline != actuallyOnline)
                         {
                             s.IsOnline = actuallyOnline;
+                            changed = true;
                         }
                     }
-                    db.SaveChanges();
+                    if (changed)
+                    {
+                        try { db.SaveChanges(); } catch { }
+                    }
 
-                    // Get roster students
-                    List<Student> students = null;
                     Dispatcher.Invoke(() =>
                     {
-                        var roster = ClassroomAppContext.ClassRoster.ActiveRoster;
+                        var roster = ClassroomAppContext.ClassRoster?.ActiveRoster;
                         if (roster != null)
                         {
                             students = ClassroomAppContext.ClassRoster.GetActiveStudents();
@@ -407,24 +418,36 @@ namespace QASmartClass.Classroom.Views
 
                     if (students == null || !students.Any())
                     {
-                        // Fallback: load all from local DB
-                        students = db.Students.ToList();
+                        students = allDbStudents;
                     }
+                }
+                catch (Exception dbStuEx)
+                {
+                    Log.Warning("BuildContactList DB students load warning: {Err}", dbStuEx.Message);
+                    students = new List<Student>();
+                }
 
-                    // Build contact list from sorted roster students
-                    var sortedStudents = VietnameseNameHelper.SortByVietnameseName(students, s => s.FullName);
-                    int i = 0;
-                    foreach (var s in sortedStudents)
+                // Build contact list from sorted roster students
+                var sortedStudents = VietnameseNameHelper.SortByVietnameseName(students ?? new List<Student>(), s => s.FullName);
+                int i = 0;
+                foreach (var s in sortedStudents)
+                {
+                    var color = AvatarColors[i % AvatarColors.Length];
+                    var initials = GetInitials(s.FullName);
+                    var roleBadge = s.Status == "Graduated" ? "🎓" : (s.Role == "PH" ? "👪" : "");
+                    var studentCode = s.StudentCode ?? $"HS{s.Id:D5}";
+
+                    string lastMsgPreview = "";
+                    DateTime lastMsgTime = DateTime.MinValue;
+                    int unread = 0;
+
+                    try
                     {
-                        var color = AvatarColors[i % AvatarColors.Length];
-                        var initials = GetInitials(s.FullName);
-                        var roleBadge = s.Status == "Graduated" ? "🎓" : (s.Role == "PH" ? "👪" : "");
-
-                        var studentCode = s.StudentCode ?? "";
+                        using var db = new AppDbContext();
                         var lastMsg = db.EventLogs
                             .Where(e => (e.EventType == "CHAT" || e.EventType == "TEACHER_CHAT" || e.EventType == "PRIVATE_CHAT")
                                         && (e.Actor == studentCode || (e.Details != null && e.Details.Contains($"[CH:{studentCode}]")))
-                                        && (e.Details != null && !e.Details.Contains("[CH:ALL]") 
+                                        && (e.Details != null && !e.Details.Contains("[CH:ALL]")
                                             && !e.Details.Contains("[CH:GROUP_") && !e.Details.Contains("[CH:STUDY_")))
                             .OrderByDescending(e => e.Timestamp)
                             .FirstOrDefault();
@@ -436,61 +459,65 @@ namespace QASmartClass.Classroom.Views
                         DateTime lastReadTime = lastReadLog?.Timestamp ?? DateTime.MinValue;
                         DateTime cutoff = lastReadTime > DateTime.Now.AddDays(-7) ? lastReadTime : DateTime.Now.AddDays(-7);
 
-                        int unread = db.EventLogs
+                        unread = db.EventLogs
                             .Count(e => (e.EventType == "PRIVATE_CHAT" || e.EventType == "CHAT")
                                         && e.Actor == studentCode
                                         && e.Timestamp > cutoff
                                         && e.Details != null
                                         && e.Details.Contains($"[CH:{studentCode}]"));
 
-                        contactsList.Add(new ChatContact
-                        {
-                            Code = s.StudentCode ?? $"HS{s.Id:D5}",
-                            DisplayName = s.ShortIdentity,
-                            FullIdentity = s.ChatIdentity,
-                            RoleBadge = roleBadge,
-                            ClassName = s.ClassName,
-                            SchoolName = s.SchoolName,
-                            AvatarText = initials,
-                            AvatarBg = CreateFrozenBrush(color),
-                            IsOnline = s.IsOnline,
-                            IsGroup = false,
-                            LastMessage = lastMsg?.Details?.Replace("Tin nhắn: ", "") ?? "",
-                            LastTime = lastMsg?.Timestamp ?? DateTime.MinValue,
-                            UnreadCount = unread
-                        });
-                        i++;
+                        lastMsgPreview = lastMsg?.Details?.Replace("Tin nhắn: ", "") ?? "";
+                        lastMsgTime = lastMsg?.Timestamp ?? DateTime.MinValue;
                     }
+                    catch { }
 
-                    // Add network-only students (not in DB)
-                    var existingCodes = contactsList.Select(c => c.Code).ToHashSet();
-                    try
+                    contactsList.Add(new ChatContact
                     {
-                        var net = ClassroomAppContext.Network;
-                        if (net != null)
+                        Code = studentCode,
+                        DisplayName = s.ShortIdentity,
+                        FullIdentity = s.ChatIdentity,
+                        RoleBadge = roleBadge,
+                        ClassName = s.ClassName,
+                        SchoolName = s.SchoolName,
+                        AvatarText = initials,
+                        AvatarBg = CreateFrozenBrush(color),
+                        IsOnline = s.IsOnline || networkOnlineCodes.Contains(studentCode),
+                        IsGroup = false,
+                        LastMessage = lastMsgPreview,
+                        LastTime = lastMsgTime,
+                        UnreadCount = unread
+                    });
+                    i++;
+                }
+
+                // Add network-only students (not in DB)
+                var existingCodes = contactsList.Select(c => c.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                try
+                {
+                    var net = ClassroomAppContext.Network;
+                    if (net != null)
+                    {
+                        foreach (var client in net.GetConnectedStudents())
                         {
-                            foreach (var client in net.GetConnectedStudents())
+                            if (!existingCodes.Contains(client.Code))
                             {
-                                if (!existingCodes.Contains(client.Code))
+                                var color = AvatarColors[(i++) % AvatarColors.Length];
+                                contactsList.Add(new ChatContact
                                 {
-                                    var color = AvatarColors[(i++) % AvatarColors.Length];
-                                    contactsList.Add(new ChatContact
-                                    {
-                                        Code = client.Code,
-                                        DisplayName = client.Name,
-                                        AvatarText = GetInitials(client.Name),
-                                        AvatarBg = CreateFrozenBrush(color),
-                                        IsOnline = true,
-                                        IsGroup = false,
-                                        LastMessage = "",
-                                        UnreadCount = 0
-                                    });
-                                }
+                                    Code = client.Code,
+                                    DisplayName = client.Name,
+                                    AvatarText = GetInitials(client.Name),
+                                    AvatarBg = CreateFrozenBrush(color),
+                                    IsOnline = true,
+                                    IsGroup = false,
+                                    LastMessage = "🟢 Đang trực tuyến",
+                                    UnreadCount = 0
+                                });
                             }
                         }
                     }
-                    catch { }
                 }
+                catch { }
 
                 // Update UI Collection and view filters on UI Thread
                 Dispatcher.Invoke(() =>
@@ -513,7 +540,23 @@ namespace QASmartClass.Classroom.Views
             catch (Exception ex)
             {
                 Log.Error("BuildContactList error: {Err}", ex.Message);
-                Dispatcher.Invoke(() => txtOnlineCount.Text = "Không thể tải danh sách");
+                Dispatcher.Invoke(() =>
+                {
+                    if (!_allContacts.Any(c => c.Code == "ALL"))
+                    {
+                        _allContacts.Insert(0, new ChatContact
+                        {
+                            Code = "ALL",
+                            DisplayName = "👥 Cả lớp",
+                            AvatarText = "🏫",
+                            AvatarBg = CreateFrozenBrush("#1976D2"),
+                            IsGroup = true,
+                            LastMessage = "Nhắn tin chung với toàn bộ lớp"
+                        });
+                    }
+                    txtOnlineCount.Text = "Sẵn sàng trò chuyện";
+                    FilterContacts();
+                });
             }
         }
 
@@ -604,6 +647,7 @@ namespace QASmartClass.Classroom.Views
 
                     Dispatcher.Invoke(() =>
                     {
+                        var liveMessages = Messages.Where(m => !m.IsSystem).ToList();
                         Messages.Clear();
 
                         if (chatEvents.Any())
@@ -690,11 +734,22 @@ namespace QASmartClass.Classroom.Views
 
                             RefreshAndScroll();
                         }
-                        else
+                        else if (liveMessages.Count == 0)
                         {
                             AddSystemMessage("💬 Chào mừng đến hệ thống tin nhắn QA SmartClass!");
                             AddSystemMessage("📌 Chọn \"Cả lớp\" để nhắn nhóm, hoặc chọn HS cụ thể để nhắn riêng.");
                         }
+
+                        // Giữ lại các tin nhắn thời gian thực vừa nhận trong lúc DB đang tải nền
+                        foreach (var live in liveMessages)
+                        {
+                            bool duplicate = Messages.Any(m => !m.IsSystem && m.Text == live.Text && m.StudentCode == live.StudentCode && Math.Abs((m.Time - live.Time).TotalSeconds) < 3);
+                            if (!duplicate)
+                            {
+                                Messages.Add(live);
+                            }
+                        }
+                        RefreshAndScroll();
                     });
                 }
                 catch (Exception ex) { Log.Warning("LoadChatHistory error: {Err}", ex.Message); }
@@ -946,6 +1001,16 @@ namespace QASmartClass.Classroom.Views
                                     shouldPlaySound = true;
                                 }
                             }
+
+                            // Chuyển tiếp (Relay) tin nhắn Cả lớp của học sinh này sang tất cả các máy học sinh khác (Windows & Android)
+                            string relayPayload = $"MSG|👥 [{author}]: {text}";
+                            foreach (var peer in net.GetConnectedStudents())
+                            {
+                                if (!string.Equals(peer.Code, args.StudentCode, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    _ = net.SendToStudentAsync(peer.Code, relayPayload);
+                                }
+                            }
                         }
                         else if (channel.StartsWith("GROUP_") || channel.StartsWith("STUDY_"))
                         {
@@ -961,13 +1026,44 @@ namespace QASmartClass.Classroom.Views
                                     shouldPlaySound = true;
                                 }
                             }
+
+                            if (channel.StartsWith("GROUP_"))
+                            {
+                                var grpId = channel.Replace("GROUP_", "");
+                                var grp = _groups.FirstOrDefault(g => g.Id == grpId);
+                                if (grp != null)
+                                {
+                                    string grpRelay = $"MSG|📨 [{grp.Name}] {author}: {text}";
+                                    foreach (var memberCode in grp.MemberCodes)
+                                    {
+                                        if (!string.Equals(memberCode, args.StudentCode, StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            _ = net.SendToStudentAsync(memberCode, grpRelay);
+                                        }
+                                    }
+                                }
+                            }
                         }
                         else
                         {
-                            // Private → update student contact
-                            var contact = _allContacts.FirstOrDefault(c => c.Code == channel);
+                            // Private → ensure student contact exists & update it
+                            var contact = _allContacts.FirstOrDefault(c => string.Equals(c.Code, channel, StringComparison.OrdinalIgnoreCase));
+                            if (contact == null && !string.IsNullOrWhiteSpace(channel))
+                            {
+                                contact = new ChatContact
+                                {
+                                    Code = channel,
+                                    DisplayName = author,
+                                    AvatarText = GetInitials(author),
+                                    AvatarBg = GetBrushForCode(channel),
+                                    IsOnline = true,
+                                    IsGroup = false
+                                };
+                                _allContacts.Add(contact);
+                            }
                             if (contact != null)
                             {
+                                contact.IsOnline = true;
                                 contact.LastMessage = text.Length > 30 ? text.Substring(0, 30) + "..." : text;
                                 contact.LastTime = DateTime.Now;
                                 if (_activeChannel != channel)
@@ -1146,7 +1242,7 @@ namespace QASmartClass.Classroom.Views
             });
         }
 
-        private void SelectChannel(string channelCode)
+        public void SelectChannel(string channelCode)
         {
             _activeChannel = channelCode;
 
@@ -1258,9 +1354,11 @@ namespace QASmartClass.Classroom.Views
 
                 if (_activeChannel == "ALL")
                 {
-                    // "Cả lớp" shows: teacher broadcast (channel=ALL), system msgs, student msgs sent to ALL
+                    // "Cả lớp" shows: teacher broadcast (channel=ALL), system msgs, student msgs sent to ALL,
+                    // AND student messages sent to Teacher so the Teacher never misses any incoming student message
                     include = msg.IsSystem
-                        || msg.Channel == "ALL";
+                        || msg.Channel == "ALL"
+                        || (!msg.IsTeacher && !msg.Channel.StartsWith("GROUP_") && !msg.Channel.StartsWith("STUDY_"));
                 }
                 else if (_activeChannel.StartsWith("GROUP_"))
                 {
@@ -2033,6 +2131,8 @@ namespace QASmartClass.Classroom.Views
             });
             headerGrid.Children.Add(headerTextSp);
 
+            bool isConfirmed = false;
+
             var closeBtn = new TextBlock
             {
                 Text = "✕", FontSize = 18,
@@ -2041,11 +2141,17 @@ namespace QASmartClass.Classroom.Views
             };
             closeBtn.MouseEnter += (_, _) => closeBtn.Foreground = Brushes.White;
             closeBtn.MouseLeave += (_, _) => closeBtn.Foreground = new SolidColorBrush(Color.FromRgb(200, 230, 200));
-            closeBtn.MouseLeftButtonDown += (_, _) => { dlg.DialogResult = false; };
+            closeBtn.MouseLeftButtonDown += (_, ev) => { ev.Handled = true; dlg.Close(); };
             DockPanel.SetDock(closeBtn, Dock.Right);
             headerGrid.Children.Add(closeBtn);
             header.Child = headerGrid;
-            header.MouseLeftButtonDown += (_, _) => dlg.DragMove();
+            header.MouseLeftButtonDown += (_, ev) =>
+            {
+                if (ev.LeftButton == MouseButtonState.Pressed && dlg.IsLoaded)
+                {
+                    try { dlg.DragMove(); } catch { }
+                }
+            };
             mainSp.Children.Add(header);
 
             // ── CONTENT ──
@@ -2417,7 +2523,7 @@ namespace QASmartClass.Classroom.Views
             };
             btnCancel.MouseEnter += (_, _) => btnCancel.Background = new SolidColorBrush(Color.FromRgb(224, 224, 224));
             btnCancel.MouseLeave += (_, _) => btnCancel.Background = new SolidColorBrush(Color.FromRgb(240, 240, 240));
-            btnCancel.MouseLeftButtonDown += (_, _) => { dlg.DialogResult = false; };
+            btnCancel.MouseLeftButtonDown += (_, ev) => { ev.Handled = true; dlg.Close(); };
 
             // Create (right, green)
             var btnCreate = new Border
@@ -2436,8 +2542,9 @@ namespace QASmartClass.Classroom.Views
             btnCreate.MouseEnter += (_, _) => btnCreate.Opacity = 0.85;
             btnCreate.MouseLeave += (_, _) => btnCreate.Opacity = 1.0;
 
-            btnCreate.MouseLeftButtonDown += (_, _) =>
+            btnCreate.MouseLeftButtonDown += (_, ev) =>
             {
+                ev.Handled = true;
                 var selected = checkBoxes.Where(x => x.cb.IsChecked == true).Select(x => x.code).ToList();
                 if (selected.Count == 0)
                 {
@@ -2449,7 +2556,8 @@ namespace QASmartClass.Classroom.Views
                     ClassroomDialog.Warn("⚠️ Vui lòng nhập tên nhóm!", "Tên nhóm trống");
                     return;
                 }
-                dlg.DialogResult = true;
+                isConfirmed = true;
+                dlg.Close();
             };
 
             DockPanel.SetDock(btnCancel, Dock.Left);
@@ -2462,7 +2570,8 @@ namespace QASmartClass.Classroom.Views
             rootBorder.Child = mainSp;
             dlg.Content = rootBorder;
 
-            if (dlg.ShowDialog() != true) return;
+            dlg.ShowDialog();
+            if (!isConfirmed) return;
 
             // Create group
             var members = checkBoxes.Where(x => x.cb.IsChecked == true).Select(x => x.code).ToList();
@@ -2682,11 +2791,17 @@ namespace QASmartClass.Classroom.Views
             };
             closeBtn.MouseEnter += (_, _) => closeBtn.Foreground = Brushes.White;
             closeBtn.MouseLeave += (_, _) => closeBtn.Foreground = new SolidColorBrush(Color.FromRgb(227, 242, 253));
-            closeBtn.MouseLeftButtonDown += (_, _) => { dlg.DialogResult = false; };
+            closeBtn.MouseLeftButtonDown += (_, ev) => { ev.Handled = true; dlg.Close(); };
             DockPanel.SetDock(closeBtn, Dock.Right);
             headerGrid.Children.Add(closeBtn);
             header.Child = headerGrid;
-            header.MouseLeftButtonDown += (_, _) => dlg.DragMove();
+            header.MouseLeftButtonDown += (_, ev) =>
+            {
+                if (ev.LeftButton == MouseButtonState.Pressed && dlg.IsLoaded)
+                {
+                    try { dlg.DragMove(); } catch { }
+                }
+            };
             mainSp.Children.Add(header);
 
             // ── CONTENT ──
@@ -2856,7 +2971,7 @@ namespace QASmartClass.Classroom.Views
             };
             btnClose.MouseEnter += (_, _) => btnClose.Background = new SolidColorBrush(Color.FromRgb(224, 224, 224));
             btnClose.MouseLeave += (_, _) => btnClose.Background = new SolidColorBrush(Color.FromRgb(240, 240, 240));
-            btnClose.MouseLeftButtonDown += (_, _) => { dlg.DialogResult = false; };
+            btnClose.MouseLeftButtonDown += (_, ev) => { ev.Handled = true; dlg.Close(); };
             btnPanel.Children.Add(btnClose);
             mainSp.Children.Add(btnPanel);
 

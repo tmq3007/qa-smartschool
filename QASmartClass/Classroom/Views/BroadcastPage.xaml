@@ -68,8 +68,35 @@
                     <!-- ── IDLE STATE: Hướng dẫn rõ ràng ── -->
                     <Border x:Name="screenIdleState" Background="White" CornerRadius="12" Padding="0" BorderBrush="#E0E0E0" BorderThickness="1">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Margin="28,24" MaxWidth="800" HorizontalAlignment="Left">
-                                <TextBlock Text="Chiếu màn hình cho học sinh" FontSize="16" FontWeight="Bold" Foreground="#212121" Margin="0,0,0,6"/>
+                            <StackPanel Margin="20,16" HorizontalAlignment="Stretch">
+                                <TextBlock Text="Chiếu màn hình &amp; Bài giảng cho Học sinh (Chuẩn Zoom / Mythware)" FontSize="17" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,6"/>
+                                <Border Background="#EFF6FF" BorderBrush="#93C5FD" BorderThickness="1.5" CornerRadius="12" Padding="18,16" Margin="0,8,0,16">
+                                    <StackPanel>
+                                        <TextBlock Text="🎯 Chọn nhanh phần muốn chia sẻ &amp; Bắt đầu chiếu ngay:" FontSize="14" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,10"/>
+                                        <WrapPanel Orientation="Horizontal">
+                                            <Button Content="🖥️ Chọn Màn hình / Cửa sổ ứng dụng…" Padding="16,10" Margin="0,0,10,8" FontSize="13.5" FontWeight="Bold" Background="#2563EB" Foreground="White" BorderThickness="0" Cursor="Hand" Click="PickSourceAndStart_Click" Template="{StaticResource RoundBtn}"/>
+                                            <Button Content="✂️ Kéo chọn vùng màn hình bất kỳ…" Padding="16,10" Margin="0,0,10,8" FontSize="13.5" FontWeight="Bold" Background="#0284C7" Foreground="White" BorderThickness="0" Cursor="Hand" Click="PickRegionAndStart_Click" Template="{StaticResource RoundBtn}"/>
+                                            <Button Content="📑 Chiếu Trang QA SmartClass / SMART TOUCH…" Padding="16,10" Margin="0,0,0,8" FontSize="13.5" FontWeight="Bold" Background="#7C3AED" Foreground="White" BorderThickness="0" Cursor="Hand" Click="PickQaPageAndStart_Click" Template="{StaticResource RoundBtn}"/>
+                                        </WrapPanel>
+                                        <TextBlock Text="💡 Khi đang chiếu, Thanh điều khiển nổi (Floating Share Bar + Màn hình PiP thu nhỏ) sẽ luôn hiển thị ở mép trên màn hình để bạn biết chính xác học sinh đang nhìn thấy gì." FontSize="12" Foreground="#1E40AF" TextWrapping="Wrap" Margin="0,4,0,12"/>
+                                        <Border Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="10" Padding="14,12" Margin="0,4,0,0">
+                                            <StackPanel>
+                                                <DockPanel LastChildFill="False" Margin="0,0,0,10">
+                                                    <TextBlock DockPanel.Dock="Left" Text="👁️ XEM TRƯỚC CÁC MÀN HÌNH &amp; CỬA SỔ CÓ THỂ CHIA SẺ" FontSize="13.5" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                                    <Button DockPanel.Dock="Right" Content="↻ Làm mới ảnh xem trước" Padding="12,5" FontSize="12" FontWeight="SemiBold" Background="#E0F2FE" Foreground="#0369A1" BorderThickness="0" Cursor="Hand" Click="RefreshInlinePreviews_Click" Template="{StaticResource RoundBtn}"/>
+                                                </DockPanel>
+                                                <WrapPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                                    <Button x:Name="btnFilterAllSources" Content="🌟 Tất cả nguồn" Tag="ALL" Padding="12,6" Margin="0,0,6,6" FontSize="12" FontWeight="Bold" Background="#1D4ED8" Foreground="White" BorderThickness="0" Cursor="Hand" Click="FilterInlinePreviews_Click" Template="{StaticResource RoundBtn}"/>
+                                                    <Button x:Name="btnFilterScreens" Content="🖥️ Toàn màn hình" Tag="SCREEN" Padding="12,6" Margin="0,0,6,6" FontSize="12" FontWeight="SemiBold" Background="#F1F5F9" Foreground="#334155" BorderThickness="0" Cursor="Hand" Click="FilterInlinePreviews_Click" Template="{StaticResource RoundBtn}"/>
+                                                    <Button x:Name="btnFilterWindows" Content="🪟 Cửa sổ đang mở" Tag="WINDOW" Padding="12,6" Margin="0,0,6,6" FontSize="12" FontWeight="SemiBold" Background="#F1F5F9" Foreground="#334155" BorderThickness="0" Cursor="Hand" Click="FilterInlinePreviews_Click" Template="{StaticResource RoundBtn}"/>
+                                                    <Button x:Name="btnFilterQaPages" Content="📑 Trang QA SmartClass &amp; SMART TOUCH" Tag="QAPAGE" Padding="12,6" Margin="0,0,6,6" FontSize="12" FontWeight="SemiBold" Background="#F1F5F9" Foreground="#334155" BorderThickness="0" Cursor="Hand" Click="FilterInlinePreviews_Click" Template="{StaticResource RoundBtn}"/>
+                                                    <Button x:Name="btnFilterRegions" Content="✂️ Vùng màn hình" Tag="REGION" Padding="12,6" Margin="0,0,6,6" FontSize="12" FontWeight="SemiBold" Background="#F1F5F9" Foreground="#334155" BorderThickness="0" Cursor="Hand" Click="FilterInlinePreviews_Click" Template="{StaticResource RoundBtn}"/>
+                                                </WrapPanel>
+                                                <WrapPanel x:Name="wrapInlineSourcePreviews" Orientation="Horizontal"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
                                 <TextBlock Text="Phát màn hình máy GV tới tất cả máy HS trong lớp, giúp HS theo dõi bài giảng trực tiếp." FontSize="12" Foreground="#757575" TextWrapping="Wrap" Margin="0,0,0,20"/>
                                 <!-- ── Cách sử dụng ── -->
                                 <Border Background="#E3F2FD" CornerRadius="10" Padding="16,14" Margin="0,0,0,16">
@@ -152,7 +179,12 @@
                                 <TextBlock x:Name="txtBroadcastInfo" Text=""
                                            FontSize="13" Foreground="#B0BEC5" HorizontalAlignment="Center" Margin="0,8,0,0"/>
                                 <TextBlock x:Name="txtBroadcastStatus" Text="Học sinh đang nhận hình ảnh từ máy GV"
-                                           FontSize="12" Foreground="#90A4AE" HorizontalAlignment="Center" Margin="0,6,0,0" FontStyle="Italic"/>
+                                           FontSize="12" Foreground="#90A4AE" HorizontalAlignment="Center" Margin="0,4,0,8" FontStyle="Italic"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Button Content="🔄 Đổi nguồn đang chiếu" Padding="12,6" Margin="0,0,8,0" FontSize="12" FontWeight="Bold" Background="#1E3A8A" Foreground="White" BorderThickness="0" Cursor="Hand" Click="PickSource_Click" Template="{StaticResource RoundBtn}"/>
+                                    <Button Content="✂️ Kéo chọn vùng chiếu" Padding="12,6" Margin="0,0,8,0" FontSize="12" FontWeight="Bold" Background="#0369A1" Foreground="White" BorderThickness="0" Cursor="Hand" Click="PickRegion_Click" Template="{StaticResource RoundBtn}"/>
+                                    <Button Content="👁️ Hiện Thanh điều khiển nổi (PiP)" Padding="12,6" FontSize="12" FontWeight="Bold" Background="#0F766E" Foreground="White" BorderThickness="0" Cursor="Hand" Click="ShowFloatingBar_Click" Template="{StaticResource RoundBtn}"/>
+                                </StackPanel>
                             </StackPanel>
                             <!-- Live badge -->
                             <Border x:Name="liveBadge" HorizontalAlignment="Left" VerticalAlignment="Top"
@@ -308,7 +340,15 @@
                             <Button x:Name="btnPickRegion" Grid.Column="0" Content="✂️ Chọn phần màn hình" FontSize="12.5" FontWeight="SemiBold" MinHeight="40" Padding="10,6" Background="#E0F2FE" Foreground="#0369A1" BorderThickness="0" Cursor="Hand" Click="PickRegion_Click" Template="{StaticResource RoundBtn}" ToolTip="Kéo chọn một khu vực bất kỳ trên màn hình để chiếu cho học sinh"/>
                             <Button x:Name="btnPickQaPage" Grid.Column="2" Content="📑 Trang QA SmartClass" FontSize="12.5" FontWeight="SemiBold" MinHeight="40" Padding="10,6" Background="#EDE9FE" Foreground="#6D28D9" BorderThickness="0" Cursor="Hand" Click="PickQaPage_Click" Template="{StaticResource RoundBtn}" ToolTip="Chọn chiếu trực tiếp một trang bài giảng / SMART TOUCH / Công cụ học tập trong QA SmartClass"/>
                         </Grid>
-                        <Button x:Name="btnOpenSharedQaPage" Visibility="Collapsed" Content="🚀 Mở trang đang chọn để thao tác" FontSize="12.5" FontWeight="SemiBold" MinHeight="38" Padding="10,6" Margin="0,0,0,6" Background="#DCFCE7" Foreground="#15803D" BorderThickness="0" Cursor="Hand" Click="OpenSharedQaPage_Click" Template="{StaticResource RoundBtn}" ToolTip="Chuyển sang trang QA SmartClass đang được chọn để thao tác trực tiếp"/>
+                        <Button x:Name="btnOpenSharedQaPage" Visibility="Collapsed" Content="🚀 Mở trang đang chọn để thao tác" FontSize="12.5" FontWeight="SemiBold" MinHeight="38" Padding="10,6" Margin="0,0,0,6" Background="#DCFCE7" Foreground="#15803D" BorderThickness="0" Cursor="Hand" Click="OpenSharedQaPage_Click" Template="{StaticResource RoundBtn}" ToolTip="Chuyển sang trang QA SmartClass đang được chọn để thao tác trực tiếp"/>
+                        <Border x:Name="brdSelectedSourcePreview" Background="#0F172A" BorderBrush="#38BDF8" BorderThickness="1.5" CornerRadius="8" Height="140" Margin="0,2,0,8" ClipToBounds="True" Cursor="Hand" MouseLeftButtonUp="PickSource_Click" ToolTip="Ảnh xem trước trực tiếp của nguồn đang chọn (Nhấp để đổi nguồn)">
+                            <Grid>
+                                <Image x:Name="imgSelectedSourceThumb" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <Border Background="#CC0F172A" CornerRadius="4" Padding="8,3" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6,6,0,0">
+                                    <TextBlock Text="👁️ Xem trước nguồn đang chọn" FontSize="10.5" FontWeight="Bold" Foreground="#38BDF8"/>
+                                </Border>
+                            </Grid>
+                        </Border>
                         <TextBlock x:Name="txtPickedSource" Text="Nguồn hiện tại: Toàn màn hình (màn hình chính)" FontSize="12" Foreground="#546E7A" TextWrapping="Wrap" Margin="0,0,0,10"/>
                         <RadioButton x:Name="rbFullScreen" Content="Toàn màn hình" IsChecked="True" FontSize="14" Margin="0,0,0,6"
                                      GroupName="Source" Checked="SourceChanged"

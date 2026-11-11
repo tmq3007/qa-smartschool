@@ -394,9 +394,8 @@
 
 
 
-        <!-- ═══ SIDEBAR ═══ -->
-
-        <Border x:Name="sidebarBorder" Grid.Column="0" Width="236" Background="{DynamicResource SidebarBg}">
+        <!-- ═══ SIDEBAR (Hiển thị đầy đủ thanh điều hướng học sinh với mục Tin nhắn GV & Cả lớp) ═══ -->
+        <Border x:Name="sidebarBorder" Grid.Column="0" Width="236" Visibility="Visible" Background="{DynamicResource SidebarBg}">
 
 
 
@@ -1206,27 +1205,42 @@
 
 
 
-                    <!-- Page Title -->
-
-
-
-                    <TextBlock x:Name="txtPageTitle" Text="🏠 Trang chủ"
-
-
-
-                               VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" Foreground="#1E293B"/>
-
-
-
-
-
-
+                    <!-- Page Title + Mythware Quick Nav -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="txtPageTitle" Text="🏠 Màn hình Học sinh"
+                                   VerticalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,14,0"/>
+                        <Button Content="🏠 Tổng quan" FontSize="11.5" FontWeight="SemiBold" Foreground="#334155" Background="#F1F5F9"
+                                BorderThickness="0" Padding="10,5" Margin="0,0,6,0" Cursor="Hand" Click="MythwareNavHome_Click">
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources>
+                        </Button>
+                        <Button Content="💬 Chat GV &amp; Cả lớp" FontSize="11.5" FontWeight="SemiBold" Foreground="#1D4ED8" Background="#EFF6FF"
+                                BorderThickness="1" BorderBrush="#BFDBFE" Padding="10,5" Margin="0,0,6,0" Cursor="Hand" Click="MythwareNavChat_Click">
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources>
+                        </Button>
+                        <Button Content="📁 Nhận / Nộp bài" FontSize="11.5" FontWeight="SemiBold" Foreground="#334155" Background="#F1F5F9"
+                                BorderThickness="0" Padding="10,5" Margin="0,0,6,0" Cursor="Hand" Click="MythwareNavFiles_Click">
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources>
+                        </Button>
+                        <Button Content="🎨 Bảng trắng" FontSize="11.5" FontWeight="SemiBold" Foreground="#334155" Background="#F1F5F9"
+                                BorderThickness="0" Padding="10,5" Margin="0,0,6,0" Cursor="Hand" Click="MythwareNavWhiteboard_Click">
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources>
+                        </Button>
+                    </StackPanel>
 
                     <!-- Right Controls -->
 
-
-
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+
+                        <!-- Mythware Switch Classroom / Channel Button -->
+                        <Button x:Name="btnSwitchClassroom" Content="🔄 Đổi Lớp / Chọn Kênh" FontSize="11.5" FontWeight="Bold"
+                                Foreground="White" Background="#2563EB" BorderThickness="0" Padding="10,5" Margin="0,0,10,0"
+                                Cursor="Hand" Click="SwitchClassroom_Click" ToolTip="Đổi phòng học / Chọn kênh (Kênh 1-20) hoặc nhập IP Giáo viên khi vào nhầm lớp">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="7"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
 
                         <!-- Re-open Broadcast Button (Focus Protection Level 2) -->
 

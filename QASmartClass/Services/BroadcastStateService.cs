@@ -32,14 +32,85 @@ namespace QASmartClass.Services
         }
         private byte[] _screenCaptureBytes = Array.Empty<byte>();
         private long _frameVersion;
+        private const int MaxRingFrames = 64; // ~1.0s sequential frame buffer at 60 FPS
+        private readonly System.Collections.Generic.Queue<(long Version, byte[] Bytes)> _frameRingBuffer = new(MaxRingFrames);
+
         public long FrameVersion => System.Threading.Interlocked.Read(ref _frameVersion);
         public byte[] ScreenCaptureBytes
         {
             get { lock (_lock) return _screenCaptureBytes; }
             set
             {
-                lock (_lock) _screenCaptureBytes = value;
-                System.Threading.Interlocked.Increment(ref _frameVersion);
+                long ver = System.Threading.Interlocked.Increment(ref _frameVersion);
+                lock (_lock)
+                {
+                    _screenCaptureBytes = value;
+                    if (value != null && value.Length > 0)
+                    {
+                        while (_frameRingBuffer.Count >= MaxRingFrames)
+                        {
+                            _frameRingBuffer.Dequeue();
+                        }
+                        _frameRingBuffer.Enqueue((ver, value));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Lấy tuần tự từng khung hình kế tiếp từ bộ đệm vòng (Ring Buffer) để phát mượt 30 FPS không bị nhảy cóc qua các nét vẽ.
+        /// </summary>
+        public bool TryGetNextSequentialFrame(ref long lastSentVersion, out byte[] frameBytes)
+        {
+            lock (_lock)
+            {
+                frameBytes = Array.Empty<byte>();
+                if (_frameRingBuffer.Count == 0)
+                {
+                    if (_screenCaptureBytes.Length > 0 && _frameVersion > lastSentVersion)
+                    {
+                        lastSentVersion = _frameVersion;
+                        frameBytes = _screenCaptureBytes;
+                        return true;
+                    }
+                    return false;
+                }
+
+                // Lần đầu kết nối: lấy khung cách hiện tại tối đa 2 frame để tạo gối đệm mượt ngay lập tức
+                if (lastSentVersion <= 0)
+                {
+                    (long Version, byte[] Bytes) chosen = default;
+                    int idx = 0;
+                    int targetIdx = Math.Max(0, _frameRingBuffer.Count - 2);
+                    foreach (var item in _frameRingBuffer)
+                    {
+                        if (idx == targetIdx)
+                        {
+                            chosen = item;
+                            break;
+                        }
+                        idx++;
+                    }
+                    if (chosen.Bytes != null && chosen.Bytes.Length > 0)
+                    {
+                        lastSentVersion = chosen.Version;
+                        frameBytes = chosen.Bytes;
+                        return true;
+                    }
+                }
+
+                // Tìm chính xác frame kế tiếp (lastSentVersion + 1) hoặc frame đầu tiên lớn hơn lastSentVersion trong Ring Buffer
+                foreach (var item in _frameRingBuffer)
+                {
+                    if (item.Version > lastSentVersion)
+                    {
+                        lastSentVersion = item.Version;
+                        frameBytes = item.Bytes;
+                        return true;
+                    }
+                }
+
+                return false;
             }
         }
         private DateTime _screenCaptureTime = DateTime.MinValue;
@@ -109,6 +180,7 @@ namespace QASmartClass.Services
             {
                 _screenCapturePath = string.Empty;
                 _screenCaptureBytes = Array.Empty<byte>();
+                _frameRingBuffer.Clear();
                 _screenCaptureTime = DateTime.MinValue;
                 _isScreenBroadcastActive = false;
                 IsForceWatchActive = false;

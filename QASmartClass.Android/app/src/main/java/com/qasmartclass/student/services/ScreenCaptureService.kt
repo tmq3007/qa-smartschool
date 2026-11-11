@@ -32,8 +32,8 @@ class ScreenCaptureService : Service() {
         private const val TAG = "ScreenCaptureService"
         private const val CHANNEL_ID = "qa_screen_capture"
         private const val NOTIF_ID = 4201
-        private const val TARGET_WIDTH = 540
-        private const val FRAME_INTERVAL_MS = 150L
+        private const val TARGET_WIDTH = 960
+        private const val FRAME_INTERVAL_MS = 65L
         const val EXTRA_CODE = "code"
         const val EXTRA_DATA = "data"
 
@@ -132,7 +132,7 @@ class ScreenCaptureService : Service() {
             val bos = ByteArrayOutputStream()
             synchronized(bmp) {
                 if (bmp.isRecycled) return null
-                bmp.compress(Bitmap.CompressFormat.JPEG, 55, bos)
+                bmp.compress(Bitmap.CompressFormat.JPEG, 65, bos)
             }
             bos.toByteArray()
         } catch (e: Exception) {

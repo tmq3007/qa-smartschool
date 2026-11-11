@@ -1,8 +1,8 @@
-﻿<Page x:Class="QASmartClass.Classroom.Views.ClassControlHub"
+<Page x:Class="QASmartClass.Classroom.Views.ClassControlHub"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Title="Điều Khiển Lớp Học"
-      Background="#F0F2F5"
+      Title="Veyon Master - Điều Khiển Lớp Học"
+      Background="#E5E9F0"
       FontFamily="Segoe UI, Inter"
       HorizontalAlignment="Stretch"
       VerticalAlignment="Stretch"
@@ -10,18 +10,18 @@
       Unloaded="Page_Unloaded">
 
     <Page.Resources>
-        <!-- ═══ Menu dọc bên trái (thay cho tab ngang). Giữ key "HubTabButton"/"HubTabButtonActive" để code-behind không đổi ═══ -->
+        <!-- ═══ Nút điều hướng trên Thanh công cụ chuẩn Veyon (Icon trên + Text dưới) ═══ -->
         <Style x:Key="HubTabButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#475569"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="FontSize" Value="11.5"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Margin" Value="0,2"/>
-            <Setter Property="MinHeight" Value="52"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="MinWidth" Value="74"/>
+            <Setter Property="MinHeight" Value="58"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="BorderThickness" Value="4,0,0,0"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -31,13 +31,16 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}"
-                                CornerRadius="10">
-                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="#1E293B"/>
-                                <Setter TargetName="border" Property="Background" Value="#F1F5F9"/>
+                                <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#CBD5E1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#CBD5E1"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -46,180 +49,227 @@
         </Style>
 
         <Style x:Key="HubTabButtonActive" TargetType="Button" BasedOn="{StaticResource HubTabButton}">
-            <Setter Property="Foreground" Value="#1976D2"/>
-            <Setter Property="BorderBrush" Value="#1976D2"/>
-            <Setter Property="Background" Value="#EAF2FD"/>
+            <Setter Property="Foreground" Value="#0369A1"/>
+            <Setter Property="BorderBrush" Value="#38BDF8"/>
+            <Setter Property="Background" Value="#E0F2FE"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
-        <!-- ═══ Ô hành động nhanh (touch-friendly, icon lớn + chú thích) ═══ -->
-        <Style x:Key="QuickActionButtonPrimary" TargetType="Button">
-            <Setter Property="Background" Value="#1976D2"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="13.5"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="14,8"/>
-            <Setter Property="Margin" Value="4,0"/>
-            <Setter Property="MinHeight" Value="64"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="b" Background="{TemplateBinding Background}"
-                                CornerRadius="12" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="b" Property="Opacity" Value="0.9"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="b" Property="Opacity" Value="0.8"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <!-- ═══ Nút tính năng chuẩn Veyon Master Toolbar (Icon trên + Nhãn dưới) ═══ -->
+        <Style x:Key="VeyonToolButton" TargetType="Button" BasedOn="{StaticResource HubTabButton}"/>
 
-        <Style x:Key="QuickActionButtonNeutral" TargetType="Button">
-            <Setter Property="Background" Value="#F1F5F9"/>
-            <Setter Property="Foreground" Value="#334155"/>
-            <Setter Property="FontSize" Value="13.5"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="14,8"/>
-            <Setter Property="Margin" Value="4,0"/>
-            <Setter Property="MinHeight" Value="64"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#CBD5E1"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="b" Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="12" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="b" Property="Background" Value="#E2E8F0"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="b" Property="Background" Value="#CBD5E1"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+        <Style x:Key="QuickActionButtonPrimary" TargetType="Button" BasedOn="{StaticResource HubTabButton}"/>
+        <Style x:Key="QuickActionButtonNeutral" TargetType="Button" BasedOn="{StaticResource HubTabButton}"/>
+
+        <!-- Vách ngăn dọc kiểu Veyon QToolBar separator -->
+        <Style x:Key="VeyonToolbarSeparator" TargetType="Border">
+            <Setter Property="Width" Value="1"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Background" Value="#CBD5E1"/>
+            <Setter Property="Margin" Value="6,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
     </Page.Resources>
 
     <!-- [RULE] QC_4.2_LAYOUT_GRID: rootGrid Stretch, No MaxWidth -->
     <Grid x:Name="rootGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="232"/> <!-- Menu dọc -->
-            <ColumnDefinition Width="*"/>   <!-- Nội dung -->
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Row 0: Veyon Master Top Toolbar -->
+            <RowDefinition Height="*"/>    <!-- Row 1: Main Workspace -->
+        </Grid.RowDefinitions>
 
-        <!-- ═══ 1. MENU DỌC BÊN TRÁI ═══ -->
-        <Border Grid.Column="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,1,0" Padding="12,16">
-            <DockPanel LastChildFill="False">
-                <StackPanel DockPanel.Dock="Top" Margin="6,0,6,16">
-                    <TextBlock Text="🖥️ ĐIỀU KHIỂN" FontSize="17" FontWeight="Bold" Foreground="#1E293B"/>
-                    <TextBlock Text="LỚP HỌC" FontSize="17" FontWeight="Bold" Foreground="#1976D2"/>
-                    <TextBlock Text="Chọn chức năng bên dưới" FontSize="11.5" Foreground="#94A3B8" Margin="0,4,0,0"/>
-                </StackPanel>
-
-                <StackPanel DockPanel.Dock="Top">
-                    <Button x:Name="tabBtnMonitor" Style="{StaticResource HubTabButtonActive}" Tag="Monitor" Click="TabButton_Click">
-                        <StackPanel>
-                            <TextBlock Text="🖥️  Giám sát &amp; Quản lý lớp"/>
-                            <TextBlock Text="Xem màn hình, trạng thái học sinh" FontSize="11" FontWeight="Normal" Opacity="0.75" Margin="26,2,0,0"/>
-                        </StackPanel>
-                    </Button>
-                    <Button x:Name="tabBtnBroadcast" Style="{StaticResource HubTabButton}" Tag="Broadcast" Click="TabButton_Click">
-                        <StackPanel>
-                            <TextBlock Text="📺  Trình chiếu &amp; Phát sóng"/>
-                            <TextBlock Text="Chiếu màn hình cho cả lớp" FontSize="11" FontWeight="Normal" Opacity="0.75" Margin="26,2,0,0"/>
-                        </StackPanel>
-                    </Button>
-                    <Button x:Name="tabBtnFiles" Style="{StaticResource HubTabButton}" Tag="Files" Click="TabButton_Click">
-                        <StackPanel>
-                            <TextBlock Text="📁  Trao đổi tài liệu"/>
-                            <TextBlock Text="Gửi / nhận file với học sinh" FontSize="11" FontWeight="Normal" Opacity="0.75" Margin="26,2,0,0"/>
-                        </StackPanel>
-                    </Button>
-                    <Button x:Name="tabBtnWeb" Style="{StaticResource HubTabButton}" Tag="Web" Click="TabButton_Click">
-                        <StackPanel>
-                            <TextBlock Text="🌐  Điều hướng website"/>
-                            <TextBlock Text="Đẩy trang web tới máy học sinh" FontSize="11" FontWeight="Normal" Opacity="0.75" Margin="26,2,0,0"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-            </DockPanel>
-        </Border>
-
-        <!-- ═══ 2. KHU VỰC NỘI DUNG ═══ -->
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Trạng thái + điều khiển nhanh (1 hàng duy nhất) -->
-                <RowDefinition Height="*"/>    <!-- Sub-page -->
-            </Grid.RowDefinitions>
-
-            <!-- Thanh trạng thái + điều khiển nhanh: chỉ giữ thao tác TOÀN LỚP (khóa/mở khóa/im lặng).
-                 Phát màn hình / Gửi file / Mở web đã có ở menu dọc bên trái nên không lặp lại ở đây. -->
-            <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="18,10">
-              <DockPanel LastChildFill="False">
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="btnQuickLock" Style="{StaticResource QuickActionButtonPrimary}" Background="#DC2626" MinHeight="46" Padding="14,6" Click="QuickLock_Click" ToolTip="Khóa màn hình và chuột bàn phím tất cả máy học sinh">
-                        <TextBlock Text="🔒 Khóa tất cả" VerticalAlignment="Center"/>
-                    </Button>
-                    <Button x:Name="btnQuickUnlock" Style="{StaticResource QuickActionButtonPrimary}" Background="#16A34A" MinHeight="46" Padding="14,6" Click="QuickUnlock_Click" ToolTip="Mở khóa tất cả máy học sinh">
-                        <TextBlock Text="🔓 Mở khóa" VerticalAlignment="Center"/>
-                    </Button>
-                    <Button x:Name="btnQuickMute" Style="{StaticResource QuickActionButtonNeutral}" MinHeight="46" Padding="14,6" Click="QuickMute_Click" ToolTip="Bật / Tắt chế độ yêu cầu im lặng">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock x:Name="iconQuickMute" Text="🔇" Margin="0,0,6,0"/>
-                            <TextBlock x:Name="txtQuickMute" Text="Im lặng"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Trạng thái lớp" FontSize="15" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center" Margin="0,0,14,0"/>
-
+        <!-- ═══ 1. VEYON MASTER TOP TOOLBAR (Icon-over-Text phẳng, trực quan 100% chuẩn Veyon) ═══ -->
+        <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="0,0,0,1" Padding="8,4">
+            <DockPanel LastChildFill="True">
+                <!-- BÊN PHẢI: Cụm huy hiệu trạng thái trực tiếp -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,4,0">
                     <!-- Live Share Status Pill -->
-                    <Border x:Name="pillLiveStatus" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="14" Padding="12,5" Margin="0,0,8,0">
+                    <Border x:Name="pillLiveStatus" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,6,0" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse x:Name="dotLiveStatus" Width="9" Height="9" Fill="#94A3B8" Margin="0,0,7,0"/>
+                            <Ellipse x:Name="dotLiveStatus" Width="9" Height="9" Fill="#94A3B8" Margin="0,0,6,0"/>
                             <TextBlock x:Name="txtLiveStatus" Text="Chưa phát màn hình" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Student Count Pill -->
-                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="14" Padding="12,5" Margin="0,0,8,0">
-                        <TextBlock x:Name="txtStudentCount" Text="👥 0 Học sinh" FontSize="12" FontWeight="SemiBold" Foreground="#1D4ED8"/>
+                    <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,6,0" VerticalAlignment="Center">
+                        <TextBlock x:Name="txtStudentCount" Text="👥 0 Học sinh" FontSize="12" FontWeight="Bold" Foreground="#1D4ED8"/>
                     </Border>
 
                     <!-- Silence Pill -->
-                    <Border x:Name="pillSilence" Visibility="Collapsed" Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="14" Padding="12,5" Margin="0,0,8,0">
-                        <TextBlock Text="🔇 Đang im lặng" FontSize="12" FontWeight="Bold" Foreground="#B91C1C"/>
+                    <Border x:Name="pillSilence" Visibility="Collapsed" Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="6" Padding="10,6" VerticalAlignment="Center">
+                        <TextBlock Text="🔇 Đang khóa chú ý" FontSize="12" FontWeight="Bold" Foreground="#B91C1C"/>
                     </Border>
                 </StackPanel>
-              </DockPanel>
-            </Border>
 
-            <!-- Sub-pages container -->
-            <Grid Grid.Row="1" x:Name="PagesContainer" Background="#F0F2F5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Frame x:Name="frameMonitor" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Visible"/>
-                <Frame x:Name="frameBroadcast" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
-                <Frame x:Name="frameFiles" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
-                <Frame x:Name="frameWeb" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
-            </Grid>
+                <!-- BÊN TRÁI: Dải nút công cụ chuẩn Veyon Master (Monitoring | Demo | Lock | Remote View/Control | Message | Web | Run App | File | Screenshot | Power) -->
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- 1. Giám sát (Monitoring) -->
+                        <Button x:Name="tabBtnMonitor" Style="{StaticResource HubTabButtonActive}" Tag="Monitor"
+                                Click="TabButton_Click" ToolTip="Chế độ Giám sát lưới màn hình toàn bộ máy tính trong lớp (Veyon Monitoring)">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🖥️" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Giám sát" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Border Style="{StaticResource VeyonToolbarSeparator}"/>
+
+                        <!-- 2. Chiếu màn hình GV (Fullscreen / Window Demo) -->
+                        <Button x:Name="btnQuickBroadcast" Style="{StaticResource VeyonToolButton}"
+                                Click="QuickBroadcast_Click" ToolTip="Chiếu màn hình Giáo viên (Toàn màn hình, Cửa sổ ứng dụng, Vùng chọn hoặc Bảng SMART TOUCH) kèm màn hình PiP xem trước">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock x:Name="iconQuickBroadcast" Text="📺" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock x:Name="txtQuickBroadcast" Text="Chiếu bài giảng" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 3. Tùy chọn Nguồn chiếu & Thông báo (Broadcast Settings) -->
+                        <Button x:Name="tabBtnBroadcast" Style="{StaticResource HubTabButton}" Tag="Broadcast"
+                                Click="TabButton_Click" ToolTip="Cấu hình chi tiết nguồn chiếu, chất lượng khung hình và gửi thông báo">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🎬" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Nguồn chiếu" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 3b. Học sinh trình bày (Student Demo — PC & Android) -->
+                        <Button x:Name="btnVeyonStudentDemo" Style="{StaticResource VeyonToolButton}"
+                                Click="VeyonStudentDemo_Click" ToolTip="Chọn 1 máy Học sinh (Windows PC hoặc Android) để chiếu màn hình bài làm của học sinh đó cho cả lớp cùng xem">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="👨‍🎓" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="HS trình bày" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Border Style="{StaticResource VeyonToolbarSeparator}"/>
+
+                        <!-- 4. Khóa màn hình (Screen Lock) -->
+                        <Button x:Name="btnQuickLock" Style="{StaticResource VeyonToolButton}"
+                                Click="QuickLock_Click" ToolTip="Khóa màn hình, chuột và bàn phím tất cả máy Học sinh (Veyon Screen Lock)">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🔒" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Khóa màn hình" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 5. Mở khóa (Unlock) -->
+                        <Button x:Name="btnQuickUnlock" Style="{StaticResource VeyonToolButton}"
+                                Click="QuickUnlock_Click" ToolTip="Mở khóa màn hình tất cả máy Học sinh">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🔓" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Mở khóa" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 6. Khóa Chú ý / Im lặng (Attention / Silence) -->
+                        <Button x:Name="btnQuickMute" Style="{StaticResource VeyonToolButton}"
+                                Click="QuickMute_Click" ToolTip="Bật/Tắt màn hình đen yêu cầu Học sinh trật tự chú ý nghe giảng">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock x:Name="iconQuickMute" Text="🔇" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock x:Name="txtQuickMute" Text="Im lặng" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Border Style="{StaticResource VeyonToolbarSeparator}"/>
+
+                        <!-- 7. Quan sát từ xa (Remote View) -->
+                        <Button x:Name="btnVeyonRemoteView" Style="{StaticResource VeyonToolButton}"
+                                Click="VeyonRemoteView_Click" ToolTip="Xem phóng to màn hình máy Học sinh đang chọn (Veyon Remote View)">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="👁️" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Quan sát" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 8. Điều khiển từ xa (Remote Control) -->
+                        <Button x:Name="btnVeyonRemoteControl" Style="{StaticResource VeyonToolButton}"
+                                Click="VeyonRemoteControl_Click" ToolTip="Điều khiển chuột và bàn phím máy Học sinh từ xa (Veyon Remote Control)">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🖱️" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Điều khiển" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Border Style="{StaticResource VeyonToolbarSeparator}"/>
+
+                        <!-- 9. Tin nhắn & Chat 2 chiều (Cả lớp / Nhóm / Từng Học sinh) -->
+                        <Button x:Name="tabBtnMessaging" Style="{StaticResource HubTabButton}" Tag="Messaging"
+                                Click="TabButton_Click" ToolTip="Trò chuyện 2 chiều với Cả lớp, Nhóm và từng Học sinh">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="💬" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Chat Lớp/HS" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 9b. Thông báo nổi (Veyon Text Message Popup) -->
+                        <Button x:Name="btnVeyonTextMessage" Style="{StaticResource VeyonToolButton}"
+                                Click="VeyonTextMessage_Click" ToolTip="Gửi thông báo văn bản bật nổi lên màn hình Học sinh (Veyon Text Message)">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="📢" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Thông báo" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 10. Mở Website (Open Website) -->
+                        <Button x:Name="tabBtnWeb" Style="{StaticResource HubTabButton}" Tag="Web"
+                                Click="TabButton_Click" ToolTip="Đẩy đường dẫn URL tự mở trên máy Học sinh (Veyon Open Website)">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🌐" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Mở Website" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 11. Chạy ứng dụng (Start Application) -->
+                        <Button x:Name="btnVeyonStartApp" Style="{StaticResource VeyonToolButton}"
+                                Click="VeyonStartApp_Click" ToolTip="Khởi chạy đồng loạt phần mềm học tập trên máy Học sinh (Veyon Start Application)">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🚀" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Chạy App" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 12. Truyền File & Thu bài (File Transfer) -->
+                        <Button x:Name="tabBtnFiles" Style="{StaticResource HubTabButton}" Tag="Files"
+                                Click="TabButton_Click" ToolTip="Phát tài liệu xuống máy Học sinh và Thu bài làm (Veyon File Transfer)">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="📁" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Truyền File" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 13. Chụp màn hình (Screenshot) -->
+                        <Button x:Name="btnVeyonScreenshot" Style="{StaticResource VeyonToolButton}"
+                                Click="VeyonScreenshot_Click" ToolTip="Chụp và lưu ảnh màn hình tất cả máy Học sinh đang trực tuyến (Veyon Screenshot)">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="📸" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Chụp ảnh" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Border Style="{StaticResource VeyonToolbarSeparator}"/>
+
+                        <!-- 14. Quản lý nguồn máy (Power Control: Reboot / Power Down / Logoff) -->
+                        <Button x:Name="btnVeyonPowerControl" Style="{StaticResource VeyonToolButton}"
+                                Click="VeyonPowerControl_Click" ToolTip="Quản lý nguồn dàn máy Học sinh: Khởi động lại, Tắt máy, Đăng xuất (Veyon Power Control)">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="⚡" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                <TextBlock Text="Nguồn máy ▾" FontSize="11.5" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!-- ═══ 2. KHU VỰC NỘI DUNG ═══ -->
+        <Grid Grid.Row="1" x:Name="PagesContainer" Background="#E5E9F0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Frame x:Name="frameMonitor" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Visible"/>
+            <Frame x:Name="frameBroadcast" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
+            <Frame x:Name="frameMessaging" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
+            <Frame x:Name="frameFiles" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
+            <Frame x:Name="frameWeb" NavigationUIVisibility="Hidden" JournalOwnership="OwnsJournal" Visibility="Collapsed"/>
         </Grid>
     </Grid>
 </Page>

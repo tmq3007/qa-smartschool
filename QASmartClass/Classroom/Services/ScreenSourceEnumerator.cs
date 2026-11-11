@@ -124,7 +124,39 @@ namespace QASmartClass.Classroom.Services
             }, IntPtr.Zero);
 
             list.Sort((a, b) => b.IsPrimary.CompareTo(a.IsPrimary));
-            return list;
+            var namedList = new List<ScreenSourceInfo>(list.Count);
+            for (int i = 0; i < list.Count; i++)
+            {
+                var s = list[i];
+                namedList.Add(new ScreenSourceInfo
+                {
+                    Kind = ScreenSourceKind.Screen,
+                    IconGlyph = "🖥️",
+                    Title = $"Màn hình {i + 1}{(s.IsPrimary ? " (Chính)" : "")} — {s.Width}×{s.Height}",
+                    Subtitle = $"Toàn bộ màn hình hiển thị #{i + 1} ({s.Width}×{s.Height} px)",
+                    X = s.X,
+                    Y = s.Y,
+                    Width = s.Width,
+                    Height = s.Height,
+                    IsPrimary = s.IsPrimary
+                });
+            }
+            return namedList;
+        }
+
+        /// <summary>Lấy danh sách tổng hợp tất cả nguồn có thể chia sẻ (Màn hình + Bảng SMART TOUCH + Cửa sổ đang mở + Vùng chọn mẫu).</summary>
+        public static List<ScreenSourceInfo> GetAllShareableSources(IntPtr excludeHwnd, double dpiScaleX = 1.0, double dpiScaleY = 1.0)
+        {
+            var all = new List<ScreenSourceInfo>();
+            all.AddRange(GetScreens());
+            var qaPages = GetQaClassPages();
+            if (qaPages.Count > 0) all.Add(qaPages[0]); // Trang đang mở
+            if (qaPages.Count > 1) all.Add(qaPages[1]); // Bảng SMART TOUCH
+            all.AddRange(GetWindows(excludeHwnd));
+            var regions = GetRegionPresets(dpiScaleX, dpiScaleY);
+            if (regions.Count > 0) all.Add(regions[0]);
+            if (regions.Count > 1) all.Add(regions[1]);
+            return all;
         }
 
         /// <summary>Tìm màn hình đang chứa điểm (x,y); dự phòng màn hình chính.</summary>
@@ -356,7 +388,11 @@ namespace QASmartClass.Classroom.Services
                     var sb = new StringBuilder(len + 1);
                     GetWindowText(hWnd, sb, sb.Capacity);
                     string title = sb.ToString();
-                    if (string.IsNullOrWhiteSpace(title) || title == "Program Manager") return true;
+                    if (string.IsNullOrWhiteSpace(title)
+                        || title == "Program Manager"
+                        || title.Contains("Chọn nguồn chiếu màn hình", StringComparison.OrdinalIgnoreCase)
+                        || title.Contains("Thanh điều khiển chia sẻ màn hình", StringComparison.OrdinalIgnoreCase))
+                        return true;
                     if (!GetWindowRect(hWnd, out var rc)) return true;
                     int w = rc.Right - rc.Left, h = rc.Bottom - rc.Top;
                     if (!IsIconic(hWnd) && (w < 80 || h < 60)) return true;
@@ -424,14 +460,145 @@ namespace QASmartClass.Classroom.Services
             }
         }
 
-        /// <summary>Tạo ảnh xem trước (đã Freeze, dùng được từ mọi luồng). Trả null nếu không chụp được.</summary>
+        /// <summary>
+        /// Chụp ảnh xem trước trực tiếp cho mọi loại nguồn (Màn hình, Cửa sổ, Vùng chọn, hoặc Trang QA SmartClass / SMART TOUCH).
+        /// Gọi trên luồng UI để hỗ trợ cả GDI và WPF Visual.
+        /// </summary>
+        public static BitmapSource? CaptureSourcePreview(ScreenSourceInfo src, Window? ownerWindow = null)
+        {
+            if (src == null) return null;
+            try
+            {
+                if (src.Kind == ScreenSourceKind.QaClassPage)
+                {
+                    if (string.Equals(src.PageFormId, "SMART_TOUCH", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (Application.Current != null)
+                        {
+                            foreach (Window w in Application.Current.Windows)
+                            {
+                                if (w.GetType().Name.Contains("Form2_MainDashboard", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var bmp = RenderElementToBitmap(w.Content as FrameworkElement ?? w, 360);
+                                    if (bmp != null) return bmp;
+                                }
+                            }
+                        }
+                        return CreateSmartTouchBoardPreviewBitmap(360, 202);
+                    }
+
+                    var targetShell = (ownerWindow as Views.ClassroomShell)
+                                   ?? (Application.Current?.MainWindow as Views.ClassroomShell);
+                    if (targetShell == null && Application.Current != null)
+                    {
+                        foreach (Window w in Application.Current.Windows)
+                        {
+                            if (w is Views.ClassroomShell cs) { targetShell = cs; break; }
+                        }
+                    }
+                    if (targetShell != null)
+                    {
+                        var pageBmp = targetShell.TryGetQaPagePreviewBitmap(src.PageFormId, 360);
+                        if (pageBmp != null) return pageBmp;
+                    }
+                    return null;
+                }
+
+                // Nếu nguồn là cửa sổ WPF thuộc chính ứng dụng đang chạy, kết xuất trực tiếp từ Visual để luôn rõ nét 100%
+                if (src.Kind == ScreenSourceKind.Window && src.Hwnd != IntPtr.Zero && Application.Current != null)
+                {
+                    foreach (Window w in Application.Current.Windows)
+                    {
+                        var h = new WindowInteropHelper(w).Handle;
+                        if (h == src.Hwnd)
+                        {
+                            var wpfBmp = RenderElementToBitmap(w.Content as FrameworkElement ?? w, 360);
+                            if (wpfBmp != null) return wpfBmp;
+                        }
+                    }
+                }
+
+                return CaptureThumbnail(src);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static BitmapSource? CreateSmartTouchBoardPreviewBitmap(int width, int height)
+        {
+            try
+            {
+                var dv = new DrawingVisual();
+                using (var dc = dv.RenderOpen())
+                {
+                    // Nền bảng xanh phấn / bảng tương tác SMART TOUCH
+                    var bgBrush = new LinearGradientBrush(
+                        Color.FromRgb(19, 42, 33),
+                        Color.FromRgb(13, 29, 23),
+                        new Point(0, 0),
+                        new Point(1, 1));
+                    dc.DrawRectangle(bgBrush, null, new Rect(0, 0, width, height));
+
+                    // Lưới ô ly mờ trên bảng
+                    var gridPen = new Pen(new SolidColorBrush(Color.FromArgb(26, 255, 255, 255)), 1);
+                    for (int x = 24; x < width; x += 24)
+                        dc.DrawLine(gridPen, new Point(x, 0), new Point(x, height));
+                    for (int y = 24; y < height; y += 24)
+                        dc.DrawLine(gridPen, new Point(0, y), new Point(width, y));
+
+                    // Hình vẽ minh họa (Tam giác & Đồ thị hàm số màu vàng/xanh sáng)
+                    var yellowPen = new Pen(new SolidColorBrush(Color.FromRgb(250, 204, 21)), 2.5);
+                    dc.DrawLine(yellowPen, new Point(48, 136), new Point(124, 52));
+                    dc.DrawLine(yellowPen, new Point(124, 52), new Point(168, 136));
+                    dc.DrawLine(yellowPen, new Point(48, 136), new Point(168, 136));
+
+                    var cyanPen = new Pen(new SolidColorBrush(Color.FromRgb(56, 189, 248)), 2.5);
+                    dc.DrawEllipse( null, cyanPen, new Point(256, 94), 38, 38);
+
+                    var ftTitle = new FormattedText(
+                        "🎨 BẢNG TƯƠNG TÁC SMART TOUCH",
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight,
+                        new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal),
+                        13,
+                        Brushes.White,
+                        1.0);
+                    dc.DrawText(ftTitle, new Point(18, 14));
+
+                    // Thanh công cụ dưới đáy bảng
+                    var dockRect = new Rect(40, height - 30, width - 80, 22);
+                    dc.DrawRoundedRectangle(new SolidColorBrush(Color.FromArgb(220, 30, 41, 59)), new Pen(new SolidColorBrush(Color.FromRgb(71, 85, 105)), 1), dockRect, 6, 6);
+                    var ftDock = new FormattedText(
+                        "✏️ Bút viết   🧹 Tẩy   📐 Hình học   🧊 3D   🔬 STEM",
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight,
+                        new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal),
+                        10.5,
+                        new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+                        1.0);
+                    dc.DrawText(ftDock, new Point((width - ftDock.Width) / 2, height - 27));
+                }
+
+                var rtb = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+                rtb.Render(dv);
+                rtb.Freeze();
+                return rtb;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>Tạo ảnh xem trước (đã Freeze, hệ màu Bgr32 không bị trong suốt Alpha=0 khi hiển thị trên WPF Image).</summary>
         public static BitmapSource? CaptureThumbnail(ScreenSourceInfo src)
         {
             if (src.Thumbnail != null) return src.Thumbnail;
             if (src.Kind == ScreenSourceKind.QaClassPage) return null;
 
             IntPtr hdcScreen = IntPtr.Zero, hdcFull = IntPtr.Zero, hbmFull = IntPtr.Zero, hOldFull = IntPtr.Zero;
-            IntPtr hdcThumb = IntPtr.Zero, hbmThumb = IntPtr.Zero, hOldThumb = IntPtr.Zero;
             try
             {
                 int w = src.Width, h = src.Height;
@@ -440,37 +607,49 @@ namespace QASmartClass.Classroom.Services
                 int tw = Math.Max(1, (int)(w * k)), th = Math.Max(1, (int)(h * k));
 
                 hdcScreen = GetDC(IntPtr.Zero);
-                hdcThumb = CreateCompatibleDC(hdcScreen);
-                hbmThumb = CreateCompatibleBitmap(hdcScreen, tw, th);
-                hOldThumb = SelectObject(hdcThumb, hbmThumb);
-                SetStretchBltMode(hdcThumb, HALFTONE);
+                hdcFull = CreateCompatibleDC(hdcScreen);
+                hbmFull = CreateCompatibleBitmap(hdcScreen, w, h);
+                hOldFull = SelectObject(hdcFull, hbmFull);
 
+                bool usedPrintWindow = false;
                 if (src.Kind == ScreenSourceKind.Screen || src.Kind == ScreenSourceKind.Region)
                 {
-                    StretchBlt(hdcThumb, 0, 0, tw, th, hdcScreen, src.X, src.Y, w, h, SRCCOPY);
+                    BitBlt(hdcFull, 0, 0, w, h, hdcScreen, src.X, src.Y, SRCCOPY);
                 }
                 else
                 {
                     if (IsIconic(src.Hwnd)) return null;
-                    hdcFull = CreateCompatibleDC(hdcScreen);
-                    hbmFull = CreateCompatibleBitmap(hdcScreen, w, h);
-                    hOldFull = SelectObject(hdcFull, hbmFull);
-                    if (!PrintWindow(src.Hwnd, hdcFull, PW_RENDERFULLCONTENT))
+                    usedPrintWindow = PrintWindow(src.Hwnd, hdcFull, PW_RENDERFULLCONTENT);
+                    if (!usedPrintWindow)
                     {
-                        StretchBlt(hdcThumb, 0, 0, tw, th, hdcScreen, src.X, src.Y, w, h, SRCCOPY);
-                    }
-                    else
-                    {
-                        SetStretchBltMode(hdcThumb, HALFTONE);
-                        StretchBlt(hdcThumb, 0, 0, tw, th, hdcFull, 0, 0, w, h, SRCCOPY);
+                        BitBlt(hdcFull, 0, 0, w, h, hdcScreen, src.X, src.Y, SRCCOPY);
                     }
                 }
 
-                SelectObject(hdcThumb, hOldThumb); hOldThumb = IntPtr.Zero;
-                var bmp = Imaging.CreateBitmapSourceFromHBitmap(hbmThumb, IntPtr.Zero, Int32Rect.Empty,
-                    BitmapSizeOptions.FromEmptyOptions());
-                bmp.Freeze();
-                return bmp;
+                var rawBmp = Imaging.CreateBitmapSourceFromHBitmap(
+                    hbmFull,
+                    IntPtr.Zero,
+                    Int32Rect.Empty,
+                    BitmapSizeOptions.FromWidthAndHeight(tw, th));
+
+                // QUAN TRỌNG: GDI BitBlt / PrintWindow trên HBITMAP 32-bit thường để kênh Alpha = 0,
+                // khiến WPF Image hiểu là trong suốt 100% (chỉ thấy nền #0D1B2A phía sau).
+                // Chuyển sang PixelFormats.Bgr32 để bỏ kênh Alpha lỗi của GDI và hiển thị 100% điểm ảnh RGB.
+                BitmapSource opaqueBmp = new FormatConvertedBitmap(rawBmp, PixelFormats.Bgr32, null, 0);
+
+                if (usedPrintWindow && IsMostlyBlackBitmap(opaqueBmp))
+                {
+                    BitBlt(hdcFull, 0, 0, w, h, hdcScreen, src.X, src.Y, SRCCOPY);
+                    var fallbackRaw = Imaging.CreateBitmapSourceFromHBitmap(
+                        hbmFull,
+                        IntPtr.Zero,
+                        Int32Rect.Empty,
+                        BitmapSizeOptions.FromWidthAndHeight(tw, th));
+                    opaqueBmp = new FormatConvertedBitmap(fallbackRaw, PixelFormats.Bgr32, null, 0);
+                }
+
+                opaqueBmp.Freeze();
+                return opaqueBmp;
             }
             catch { return null; }
             finally
@@ -478,10 +657,45 @@ namespace QASmartClass.Classroom.Services
                 if (hOldFull != IntPtr.Zero) SelectObject(hdcFull, hOldFull);
                 if (hbmFull != IntPtr.Zero) DeleteObject(hbmFull);
                 if (hdcFull != IntPtr.Zero) DeleteDC(hdcFull);
-                if (hOldThumb != IntPtr.Zero) SelectObject(hdcThumb, hOldThumb);
-                if (hbmThumb != IntPtr.Zero) DeleteObject(hbmThumb);
-                if (hdcThumb != IntPtr.Zero) DeleteDC(hdcThumb);
                 if (hdcScreen != IntPtr.Zero) ReleaseDC(IntPtr.Zero, hdcScreen);
+            }
+        }
+
+        private static bool IsMostlyBlackBitmap(BitmapSource bmp)
+        {
+            try
+            {
+                int w = bmp.PixelWidth, h = bmp.PixelHeight;
+                if (w <= 4 || h <= 4) return true;
+                int stride = w * 4;
+                byte[] pixels = new byte[stride * h];
+                bmp.CopyPixels(pixels, stride, 0);
+                int nonBlackSamples = 0;
+                int totalSamples = 0;
+                int stepY = Math.Max(1, h / 12);
+                int stepX = Math.Max(1, w / 16);
+                for (int y = stepY; y < h - stepY; y += stepY)
+                {
+                    int rowOffset = y * stride;
+                    for (int x = stepX; x < w - stepX; x += stepX)
+                    {
+                        int idx = rowOffset + x * 4;
+                        if (idx + 2 < pixels.Length)
+                        {
+                            totalSamples++;
+                            if (pixels[idx] > 8 || pixels[idx + 1] > 8 || pixels[idx + 2] > 8)
+                            {
+                                nonBlackSamples++;
+                                if (nonBlackSamples >= 4) return false;
+                            }
+                        }
+                    }
+                }
+                return totalSamples > 0 && nonBlackSamples < 4;
+            }
+            catch
+            {
+                return false;
             }
         }
     }

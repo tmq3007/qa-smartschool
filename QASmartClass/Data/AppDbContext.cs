@@ -17,8 +17,33 @@ namespace QASmartClass.Data
         public class SqliteWalInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.DbConnectionInterceptor
         {
             private static string? _cachedJournalMode = null;
+            private static bool _schemaChecked = false;
 
             public static void InvalidateWalCache() => _cachedJournalMode = null;
+
+            private static void EnsureSchemaColumns(System.Data.Common.DbConnection connection)
+            {
+                if (_schemaChecked) return;
+                _schemaChecked = true;
+                try
+                {
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.CommandText = "ALTER TABLE EventLogs ADD COLUMN MacAddress TEXT DEFAULT '';";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch { }
+                try
+                {
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.CommandText = "ALTER TABLE EventLogs ADD COLUMN ClientIP TEXT DEFAULT '';";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch { }
+            }
 
             public override void ConnectionOpened(System.Data.Common.DbConnection connection, Microsoft.EntityFrameworkCore.Diagnostics.ConnectionEndEventData eventData)
             {
@@ -31,6 +56,8 @@ namespace QASmartClass.Data
                     }
                 }
                 catch { }
+
+                EnsureSchemaColumns(connection);
 
                 if (_cachedJournalMode == null)
                 {
@@ -73,6 +100,8 @@ namespace QASmartClass.Data
                     }
                 }
                 catch { }
+
+                EnsureSchemaColumns(connection);
 
                 if (_cachedJournalMode == null)
                 {

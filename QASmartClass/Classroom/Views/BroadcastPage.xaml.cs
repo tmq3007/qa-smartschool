@@ -39,6 +39,7 @@ namespace QASmartClass.Classroom.Views
         public BroadcastPage()
         {
             InitializeComponent();
+            InitializeHighFpsOptions();
             LoadDynamicWhitelist();
             SetupConfigWatcher();
             // btnTurboBroadcast.Visibility = QASmartTouch.Services.AppSettings.Broadcast_AllowTurboMode ? Visibility.Visible : Visibility.Collapsed; // Tạm ẩn theo yêu cầu
@@ -78,6 +79,8 @@ namespace QASmartClass.Classroom.Views
                         rbAllStudents.IsChecked = true;
                     }
                     UpdateRecipientCount();
+                    RefreshInlineSourcePreviews();
+                    UpdateSelectedSourcePreviewThumb();
                 });
 
                 // Tải lại lịch sử thông báo đã gửi từ SQLite Database
@@ -163,6 +166,120 @@ namespace QASmartClass.Classroom.Views
             {
                 StopVncBroadcast();
             }
+        }
+
+        // [MYTHWARE_LITE] Cho phép nút 1-Click Broadcast trên Top Command Ribbon mở hộp chọn nguồn trực quan và bật/tắt chiếu màn hình kèm Thanh điều khiển nổi (Floating Share Bar + Live PiP)
+        private bool _skipConfirmForQuickBroadcast = false;
+        private FloatingBroadcastBarWindow? _floatingBroadcastBar;
+        private bool _hideClassroomShellFromStudents = false;
+
+        public void ToggleMythwareQuickBroadcast()
+        {
+            if (_isBroadcasting || _isVncBroadcasting)
+            {
+                StopAllBroadcasting();
+                return;
+            }
+
+            // Mở hộp chọn nguồn (Toàn màn hình / Cửa sổ ứng dụng / Vùng chọn / Trang QA SmartClass) để GV thấy rõ mình sắp chiếu gì
+            if (!OpenSourcePicker(ScreenSourceKind.Screen, out bool autoMinimizeShell))
+            {
+                return;
+            }
+
+            _skipConfirmForQuickBroadcast = true;
+            try
+            {
+                Broadcast_Click(this, new RoutedEventArgs());
+                if (_isBroadcasting && autoMinimizeShell)
+                {
+                    var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                    if (shell != null) shell.WindowState = WindowState.Minimized;
+                }
+            }
+            finally
+            {
+                _skipConfirmForQuickBroadcast = false;
+            }
+        }
+
+        private void EnsureFloatingBroadcastBarShown(string sourceDescription, string resolution, string fps)
+        {
+            try
+            {
+                if (_floatingBroadcastBar == null || !_floatingBroadcastBar.IsLoaded)
+                {
+                    _floatingBroadcastBar = new FloatingBroadcastBarWindow(_hideClassroomShellFromStudents);
+                    _floatingBroadcastBar.ChangeSourceRequested += (_, _) =>
+                    {
+                        Dispatcher.Invoke(() => OpenSourcePicker(ScreenSourceKind.Screen, out _));
+                    };
+                    _floatingBroadcastBar.SelectRegionRequested += (_, _) =>
+                    {
+                        Dispatcher.Invoke(() => PickRegion_Click(this, new RoutedEventArgs()));
+                    };
+                    _floatingBroadcastBar.TogglePauseRequested += (_, _) =>
+                    {
+                        Dispatcher.Invoke(() => Pause_Click(this, new RoutedEventArgs()));
+                    };
+                    _floatingBroadcastBar.StopRequested += (_, _) =>
+                    {
+                        Dispatcher.Invoke(StopAllBroadcasting);
+                    };
+                    _floatingBroadcastBar.RestoreShellRequested += (_, _) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                            if (shell != null)
+                            {
+                                if (shell.WindowState == WindowState.Minimized)
+                                    shell.WindowState = WindowState.Maximized;
+                                shell.Show();
+                                shell.Activate();
+                            }
+                        });
+                    };
+                    _floatingBroadcastBar.HideClassroomShellChanged += (_, hideShell) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            _hideClassroomShellFromStudents = hideShell;
+                            ScreenSourceInfo? curPicked;
+                            lock (_srcLock) curPicked = _picked;
+                            bool shouldExclude = _hideClassroomShellFromStudents && (curPicked == null || curPicked.Kind == ScreenSourceKind.Screen);
+                            ApplyScreenCaptureExclusion(shouldExclude);
+                        });
+                    };
+                    _floatingBroadcastBar.Show();
+                }
+                else
+                {
+                    _floatingBroadcastBar.SetHideClassroomShellCheck(_hideClassroomShellFromStudents);
+                    if (_floatingBroadcastBar.Visibility != Visibility.Visible)
+                        _floatingBroadcastBar.Show();
+                }
+
+                int recipientCount = ClassroomAppContext.Network?.ConnectedCount ?? 0;
+                _floatingBroadcastBar.UpdateStatus(_isPaused || _isBroadcastPausedDueToPrivacy, "00:00", recipientCount, sourceDescription);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[BroadcastPage] EnsureFloatingBroadcastBarShown error: {Err}", ex.Message);
+            }
+        }
+
+        private void CloseFloatingBroadcastBar()
+        {
+            try
+            {
+                if (_floatingBroadcastBar != null)
+                {
+                    _floatingBroadcastBar.Close();
+                    _floatingBroadcastBar = null;
+                }
+            }
+            catch { }
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -434,6 +551,7 @@ namespace QASmartClass.Classroom.Views
                     _privacyBorder.Close();
                     _privacyBorder = null;
                 }
+                CloseFloatingBroadcastBar();
 
                 screenIdleState.Visibility = Visibility.Visible;
                 screenLiveState.Visibility = Visibility.Collapsed;
@@ -506,7 +624,7 @@ namespace QASmartClass.Classroom.Views
                     return;
                 }
 
-                if (recipientCount == 0)
+                if (recipientCount == 0 && !_skipConfirmForQuickBroadcast)
                 {
                     var warnResult = MessageBox.Show(
                         "[Cảnh báo] HIỆN CHƯA CÓ HỌC SINH NÀO NHẬN\n\n" +
@@ -527,7 +645,7 @@ namespace QASmartClass.Classroom.Views
             }
 
             // Xác nhận lại số lượng học sinh nhận trình chiếu khi không bật Force Watch
-            if (chkForceWatch.IsChecked == false)
+            if (chkForceWatch.IsChecked == false && !_skipConfirmForQuickBroadcast)
             {
                 try
                 {
@@ -647,7 +765,9 @@ namespace QASmartClass.Classroom.Views
             ScreenSourceInfo? curPicked;
             lock (_srcLock) curPicked = _picked;
 
-            bool shouldExclude = QASmartTouch.Services.AppSettings.Broadcast_EnableScreenExclusion;
+            // [MYTHWARE_LITE] Mặc định cho phép chiếu đúng những gì Giáo viên đang nhìn thấy trên màn hình;
+            // chỉ ẩn cửa sổ Quản lý lớp khi Giáo viên chủ động bật "Ẩn cửa sổ Quản lý lớp khỏi màn hình Học sinh".
+            bool shouldExclude = _hideClassroomShellFromStudents && (curPicked == null || curPicked.Kind == ScreenSourceKind.Screen);
             if (QASmartTouch.Services.AppSettings.Broadcast_TurboMode && QASmartTouch.Services.AppSettings.Broadcast_TurboDisableExclusion)
             {
                 shouldExclude = false;
@@ -659,18 +779,10 @@ namespace QASmartClass.Classroom.Views
             ApplyScreenCaptureExclusion(shouldExclude);
             _isFirstCapture = true;
 
-            // CR-06 FIX: Cache compression format once at start instead of querying DB every frame
-            try
-            {
-                using (var db = new QASmartClass.Data.AppDbContext())
-                {
-                    var formatSetting = db.SystemSettings.FirstOrDefault(s => s.Id == "Network_ScreenCompressionFormat");
-                    if (formatSetting != null) _cachedCompressionFormat = formatSetting.Value;
-                    else _cachedCompressionFormat = "WebP";
-                }
-            }
-            catch { _cachedCompressionFormat = "WebP"; }
+            // CR-06 FIX: Use fast JPEG encoding for real-time low-latency screen broadcast
+            _cachedCompressionFormat = "JPEG";
             _seconds = 0;
+            RefreshCachedBroadcastParams();
 
             var resolution = (cmbResolution.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "1920×1080";
             var fps = (cmbFPS.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "30 fps";
@@ -730,41 +842,34 @@ namespace QASmartClass.Classroom.Views
                 shell?.NavigateToQaPageForBroadcast(curPicked.PageFormId);
             }
 
+            // [MYTHWARE_LITE] Hiển thị Thanh điều khiển nổi (Floating Share Bar + Live PiP Monitor)
+            EnsureFloatingBroadcastBarShown(source, resolution, fps);
+
             // Timer đếm thời gian
             _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _timer.Tick += (s, ev) =>
             {
                 _seconds++;
-                txtTimer.Text = $"{_seconds / 60:D2}:{_seconds % 60:D2}";
-                txtStatus.Text = $"Đang phát — {source} — {_seconds / 60:D2}:{_seconds % 60:D2}";
+                string timerStr = $"{_seconds / 60:D2}:{_seconds % 60:D2}";
+                txtTimer.Text = timerStr;
+                ScreenSourceInfo? latestPicked;
+                lock (_srcLock) latestPicked = _picked;
+                string latestSource = latestPicked != null ? DescribeSource(latestPicked) : source;
+                txtStatus.Text = $"Đang phát — {latestSource} — {timerStr}";
                 // V22-14: Status color xanh khi đang phát
                 txtStatus.Foreground = new SolidColorBrush(Color.FromRgb(46, 125, 50));
                 string otpInfo = !string.IsNullOrEmpty(_currentEmergencyOtp) ? $" | OTP Khẩn cấp: {_currentEmergencyOtp}" : "";
                 txtBroadcastInfo.Text = $"{resolution} | {fps} | {txtRecipientCount.Text.Replace("→ ", "")}{otpInfo}";
+                int recipientCnt = ClassroomAppContext.Network?.ConnectedCount ?? 0;
+                _floatingBroadcastBar?.UpdateStatus(_isPaused || _isBroadcastPausedDueToPrivacy, timerStr, recipientCnt, latestSource);
+                RefreshCachedBroadcastParams();
             };
             _timer.Start();
 
-            // Timer chụp màn hình — interval tùy FPS
-            int targetFps = 30;
-            try
-            {
-                var fpsItem = cmbFPS.SelectedItem as ComboBoxItem;
-                if (fpsItem?.Tag is string fpsTag && int.TryParse(fpsTag, out int parsedFps) && parsedFps > 0)
-                {
-                    targetFps = parsedFps;
-                }
-                else
-                {
-                    var fpsDigits = new string(fps.Where(char.IsDigit).ToArray());
-                    if (int.TryParse(fpsDigits, out int parsedFpsContent) && parsedFpsContent > 0)
-                    {
-                        targetFps = parsedFpsContent;
-                    }
-                }
-            }
-            catch (Exception ex) { Log.Warning("[BroadcastPage][ParseFps] FPS parse error: {Err}", ex.Message); }
-            int captureMs = 1000 / targetFps;
-            // V22-02: Background thread capture — tránh lag UI ở 30fps
+            // Timer chụp màn hình — interval tùy FPS (hỗ trợ 30 / 60 / 120 FPS)
+            int targetFps = GetSelectedTargetFps();
+            int captureMs = Math.Max(8, (int)Math.Round(1000.0 / targetFps));
+            // V22-02: Background thread capture — tránh lag UI ở 60-120fps
             _captureTimer = new System.Threading.Timer(
                 async _ => await CaptureAndSendAsync(),
                 null, 0, captureMs);
@@ -830,7 +935,170 @@ namespace QASmartClass.Classroom.Views
         private DateTime _lastEncodedFrameUtc = DateTime.MinValue;
         private DateTime _lastTcpBroadcastCmdUtc = DateTime.MinValue;
 
-        /// <summary>Tính mã băm lấy mẫu nhanh 64 điểm ảnh để phát hiện khung hình tĩnh (tiết kiệm CPU nén JPEG/WebP).</summary>
+        private void InitializeHighFpsOptions()
+        {
+            try
+            {
+                if (cmbFPS == null) return;
+                bool has60 = cmbFPS.Items.OfType<ComboBoxItem>().Any(i => i.Tag?.ToString() == "60");
+                if (!has60)
+                {
+                    cmbFPS.Items.Add(new ComboBoxItem { Content = "Siêu mượt (60 fps)", Tag = "60" });
+                }
+                bool has120 = cmbFPS.Items.OfType<ComboBoxItem>().Any(i => i.Tag?.ToString() == "120");
+                if (!has120)
+                {
+                    cmbFPS.Items.Add(new ComboBoxItem { Content = "Cực đại (120 fps)", Tag = "120" });
+                }
+
+                // Mặc định chọn 60 fps (thay vì SelectedIndex=1 là 2 fps làm giật hình trước đây!)
+                var item60 = cmbFPS.Items.OfType<ComboBoxItem>().FirstOrDefault(i => i.Tag?.ToString() == "60");
+                if (item60 != null)
+                {
+                    cmbFPS.SelectedItem = item60;
+                }
+                cmbFPS.SelectionChanged -= CmbFPS_SelectionChanged;
+                cmbFPS.SelectionChanged += CmbFPS_SelectionChanged;
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("[BroadcastPage] InitializeHighFpsOptions error: {Err}", ex.Message);
+            }
+        }
+
+        private int GetSelectedTargetFps()
+        {
+            int targetFps = 60;
+            try
+            {
+                var fpsItem = cmbFPS?.SelectedItem as ComboBoxItem;
+                if (fpsItem?.Tag is string fpsTag && int.TryParse(fpsTag, out int parsedFps) && parsedFps > 0)
+                {
+                    targetFps = parsedFps;
+                }
+                else if (fpsItem?.Content != null)
+                {
+                    var fpsDigits = new string((fpsItem.Content.ToString() ?? "").Where(char.IsDigit).ToArray());
+                    if (int.TryParse(fpsDigits, out int parsedFpsContent) && parsedFpsContent > 0)
+                    {
+                        targetFps = parsedFpsContent;
+                    }
+                }
+            }
+            catch { }
+            return Math.Clamp(targetFps, 1, 120);
+        }
+
+        private void CmbFPS_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isBroadcasting || _captureTimer == null) return;
+            try
+            {
+                int targetFps = GetSelectedTargetFps();
+                int captureMs = Math.Max(8, (int)Math.Round(1000.0 / targetFps));
+                _captureTimer.Change(0, captureMs);
+                var resolution = (cmbResolution?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "1920×1080";
+                var fpsText = (cmbFPS?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? $"{targetFps} fps";
+                if (txtRes != null) txtRes.Text = $"{resolution}  {fpsText}";
+                Log.Information("[BroadcastPage] Live FPS updated to {Fps} fps ({Ms}ms interval)", targetFps, captureMs);
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("[BroadcastPage] CmbFPS_SelectionChanged error: {Err}", ex.Message);
+            }
+        }
+
+        // Cached UI state to avoid blocking UI thread with synchronous Dispatcher.Invoke on every frame (30fps)
+        private volatile int _cachedScreenW = 1920;
+        private volatile int _cachedScreenH = 1080;
+        private double _cachedScaleX = 1.0;
+        private double _cachedScaleY = 1.0;
+        private volatile bool _cachedIsWindowSource = false;
+        private IntPtr _cachedWindowHwnd = IntPtr.Zero;
+        private IntPtr _cachedSmartTouchHwnd = IntPtr.Zero;
+        private volatile int _cachedTargetWidth = 1280;
+        private volatile int _cachedQualityLevel = 70;
+        private volatile bool _cachedIsForceWatch = false;
+        private volatile int _cachedWebPort = 8080;
+        private volatile string _cachedLessonTitle = "";
+        private System.Collections.Generic.List<string>? _cachedTargetCodes = null;
+
+        private void RefreshCachedBroadcastParams()
+        {
+            try
+            {
+                _cachedScreenW = (int)SystemParameters.PrimaryScreenWidth;
+                _cachedScreenH = (int)SystemParameters.PrimaryScreenHeight;
+                var dpiScale = VisualTreeHelper.GetDpi(this);
+                _cachedScaleX = dpiScale.DpiScaleX;
+                _cachedScaleY = dpiScale.DpiScaleY;
+
+                _cachedIsWindowSource = rbWindow.IsChecked == true;
+                if (_cachedIsWindowSource && cmbWindowList.SelectedItem is ComboBoxItem item && item.Tag is int pId)
+                {
+                    try
+                    {
+                        var proc = System.Diagnostics.Process.GetProcessById(pId);
+                        _cachedWindowHwnd = proc.MainWindowHandle;
+                    }
+                    catch { _cachedWindowHwnd = IntPtr.Zero; }
+                }
+
+                if (cmbResolution.SelectedItem is ComboBoxItem resItem)
+                {
+                    string resText = resItem.Content?.ToString() ?? "";
+                    if (resText.Contains("1920")) _cachedTargetWidth = 1920;
+                    else if (resText.Contains("2560")) _cachedTargetWidth = 2560;
+                    else _cachedTargetWidth = 1280;
+                }
+
+                int qLevel = 72;
+                if (cmbQuality.SelectedItem is ComboBoxItem qItem && int.TryParse(qItem.Tag?.ToString(), out int qVal))
+                {
+                    qLevel = qVal;
+                }
+
+                if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                {
+                    try
+                    {
+                        var clients = ClassroomAppContext.Network.GetConnectedStudents();
+                        if (clients != null && clients.Count > 0)
+                        {
+                            int maxLatency = 0;
+                            foreach (var c in clients)
+                            {
+                                if (c.LatencyMs > maxLatency) maxLatency = c.LatencyMs;
+                            }
+                            if (maxLatency > 300)
+                            {
+                                qLevel = Math.Max(55, qLevel - 15);
+                            }
+                        }
+                    }
+                    catch { }
+                }
+                _cachedQualityLevel = qLevel;
+                _cachedIsForceWatch = chkForceWatch.IsChecked == true;
+                if (ClassroomAppContext.Network?.WebBridge != null)
+                {
+                    _cachedWebPort = ClassroomAppContext.Network.WebBridge.WebPort;
+                }
+                _cachedLessonTitle = txtLessonTitle != null ? txtLessonTitle.Text?.Trim() ?? "" : "";
+                _cachedTargetCodes = GetTargetStudentCodes();
+
+                var stWin = Application.Current?.Windows.OfType<QASmartTouch.Forms.Form2_MainDashboard>().FirstOrDefault();
+                _cachedSmartTouchHwnd = stWin != null
+                    ? new System.Windows.Interop.WindowInteropHelper(stWin).Handle
+                    : IntPtr.Zero;
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("[BroadcastPage] RefreshCachedBroadcastParams error: {Err}", ex.Message);
+            }
+        }
+
+        /// <summary>Tính mã băm lấy mẫu mật độ cao (48x64 = 3072 điểm ảnh) để phát hiện ngay cả nét bút mảnh nhất trên bảng viết.</summary>
         private static uint ComputeFastSampleHash(BitmapSource? bmp)
         {
             if (bmp == null) return 0;
@@ -842,14 +1110,17 @@ namespace QASmartClass.Classroom.Views
                 int bpp = (bmp.Format.BitsPerPixel + 7) / 8;
                 if (bpp < 3) return 0;
                 uint hash = 2166136261u;
-                byte[] rowBuf = new byte[w * bpp];
-                for (int ry = 1; ry <= 8; ry++)
+                int stride = w * bpp;
+                byte[] rowBuf = new byte[stride];
+                const int rows = 48;
+                const int cols = 64;
+                for (int ry = 1; ry <= rows; ry++)
                 {
-                    int y = (h * ry) / 9;
-                    bmp.CopyPixels(new Int32Rect(0, y, w, 1), rowBuf, w * bpp, 0);
-                    for (int rx = 1; rx <= 8; rx++)
+                    int y = (h * ry) / (rows + 1);
+                    bmp.CopyPixels(new Int32Rect(0, y, w, 1), rowBuf, stride, 0);
+                    for (int rx = 1; rx <= cols; rx++)
                     {
-                        int idx = ((w * rx) / 9) * bpp;
+                        int idx = ((w * rx) / (cols + 1)) * bpp;
                         if (idx + 2 < rowBuf.Length)
                         {
                             hash = (hash ^ rowBuf[idx]) * 16777619u;
@@ -863,113 +1134,79 @@ namespace QASmartClass.Classroom.Views
             catch { return 0; }
         }
 
-        // V22-02: Async + SemaphoreSlim guard chống overlap
+        // V22-02: Async + SemaphoreSlim guard chống overlap, KHÔNG khóa UI thread mỗi frame
         private async Task CaptureAndSendAsync()
         {
             if (!_isBroadcasting || _isPaused || _isBroadcastPausedDueToPrivacy) return;
-            if (!await _captureLock.WaitAsync(100)) return; // === PHASE6-GD4: Timeout 100ms thay vì 0ms để tránh deadlock ===
+            if (!await _captureLock.WaitAsync(15)) return;
             try
             {
-                // === Gom TẤT CẢ truy cập UI vào 1 lần Dispatcher.Invoke duy nhất đầu chu kỳ ===
-                int screenW = 0, screenH = 0;
-                double scaleX = 1, scaleY = 1;
-                bool isWindowSource = false;
-                IntPtr targetHWnd = IntPtr.Zero;
-                ScreenSourceInfo? pickedSrc = null;
+                int screenW = _cachedScreenW;
+                int screenH = _cachedScreenH;
+                double scaleX = _cachedScaleX;
+                double scaleY = _cachedScaleY;
+                bool isWindowSource = _cachedIsWindowSource;
+                IntPtr targetHWnd = _cachedWindowHwnd;
+                ScreenSourceInfo? pickedSrc;
+                lock (_srcLock) pickedSrc = _picked;
                 BitmapSource? qaPageBitmap = null;
                 string resolvedQaPageTitle = "";
-                int targetWidth = 1280;
-                int qualityLevel = 65;
-                bool isNetworkActive = false;
-                bool isForceWatch = false;
-                int webPort = 8080;
-                string lessonTitle = "";
-                System.Collections.Generic.List<string>? targetCodes = null;
+                int targetWidth = _cachedTargetWidth;
+                int qualityLevel = _cachedQualityLevel;
+                bool isNetworkActive = ClassroomAppContext.Network?.IsBroadcasting == true;
+                bool isForceWatch = _cachedIsForceWatch;
+                int webPort = _cachedWebPort;
+                string lessonTitle = _cachedLessonTitle;
+                var targetCodes = _cachedTargetCodes;
 
-                Dispatcher.Invoke(() =>
+                // Nếu nguồn chiếu là Trang bên trong QA SmartClass:
+                // - Nếu là SMART_TOUCH và cửa sổ bảng viết đang hiển thị trên màn hình: chụp trực tiếp bằng GDI trên luồng ngầm (0ms khóa UI, lấy trọn vẹn cả nét bút Wet-Ink DynamicRenderer đang kéo dở ở 60Hz).
+                // - Nếu cửa sổ đang ẩn/offscreen hoặc là trang nội bộ khác: kết xuất ở DispatcherPriority.Render để đồng bộ với nhịp vẽ khung hình (không dùng Background vì Background bị chặn khi đang kéo chuột/bút).
+                bool captureSmartTouchViaGdi = false;
+                IntPtr smartTouchHwnd = _cachedSmartTouchHwnd;
+                if (pickedSrc != null && pickedSrc.Kind == ScreenSourceKind.QaClassPage)
                 {
-                    // === PHASE6-GD4: SystemParameters + VisualTreeHelper PHẢI truy cập trên UI thread ===
-                    screenW = (int)SystemParameters.PrimaryScreenWidth;
-                    screenH = (int)SystemParameters.PrimaryScreenHeight;
-                    var dpiScale = VisualTreeHelper.GetDpi(this);
-                    scaleX = dpiScale.DpiScaleX;
-                    scaleY = dpiScale.DpiScaleY;
-
-                    lock (_srcLock) pickedSrc = _picked;
-                    isWindowSource = rbWindow.IsChecked == true;
-                    if (isWindowSource && cmbWindowList.SelectedItem is ComboBoxItem item && item.Tag is int pId)
+                    if (string.Equals(pickedSrc.PageFormId, "SMART_TOUCH", StringComparison.OrdinalIgnoreCase))
                     {
-                        try
+                        if (smartTouchHwnd == IntPtr.Zero || !NativeMethods.IsWindowVisible(smartTouchHwnd))
                         {
-                            var proc = System.Diagnostics.Process.GetProcessById(pId);
-                            targetHWnd = proc.MainWindowHandle;
-                        }
-                        catch (Exception ex) { Log.Debug("[BroadcastPage][CaptureWindow] GetProcessById error: {Err}", ex.Message); }
-                    }
-                    
-                    if (cmbResolution.SelectedItem is ComboBoxItem resItem)
-                    {
-                        string resText = resItem.Content.ToString();
-                        if (resText.Contains("1920")) targetWidth = 1920;
-                        else if (resText.Contains("2560")) targetWidth = 2560;
-                        else targetWidth = 1280;
-                    }
-
-                    // Nếu nguồn chiếu là Trang bên trong QA SmartClass → kết xuất trực tiếp Visual của trang đó trên UI thread
-                    if (pickedSrc != null && pickedSrc.Kind == ScreenSourceKind.QaClassPage)
-                    {
-                        var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
-                        if (shell != null)
-                        {
-                            qaPageBitmap = shell.CaptureQaClassPageBitmap(pickedSrc.PageFormId, targetWidth, out resolvedQaPageTitle);
-                        }
-                    }
-
-                    isNetworkActive = ClassroomAppContext.Network?.IsBroadcasting == true;
-                    isForceWatch = chkForceWatch.IsChecked == true;
-                    if (ClassroomAppContext.Network?.WebBridge != null)
-                    {
-                        webPort = ClassroomAppContext.Network.WebBridge.WebPort;
-                    }
-                    if (cmbQuality.SelectedItem is ComboBoxItem qItem && int.TryParse(qItem.Tag?.ToString(), out int qVal))
-                    {
-                        qualityLevel = qVal;
-                    }
-                    lessonTitle = txtLessonTitle != null ? txtLessonTitle.Text?.Trim() ?? "" : "";
-                    if (string.IsNullOrEmpty(lessonTitle) && !string.IsNullOrEmpty(resolvedQaPageTitle))
-                    {
-                        lessonTitle = resolvedQaPageTitle;
-                    }
-                    targetCodes = GetTargetStudentCodes();
-
-                    // Tự động thích ứng chất lượng nén (Auto-scaling quality) dựa trên độ trễ học sinh
-                    if (isNetworkActive && ClassroomAppContext.Network != null)
-                    {
-                        try
-                        {
-                            var clients = ClassroomAppContext.Network.GetConnectedStudents();
-                            if (clients != null && clients.Count > 0)
+                            Dispatcher.Invoke(() =>
                             {
-                                int maxLatency = 0;
-                                foreach (var c in clients)
+                                var stWin = Application.Current?.Windows.OfType<QASmartTouch.Forms.Form2_MainDashboard>().FirstOrDefault();
+                                if (stWin != null)
                                 {
-                                    if (c.LatencyMs > maxLatency)
-                                        maxLatency = c.LatencyMs;
+                                    _cachedSmartTouchHwnd = new System.Windows.Interop.WindowInteropHelper(stWin).Handle;
+                                    smartTouchHwnd = _cachedSmartTouchHwnd;
                                 }
-
-                                if (maxLatency > 300)
-                                {
-                                    qualityLevel = Math.Max(55, qualityLevel - 20);
-                                    Log.Debug("[BroadcastPage] High latency detected ({MaxLatency}ms). Quality auto-scaled down to {Quality}", maxLatency, qualityLevel);
-                                }
-                            }
+                            }, DispatcherPriority.Render);
                         }
-                        catch (Exception exLat)
+
+                        if (smartTouchHwnd != IntPtr.Zero
+                            && NativeMethods.IsWindowVisible(smartTouchHwnd)
+                            && !NativeMethods.IsIconic(smartTouchHwnd))
                         {
-                            Log.Debug("Auto-scaling quality error: {Err}", exLat.Message);
+                            captureSmartTouchViaGdi = true;
+                            if (string.IsNullOrEmpty(lessonTitle)) lessonTitle = "Bảng trắng tương tác SMART TOUCH";
                         }
                     }
-                });
+
+                    if (!captureSmartTouchViaGdi)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                            if (shell != null)
+                            {
+                                qaPageBitmap = shell.CaptureQaClassPageBitmap(pickedSrc.PageFormId, targetWidth, out resolvedQaPageTitle);
+                            }
+                        }, DispatcherPriority.Render);
+
+                        if (string.IsNullOrEmpty(lessonTitle) && !string.IsNullOrEmpty(resolvedQaPageTitle))
+                        {
+                            lessonTitle = resolvedQaPageTitle;
+                        }
+                    }
+                }
 
                 // Chạy logic chụp & lưu file trên thread pool để tránh block UI thread
                 await System.Threading.Tasks.Task.Run(() =>
@@ -1000,6 +1237,18 @@ namespace QASmartClass.Classroom.Views
                             }
                             else if (pickedSrc.Kind == ScreenSourceKind.QaClassPage)
                             {
+                                if (captureSmartTouchViaGdi && NativeMethods.GetWindowRect(smartTouchHwnd, out var stRect))
+                                {
+                                    int stW = stRect.Right - stRect.Left;
+                                    int stH = stRect.Bottom - stRect.Top;
+                                    if (stW > 64 && stH > 64)
+                                    {
+                                        x = stRect.Left;
+                                        y = stRect.Top;
+                                        pixelW = stW;
+                                        pixelH = stH;
+                                    }
+                                }
                                 isWindowSource = false;
                             }
                             else if (ScreenSourceEnumerator.IsWindowAlive(pickedSrc.Hwnd) || ScreenSourceEnumerator.IsMinimized(pickedSrc.Hwnd))
@@ -1021,8 +1270,6 @@ namespace QASmartClass.Classroom.Views
                             NativeMethods.RECT rect;
                             if (NativeMethods.GetWindowRect(targetHWnd, out rect))
                             {
-                                // Phục hồi cửa sổ nếu bị thu nhỏ
-                                // Chỉ phục hồi khi đang thu nhỏ (SW_RESTORE trên cửa sổ phóng to sẽ làm nó nhỏ lại)
                                 if (NativeMethods.IsIconic(targetHWnd))
                                 {
                                     NativeMethods.ShowWindow(targetHWnd, 9); // SW_RESTORE = 9
@@ -1035,7 +1282,6 @@ namespace QASmartClass.Classroom.Views
                                 pixelW = rect.Right - rect.Left;
                                 pixelH = rect.Bottom - rect.Top;
 
-                                // Kiểm tra biên an toàn
                                 if (pixelW <= 0 || pixelH <= 0)
                                 {
                                     x = 0; y = 0;
@@ -1047,69 +1293,54 @@ namespace QASmartClass.Classroom.Views
 
                         if (pixelW <= 0 || pixelH <= 0) return;
 
-                        // HI-03 FIX: Initialize GDI handles before try block for guaranteed cleanup
                         IntPtr hdcSrc = IntPtr.Zero;
                         IntPtr hdcDest = IntPtr.Zero;
                         IntPtr hBitmap = IntPtr.Zero;
                         IntPtr hOld = IntPtr.Zero;
-                        System.Drawing.Bitmap? drawingBitmap = null;
                         BitmapSource? bmpSource = qaPageBitmap;
-                        // CR-06 FIX: Use cached compression format instead of querying DB every frame
-                        string compFormat = _cachedCompressionFormat;
-                        if (bmpSource != null)
-                        {
-                            // Khi nguồn là Trang bên trong QA SmartClass (đã kết xuất ra BitmapSource), dùng JPEG encoder trực tiếp siêu nhanh
-                            compFormat = "JPEG";
-                        }
-                        else
+                        if (bmpSource == null)
                         {
                             try
                             {
+                                double scaleRatio = pixelW > targetWidth ? (double)targetWidth / pixelW : 1.0;
+                                int outW = Math.Max(64, (int)Math.Round(pixelW * scaleRatio));
+                                int outH = Math.Max(64, (int)Math.Round(pixelH * scaleRatio));
+
                                 hdcSrc = NativeMethods.GetDC(IntPtr.Zero);
                                 hdcDest = NativeMethods.CreateCompatibleDC(hdcSrc);
-                                hBitmap = NativeMethods.CreateCompatibleBitmap(hdcSrc, pixelW, pixelH);
+                                hBitmap = NativeMethods.CreateCompatibleBitmap(hdcSrc, outW, outH);
                                 hOld = NativeMethods.SelectObject(hdcDest, hBitmap);
+                                NativeMethods.SetStretchBltMode(hdcDest, 3); // COLORONCOLOR = 3 (nhanh và rõ nét cho chữ/nét vẽ)
 
-                                // Cửa sổ do GV chọn: PrintWindow lấy đúng nội dung kể cả khi bị che; thất bại thì chụp vùng màn hình
-                                bool printed = usePrintWindow && NativeMethods.PrintWindow(targetHWnd, hdcDest, 2); // PW_RENDERFULLCONTENT
-                                if (!printed)
-                                    NativeMethods.BitBlt(hdcDest, 0, 0, pixelW, pixelH, hdcSrc, x, y, 0x00CC0020); // SRCCOPY
-
-                                // Convert to BitmapSource
-                                bmpSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                                    hBitmap, IntPtr.Zero, Int32Rect.Empty,
-                                    BitmapSizeOptions.FromWidthAndHeight(targetWidth, (int)(pixelH * ((double)targetWidth / pixelW))));
-
-                                // Freeze bmpSource TRƯỚC KHI giải phóng tài nguyên GDI để tránh lỗi mất handle
-                                bmpSource.Freeze();
-
-                                // PrintWindow thường trả về khung đen với ứng dụng dùng GPU (Chrome, game...) → dự phòng chụp vùng màn hình của cửa sổ
-                                if (printed && IsMostlyBlack(bmpSource))
+                                bool printed = false;
+                                if (usePrintWindow && outW == pixelW && outH == pixelH)
                                 {
-                                    NativeMethods.BitBlt(hdcDest, 0, 0, pixelW, pixelH, hdcSrc, x, y, 0x00CC0020); // SRCCOPY
-                                    bmpSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                                        hBitmap, IntPtr.Zero, Int32Rect.Empty,
-                                        BitmapSizeOptions.FromWidthAndHeight(targetWidth, (int)(pixelH * ((double)targetWidth / pixelW))));
-                                    bmpSource.Freeze();
+                                    printed = NativeMethods.PrintWindow(targetHWnd, hdcDest, 2); // PW_RENDERFULLCONTENT
+                                }
+                                if (!printed)
+                                {
+                                    if (outW == pixelW && outH == pixelH)
+                                        NativeMethods.BitBlt(hdcDest, 0, 0, outW, outH, hdcSrc, x, y, 0x00CC0020); // SRCCOPY
+                                    else
+                                        NativeMethods.StretchBlt(hdcDest, 0, 0, outW, outH, hdcSrc, x, y, pixelW, pixelH, 0x00CC0020);
                                 }
 
-                                // ─── UPGRADE_07: Get Drawing Bitmap from hBitmap for WebP encoding ───
-                                if (compFormat == "WebP")
+                                var rawBmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                                    hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                                bmpSource = new FormatConvertedBitmap(rawBmp, PixelFormats.Bgr32, null, 0);
+                                bmpSource.Freeze();
+
+                                if (printed && IsMostlyBlack(bmpSource))
                                 {
-                                    try
-                                    {
-                                        drawingBitmap = System.Drawing.Bitmap.FromHbitmap(hBitmap);
-                                    }
-                                    catch (Exception exBmp)
-                                    {
-                                        Log.Warning("FromHbitmap failed, fallback to JPEG: {Err}", exBmp.Message);
-                                        compFormat = "JPEG";
-                                    }
+                                    NativeMethods.StretchBlt(hdcDest, 0, 0, outW, outH, hdcSrc, x, y, pixelW, pixelH, 0x00CC0020);
+                                    var fallbackRaw = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                                        hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                                    bmpSource = new FormatConvertedBitmap(fallbackRaw, PixelFormats.Bgr32, null, 0);
+                                    bmpSource.Freeze();
                                 }
                             }
                             finally
                             {
-                                // Cleanup GDI — guaranteed even on exceptions
                                 if (hOld != IntPtr.Zero) NativeMethods.SelectObject(hdcDest, hOld);
                                 if (hBitmap != IntPtr.Zero) NativeMethods.DeleteObject(hBitmap);
                                 if (hdcDest != IntPtr.Zero) NativeMethods.DeleteDC(hdcDest);
@@ -1121,57 +1352,28 @@ namespace QASmartClass.Classroom.Views
                         int idx = System.Threading.Interlocked.Increment(ref _captureIndex) % 2;
                         string filePath = System.IO.Path.Combine(_captureDir, $"broadcast_{idx}.jpg");
 
-                        // Kiểm tra nhanh khung hình tĩnh: nếu điểm ảnh không đổi trong vòng 1.2s, tái sử dụng mảng byte đã nén để tiết kiệm CPU
-                        uint sampleHash = ComputeFastSampleHash(bmpSource);
+                        // Luôn mã hóa JPEG nhanh (~3ms) và đẩy tuần tự vào Ring Buffer 30 FPS để nét vẽ của GV liền mạch tuyệt đối (không bỏ sót frame trung gian)
                         var nowUtc = DateTime.UtcNow;
                         byte[] imgBytes;
-                        bool reuseStaticFrame = !_isFirstCapture
-                            && sampleHash != 0
-                            && sampleHash == _lastFrameSampleHash
-                            && _lastEncodedFrameBytes != null
-                            && (nowUtc - _lastEncodedFrameUtc).TotalMilliseconds < 1200;
-
-                        if (reuseStaticFrame)
+                        var encoder = new JpegBitmapEncoder { QualityLevel = qualityLevel };
+                        encoder.Frames.Add(BitmapFrame.Create(bmpSource));
+                        using (var ms = new System.IO.MemoryStream(65536))
                         {
-                            if (drawingBitmap != null) drawingBitmap.Dispose();
-                            imgBytes = _lastEncodedFrameBytes!;
+                            encoder.Save(ms);
+                            imgBytes = ms.ToArray();
                         }
-                        else
-                        {
-                            // Nén ảnh sang WebP hoặc JPEG
-                            if (compFormat == "WebP" && drawingBitmap != null)
-                            {
-                                using (drawingBitmap)
-                                using (var mat = OpenCvSharp.Extensions.BitmapConverter.ToMat(drawingBitmap))
-                                {
-                                    OpenCvSharp.Cv2.ImEncode(".webp", mat, out imgBytes, new OpenCvSharp.ImageEncodingParam(OpenCvSharp.ImwriteFlags.WebPQuality, qualityLevel));
-                                }
-                            }
-                            else
-                            {
-                                if (drawingBitmap != null) drawingBitmap.Dispose();
-                                var encoder = new JpegBitmapEncoder { QualityLevel = qualityLevel };
-                                encoder.Frames.Add(BitmapFrame.Create(bmpSource));
-                                using (var ms = new System.IO.MemoryStream())
-                                {
-                                    encoder.Save(ms);
-                                    imgBytes = ms.ToArray();
-                                }
-                            }
-                            _lastFrameSampleHash = sampleHash;
-                            _lastEncodedFrameBytes = imgBytes;
-                            _lastEncodedFrameUtc = nowUtc;
+                        _lastEncodedFrameBytes = imgBytes;
+                        _lastEncodedFrameUtc = nowUtc;
 
-                            // Lưu ảnh chụp màn hình trực tiếp trên RAM để tránh ghi đĩa cứng (và tăng FrameVersion cho HTTP Stream)
-                            QASmartClass.Services.BroadcastStateService.Instance.ScreenCaptureBytes = imgBytes;
-                        }
+                        // Lưu ảnh chụp màn hình vào Ring Buffer tuần tự trên RAM (phục vụ luồng Stream 30 FPS không nhảy cóc)
+                        QASmartClass.Services.BroadcastStateService.Instance.ScreenCaptureBytes = imgBytes;
 
                         // Chỉ ghi đĩa nếu chạy ở chế độ cục bộ (không qua mạng LAN)
                         if (!isNetworkActive)
                         {
                             System.IO.File.WriteAllBytes(filePath, imgBytes);
                         }
-                        else if (!reuseStaticFrame || (nowUtc - _lastEncodedFrameUtc).TotalMilliseconds >= 500)
+                        else
                         {
                             _ = QASmartClass.Services.UdpScreenBroadcastService.Instance.SendFrameAsync(imgBytes);
                         }
@@ -1230,7 +1432,7 @@ namespace QASmartClass.Classroom.Views
                         }
 
                         // Cập nhật Live Preview và Local Bus bất đồng bộ (không khóa luồng chụp màn hình)
-                        bool shouldUpdatePreview = (nowUtc - _lastLivePreview).TotalMilliseconds >= 400;
+                        bool shouldUpdatePreview = (nowUtc - _lastLivePreview).TotalMilliseconds >= 80;
                         if (shouldUpdatePreview || shouldSendTcpCmd)
                         {
                             if (shouldUpdatePreview) _lastLivePreview = nowUtc;
@@ -1238,13 +1440,15 @@ namespace QASmartClass.Classroom.Views
                             {
                                 if (shouldUpdatePreview)
                                 {
-                                    bool previewSafe = (pickedSrc != null && (pickedSrc.Kind == ScreenSourceKind.Window || pickedSrc.Kind == ScreenSourceKind.Region || pickedSrc.Kind == ScreenSourceKind.QaClassPage)) || isWindowSource || IsScreenExclusionActive();
-                                    imgLivePreview.Source = (previewSafe && bmpSource != null) ? bmpSource : GetBroadcastPlaceholder();
-                                    if (pickedSrc != null)
-                                    {
-                                        string lbl = "Đang chiếu: " + DescribeSource(pickedSrc);
-                                        if (txtPreviewLabel.Text != lbl) txtPreviewLabel.Text = lbl;
-                                    }
+                                    // [MYTHWARE_LITE] Luôn hiển thị khung hình thực tế mà máy Học sinh đang nhận được
+                                    // (Cả trong trang Trình chiếu lẫn trên Thanh điều khiển nổi PiP)
+                                    imgLivePreview.Source = bmpSource ?? GetBroadcastPlaceholder();
+                                    string srcDesc = pickedSrc != null
+                                        ? DescribeSource(pickedSrc)
+                                        : (isWindowSource ? "Cửa sổ ứng dụng" : "Toàn màn hình");
+                                    string lbl = "Đang chiếu: " + srcDesc;
+                                    if (txtPreviewLabel.Text != lbl) txtPreviewLabel.Text = lbl;
+                                    _floatingBroadcastBar?.UpdateLiveFrame(bmpSource, srcDesc, txtRes.Text);
                                 }
                                 if (shouldSendTcpCmd)
                                 {
@@ -1354,6 +1558,10 @@ namespace QASmartClass.Classroom.Views
             [System.Runtime.InteropServices.DllImport("gdi32.dll")]
             public static extern bool BitBlt(IntPtr hdcDest, int xDest, int yDest, int wDest, int hDest, IntPtr hdcSrc, int xSrc, int ySrc, int rop);
             [System.Runtime.InteropServices.DllImport("gdi32.dll")]
+            public static extern bool StretchBlt(IntPtr hdcDest, int xDest, int yDest, int wDest, int hDest, IntPtr hdcSrc, int xSrc, int ySrc, int wSrc, int hSrc, int rop);
+            [System.Runtime.InteropServices.DllImport("gdi32.dll")]
+            public static extern int SetStretchBltMode(IntPtr hdc, int iStretchMode);
+            [System.Runtime.InteropServices.DllImport("gdi32.dll")]
             public static extern bool DeleteObject(IntPtr hObject);
             [System.Runtime.InteropServices.DllImport("gdi32.dll")]
             public static extern bool DeleteDC(IntPtr hdc);
@@ -1364,6 +1572,8 @@ namespace QASmartClass.Classroom.Views
             public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
             [System.Runtime.InteropServices.DllImport("user32.dll")]
             public static extern bool IsIconic(IntPtr hWnd);
+            [System.Runtime.InteropServices.DllImport("user32.dll")]
+            public static extern bool IsWindowVisible(IntPtr hWnd);
             [System.Runtime.InteropServices.DllImport("user32.dll")]
             public static extern bool PrintWindow(IntPtr hWnd, IntPtr hdcBlt, uint nFlags);
             
@@ -1426,6 +1636,12 @@ namespace QASmartClass.Classroom.Views
                 SaveEvent(_isVncBroadcasting ? "VNC_BROADCAST" : "BROADCAST", "GV", "Tiếp tục phát màn hình");
                 Log.Information("[BroadcastPage] Broadcast RESUMED — sent BROADCAST_RESUME to students");
             }
+
+            ScreenSourceInfo? curSrc;
+            lock (_srcLock) curSrc = _picked;
+            string curDesc = curSrc != null ? DescribeSource(curSrc) : "Toàn màn hình";
+            int recipientCnt = ClassroomAppContext.Network?.ConnectedCount ?? 0;
+            _floatingBroadcastBar?.UpdateStatus(_isPaused || _isBroadcastPausedDueToPrivacy, txtTimer.Text, recipientCnt, curDesc);
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -1442,7 +1658,77 @@ namespace QASmartClass.Classroom.Views
 
         private void PickSource_Click(object sender, RoutedEventArgs e)
         {
-            OpenSourcePicker(ScreenSourceKind.Screen);
+            OpenSourcePicker(ScreenSourceKind.Screen, out _);
+        }
+
+        private void PickSourceAndStart_Click(object sender, RoutedEventArgs e)
+        {
+            if (OpenSourcePicker(ScreenSourceKind.Screen, out bool autoMin) && !_isBroadcasting)
+            {
+                _skipConfirmForQuickBroadcast = true;
+                try
+                {
+                    Broadcast_Click(this, new RoutedEventArgs());
+                    if (_isBroadcasting && autoMin)
+                    {
+                        var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                        if (shell != null) shell.WindowState = WindowState.Minimized;
+                    }
+                }
+                finally
+                {
+                    _skipConfirmForQuickBroadcast = false;
+                }
+            }
+        }
+
+        private void PickRegionAndStart_Click(object sender, RoutedEventArgs e)
+        {
+            PickRegion_Click(sender, e);
+            ScreenSourceInfo? cur;
+            lock (_srcLock) cur = _picked;
+            if (cur != null && cur.Kind == ScreenSourceKind.Region && !_isBroadcasting)
+            {
+                _skipConfirmForQuickBroadcast = true;
+                try
+                {
+                    Broadcast_Click(this, new RoutedEventArgs());
+                }
+                finally
+                {
+                    _skipConfirmForQuickBroadcast = false;
+                }
+            }
+        }
+
+        private void PickQaPageAndStart_Click(object sender, RoutedEventArgs e)
+        {
+            if (OpenSourcePicker(ScreenSourceKind.QaClassPage, out _) && !_isBroadcasting)
+            {
+                _skipConfirmForQuickBroadcast = true;
+                try
+                {
+                    Broadcast_Click(this, new RoutedEventArgs());
+                }
+                finally
+                {
+                    _skipConfirmForQuickBroadcast = false;
+                }
+            }
+        }
+
+        private void ShowFloatingBar_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isBroadcasting)
+            {
+                ScreenSourceInfo? cur;
+                lock (_srcLock) cur = _picked;
+                string srcDesc = cur != null ? DescribeSource(cur) : "Toàn màn hình";
+                var resolution = (cmbResolution.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "1920×1080";
+                var fps = (cmbFPS.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "30 fps";
+                EnsureFloatingBroadcastBarShown(srcDesc, resolution, fps);
+                _floatingBroadcastBar?.Activate();
+            }
         }
 
         private void PickRegion_Click(object sender, RoutedEventArgs e)
@@ -1468,7 +1754,7 @@ namespace QASmartClass.Classroom.Views
 
         private void PickQaPage_Click(object sender, RoutedEventArgs e)
         {
-            OpenSourcePicker(ScreenSourceKind.QaClassPage);
+            OpenSourcePicker(ScreenSourceKind.QaClassPage, out _);
         }
 
         private void OpenSharedQaPage_Click(object sender, RoutedEventArgs e)
@@ -1482,25 +1768,34 @@ namespace QASmartClass.Classroom.Views
             }
         }
 
-        private void OpenSourcePicker(ScreenSourceKind initialTab)
+        private bool OpenSourcePicker(ScreenSourceKind initialTab, out bool autoMinimizeClassroomShell)
         {
+            autoMinimizeClassroomShell = false;
             if (_isBroadcasting && rbCamera.IsChecked == true)
             {
                 txtPickedSource.Text = "Đang phát Camera — hãy dừng phát trước khi đổi sang màn hình.";
-                return;
+                return false;
             }
 
             var owner = Window.GetWindow(this);
             IntPtr self = owner != null ? new System.Windows.Interop.WindowInteropHelper(owner).Handle : IntPtr.Zero;
-            var dlg = new ScreenSourcePickerWindow(self, IsCurrentSource, initialTab) { Owner = owner };
+            var dlg = new ScreenSourcePickerWindow(self, IsCurrentSource, initialTab, _hideClassroomShellFromStudents) { Owner = owner };
             dlg.SourceInitialized += (_, _) =>
             {
-                // Đang chiếu: ẩn chính hộp chọn khỏi luồng chiếu để học sinh không thấy GV đang chọn
-                if (_isBroadcasting)
-                    NativeMethods.SetWindowDisplayAffinity(new System.Windows.Interop.WindowInteropHelper(dlg).Handle, 0x11); // WDA_EXCLUDEFROMCAPTURE
+                // Luôn ẩn hộp chọn khỏi ảnh chụp màn hình để ảnh preview của Màn hình 1 không bị đè bởi chính hộp chọn này
+                NativeMethods.SetWindowDisplayAffinity(new System.Windows.Interop.WindowInteropHelper(dlg).Handle, 0x11); // WDA_EXCLUDEFROMCAPTURE
             };
-            if (dlg.ShowDialog() != true || dlg.Selected == null) return;
+            if (dlg.ShowDialog() != true || dlg.Selected == null) return false;
+            autoMinimizeClassroomShell = dlg.AutoMinimizeClassroomShell;
+            _hideClassroomShellFromStudents = dlg.HideClassroomShellFromStudents;
+            _floatingBroadcastBar?.SetHideClassroomShellCheck(_hideClassroomShellFromStudents);
             ApplyPickedSource(dlg.Selected);
+            if (_isBroadcasting)
+            {
+                bool shouldExclude = _hideClassroomShellFromStudents && dlg.Selected.Kind == ScreenSourceKind.Screen;
+                ApplyScreenCaptureExclusion(shouldExclude);
+            }
+            return true;
         }
 
         private bool IsCurrentSource(ScreenSourceInfo s)
@@ -1587,7 +1882,250 @@ namespace QASmartClass.Classroom.Views
                     _privacyBorder.SetBounds(0, 0, 0, 0);
                 }
             }
+            UpdateSelectedSourcePreviewThumb();
+            HighlightSelectedInlineCard();
+            RefreshCachedBroadcastParams();
             Log.Information("[BroadcastPage] Source picked: {Kind} {Title} ({W}x{H}) live={Live}", src.Kind, src.Title, src.Width, src.Height, _isBroadcasting);
+        }
+
+        private string _inlinePreviewFilter = "ALL";
+        private int _inlinePreviewVersion = 0;
+
+        private void RefreshInlinePreviews_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshInlineSourcePreviews();
+            UpdateSelectedSourcePreviewThumb();
+        }
+
+        private void FilterInlinePreviews_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string filterTag)
+            {
+                _inlinePreviewFilter = filterTag;
+                var activeBg = new SolidColorBrush(Color.FromRgb(29, 78, 216));
+                var normalBg = new SolidColorBrush(Color.FromRgb(241, 245, 249));
+                var normalFg = new SolidColorBrush(Color.FromRgb(51, 65, 85));
+
+                Button[] filterBtns = { btnFilterAllSources, btnFilterScreens, btnFilterWindows, btnFilterQaPages, btnFilterRegions };
+                foreach (var b in filterBtns)
+                {
+                    if (b == null) continue;
+                    bool isMatch = string.Equals(b.Tag as string, filterTag, StringComparison.OrdinalIgnoreCase);
+                    b.Background = isMatch ? activeBg : normalBg;
+                    b.Foreground = isMatch ? Brushes.White : normalFg;
+                    b.FontWeight = isMatch ? FontWeights.Bold : FontWeights.SemiBold;
+                }
+                RefreshInlineSourcePreviews();
+            }
+        }
+
+        private void UpdateSelectedSourcePreviewThumb()
+        {
+            if (imgSelectedSourceThumb == null) return;
+            ScreenSourceInfo? cur;
+            lock (_srcLock) cur = _picked;
+            var srcToPreview = cur ?? ScreenSourceEnumerator.GetScreens().FirstOrDefault();
+            if (srcToPreview == null) return;
+
+            var owner = Window.GetWindow(this);
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var bmp = ScreenSourceEnumerator.CaptureSourcePreview(srcToPreview, owner);
+                if (bmp != null)
+                {
+                    imgSelectedSourceThumb.Source = bmp;
+                }
+            }), DispatcherPriority.Background);
+        }
+
+        private void HighlightSelectedInlineCard()
+        {
+            if (wrapInlineSourcePreviews == null) return;
+            foreach (var child in wrapInlineSourcePreviews.Children)
+            {
+                if (child is Border card && card.Tag is ScreenSourceInfo info)
+                {
+                    bool sel = IsCurrentSource(info);
+                    card.BorderBrush = sel
+                        ? new SolidColorBrush(Color.FromRgb(37, 99, 235))
+                        : new SolidColorBrush(Color.FromRgb(203, 213, 225));
+                    card.Background = sel
+                        ? new SolidColorBrush(Color.FromRgb(239, 246, 255))
+                        : Brushes.White;
+                }
+            }
+        }
+
+        private void RefreshInlineSourcePreviews()
+        {
+            if (wrapInlineSourcePreviews == null) return;
+            wrapInlineSourcePreviews.Children.Clear();
+
+            int version = ++_inlinePreviewVersion;
+            var owner = Window.GetWindow(this);
+            IntPtr selfHwnd = owner != null ? new System.Windows.Interop.WindowInteropHelper(owner).Handle : IntPtr.Zero;
+            var dpi = VisualTreeHelper.GetDpi(this);
+
+            System.Collections.Generic.List<ScreenSourceInfo> sources = _inlinePreviewFilter switch
+            {
+                "SCREEN" => ScreenSourceEnumerator.GetScreens(),
+                "WINDOW" => ScreenSourceEnumerator.GetWindows(selfHwnd),
+                "QAPAGE" => ScreenSourceEnumerator.GetQaClassPages(),
+                "REGION" => ScreenSourceEnumerator.GetRegionPresets(dpi.DpiScaleX, dpi.DpiScaleY),
+                _ => ScreenSourceEnumerator.GetAllShareableSources(selfHwnd, dpi.DpiScaleX, dpi.DpiScaleY)
+            };
+
+            if (sources.Count == 0)
+            {
+                wrapInlineSourcePreviews.Children.Add(new TextBlock
+                {
+                    Text = "Không có cửa sổ hoặc nguồn nào trong mục này.",
+                    FontSize = 13,
+                    Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+                    Margin = new Thickness(8)
+                });
+                return;
+            }
+
+            foreach (var src in sources)
+            {
+                var hold = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(15, 23, 42)),
+                    CornerRadius = new CornerRadius(6),
+                    Height = 122,
+                    Margin = new Thickness(0, 0, 0, 8),
+                    ClipToBounds = true
+                };
+
+                var thumbImg = new Image { Stretch = Stretch.Uniform };
+                RenderOptions.SetBitmapScalingMode(thumbImg, BitmapScalingMode.HighQuality);
+
+                var fallbackStack = new StackPanel
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                fallbackStack.Children.Add(new TextBlock
+                {
+                    Text = src.IconGlyph,
+                    FontSize = 30,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                });
+                fallbackStack.Children.Add(new TextBlock
+                {
+                    Text = src.Kind switch
+                    {
+                        ScreenSourceKind.Screen => "TOÀN MÀN HÌNH",
+                        ScreenSourceKind.Window => "CỬA SỔ ỨNG DỤNG",
+                        ScreenSourceKind.Region => "VÙNG MÀN HÌNH",
+                        _ => "TRANG QA SMARTCLASS"
+                    },
+                    FontSize = 9.5,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(147, 197, 253)),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 4, 0, 0)
+                });
+
+                var previewGrid = new Grid();
+                previewGrid.Children.Add(fallbackStack);
+                previewGrid.Children.Add(thumbImg);
+                hold.Child = previewGrid;
+
+                var capturedSrc = src;
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (version != _inlinePreviewVersion) return;
+                    var bmp = ScreenSourceEnumerator.CaptureSourcePreview(capturedSrc, owner);
+                    if (bmp != null)
+                    {
+                        thumbImg.Source = bmp;
+                        fallbackStack.Visibility = Visibility.Collapsed;
+                    }
+                }), DispatcherPriority.Background);
+
+                var titleTxt = new TextBlock
+                {
+                    Text = src.Title,
+                    FontSize = 12.5,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(15, 23, 42)),
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    ToolTip = src.Title
+                };
+
+                var subTxt = new TextBlock
+                {
+                    Text = string.IsNullOrWhiteSpace(src.Subtitle) ? $"{src.Width}×{src.Height} px" : src.Subtitle,
+                    FontSize = 11,
+                    Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    Margin = new Thickness(0, 2, 0, 6)
+                };
+
+                var btnStartThis = new Button
+                {
+                    Content = "🚀 Chiếu nguồn này ngay",
+                    Padding = new Thickness(10, 5, 10, 5),
+                    FontSize = 11.5,
+                    FontWeight = FontWeights.Bold,
+                    Background = new SolidColorBrush(Color.FromRgb(37, 99, 235)),
+                    Foreground = Brushes.White,
+                    BorderThickness = new Thickness(0),
+                    Cursor = Cursors.Hand,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                };
+                btnStartThis.Click += (_, ev) =>
+                {
+                    ev.Handled = true;
+                    ApplyPickedSource(capturedSrc);
+                    if (!_isBroadcasting)
+                    {
+                        _skipConfirmForQuickBroadcast = true;
+                        try { Broadcast_Click(this, new RoutedEventArgs()); }
+                        finally { _skipConfirmForQuickBroadcast = false; }
+                    }
+                };
+
+                var cardStack = new StackPanel();
+                cardStack.Children.Add(hold);
+                cardStack.Children.Add(titleTxt);
+                cardStack.Children.Add(subTxt);
+                cardStack.Children.Add(btnStartThis);
+
+                bool isSelected = IsCurrentSource(src);
+                var cardBorder = new Border
+                {
+                    Width = 236,
+                    Margin = new Thickness(0, 0, 10, 10),
+                    Padding = new Thickness(8),
+                    CornerRadius = new CornerRadius(8),
+                    BorderThickness = new Thickness(2),
+                    BorderBrush = isSelected
+                        ? new SolidColorBrush(Color.FromRgb(37, 99, 235))
+                        : new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                    Background = isSelected
+                        ? new SolidColorBrush(Color.FromRgb(239, 246, 255))
+                        : Brushes.White,
+                    Cursor = Cursors.Hand,
+                    Tag = src,
+                    Child = cardStack
+                };
+
+                cardBorder.MouseLeftButtonUp += (_, ev) =>
+                {
+                    ApplyPickedSource(capturedSrc);
+                    if (ev.ClickCount >= 2 && !_isBroadcasting)
+                    {
+                        _skipConfirmForQuickBroadcast = true;
+                        try { Broadcast_Click(this, new RoutedEventArgs()); }
+                        finally { _skipConfirmForQuickBroadcast = false; }
+                    }
+                };
+
+                wrapInlineSourcePreviews.Children.Add(cardBorder);
+            }
         }
 
         private void ResetPickedToPrimary()
@@ -2797,6 +3335,16 @@ namespace QASmartClass.Classroom.Views
                 foreach (Window win in Application.Current.Windows)
                 {
                     if (win is BroadcastPrivacyBorder) continue;
+                    if (win is FloatingBroadcastBarWindow)
+                    {
+                        // Thanh điều khiển nổi (Floating Share Bar + PiP) luôn ẩn khỏi ảnh chụp của Học sinh
+                        var fHelper = new System.Windows.Interop.WindowInteropHelper(win);
+                        if (fHelper.Handle != IntPtr.Zero)
+                        {
+                            NativeMethods.SetWindowDisplayAffinity(fHelper.Handle, 0x00000011U);
+                        }
+                        continue;
+                    }
                     var helper = new System.Windows.Interop.WindowInteropHelper(win);
                     if (helper.Handle != IntPtr.Zero)
                     {
@@ -2848,9 +3396,9 @@ namespace QASmartClass.Classroom.Views
                 return;
             }
 
-            // Ghi đè UI Settings tạm thời sang cấu hình đọc chữ cực nét (SP-04)
+            // Ghi đè UI Settings tạm thời sang cấu hình đọc chữ cực nét (SP-04) nhưng vẫn giữ 30 FPS mượt mà
             cmbResolution.SelectedIndex = 1; // 1920x1080
-            cmbFPS.SelectedIndex = 0;        // Thấp (1 fps)
+            if (cmbFPS.Items.Count > 4) cmbFPS.SelectedIndex = 4; // Rất mượt (30 fps)
             cmbQuality.SelectedIndex = 2;    // Nén ít (85%)
             
             _isTextMode = true;

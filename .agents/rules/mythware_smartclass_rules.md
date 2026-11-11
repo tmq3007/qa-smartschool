@@ -2,7 +2,7 @@
 trigger: always_on
 ---
 
-# 🖥️ QUY CHUẨN PHÂN HỆ SMART CLASS CHUẨN MYTHWARE (PC & ANDROID SCREEN SHARE / MANAGEMENT RULES)
+# 🖥️ QUY CHUẨN PHÂN HỆ SMART CLASS CHUẨN VEYON & MYTHWARE (WINDOWS PC & ANDROID STUDENT PARITY RULES)
 
 > **Phạm vi áp dụng:** Bộ quy tắc này **CHỈ ÁP DỤNG CHO PHÂN HỆ `SMART CLASS`** (`QASmartClass/Classroom/`, `QASmartClass/StudentClient/`, `QASmartClass/Forms/Form0_LoginSelection*`, và `QASmartClass.Android/`).
 > **TUYỆT ĐỐI KHÔNG** dùng quy tắc này để sửa đổi, cắt gọn hay can thiệp vào Bảng viết tương tác **`SMART TOUCH`** (`Form2_MainDashboard` và `QASmartTouch.csproj`).
@@ -11,54 +11,46 @@ trigger: always_on
 
 ## 1. [RULE] QSC_SMARTTOUCH_IMMUNITY: Bất Khả Xâm Phạm Đối Với `SMART TOUCH`
 1. **Giữ nguyên 100% `SMART TOUCH`:**
-   * Mọi tác vụ thiết kế lại giao diện hoặc tinh gọn `QASmartClass` theo chuẩn Mythware **tuyệt đối không được sửa đổi** giao diện, thanh công cụ, học cụ STEM, mô hình 3D, hay luồng cảm ứng/bút viết của **`SMART TOUCH`** (`Form2_MainDashboard.*`, `Form2_*`, `WhiteboardCore/`, `Controls/`).
-   * Bảng viết `SMART TOUCH` bên trong `QASmartClass` luôn giữ nguyên 100% tính năng và giao diện 
+   * Mọi tác vụ thiết kế lại giao diện hoặc nâng cấp `QASmartClass` theo chuẩn Veyon/Mythware **tuyệt đối không được sửa đổi** giao diện, thanh công cụ, học cụ STEM, mô hình 3D, hay luồng cảm ứng/bút viết của **`SMART TOUCH`** (`Form2_MainDashboard.*`, `Form2_*`, `WhiteboardCore/`, `Controls/`).
 2. **Bảo toàn Chuyển đổi 3 Chế độ (`SMART CLASS` $\leftrightarrow$ `SMART TOUCH` $\leftrightarrow$ `DESKTOP`):**
-   * Thanh chuyển đổi chế độ nổi (`FloatingModeBar`) luôn hoạt động xuyên suốt để Giáo viên có thể vừa phát màn hình (`Screen Broadcast`) vừa chuyển sang bảng viết `SMART TOUCH` hoặc `DESKTOP` giảng bài.
+   * Thanh chuyển đổi chế độ nổi (`FloatingModeBar`) và Thanh điều khiển chia sẻ màn hình nổi (`FloatingBroadcastBarWindow`) luôn hoạt động xuyên suốt để Giáo viên vừa phát màn hình vừa giảng bài trên `SMART TOUCH` hoặc `DESKTOP`.
 
 ---
 
-## 2. [RULE] QSC_MYTHWARE_CORE_SCOPE: Tập Trung 100% Vào Chia Sẻ & Quản Lý Màn Hình (Mythware Standard)
-Phân hệ **`SMART CLASS`** bỏ qua toàn bộ các chức năng quản lý trường học/học vụ rườm rà (ERP/LMS) và chỉ tập trung vào **7 nhóm chức năng cốt lõi của Mythware Classroom Management**:
-1. **📺 Chiếu màn hình Giáo viên (`Screen Broadcast`):**
-   * Chiếu toàn màn hình (bao gồm cả khi Giáo viên đang viết trên `SMART TOUCH` hoặc thao tác ngoài `DESKTOP`), chiếu 1 cửa sổ ứng dụng hoặc vùng chọn xuống toàn bộ máy Học sinh (**Windows PC & Android**).
-   * Hỗ trợ đóng băng hình chiếu (`Freeze`) và tùy chỉnh chất lượng luồng phát (Mượt FPS cao / Rõ nét độ phân giải cao).
-2. **👨‍🎓 Học sinh trình bày (`Student Demonstration`):**
-   * Chọn 1 máy Học sinh (PC hoặc Android) để phát màn hình của học sinh đó cho cả lớp cùng xem.
-3. **🖥️ Giám sát lưới màn hình trực tiếp (`Live Screen Monitor Grid`):**
-   * Hiển thị lưới ảnh màn hình thời gian thực (`Live Thumbnails`) của tất cả máy PC và thiết bị Android đang kết nối.
-   * Phân biệt rõ biểu tượng thiết bị (`🪟 PC` / `🤖 Android`), tên máy/học sinh, địa chỉ IP và trạng thái (`Online`, `✋ Giơ tay`, `🔒 Đang khóa`).
-4. **🖱️ Xem to & Điều khiển từ xa (`Remote View & Control`):**
-   * Phóng to xem trực tiếp màn hình 1 học sinh, chụp ảnh màn hình (`Snapshot`), và điều khiển chuột/bàn phím từ xa.
-5. **🔒 Khóa màn hình & Im lặng (`Black Screen / Silence Lock`):**
-   * Khóa toàn bộ hoặc từng máy học sinh đang chọn bằng màn hình thông báo *"Giáo viên đang giảng bài - Vui lòng chú ý lắng nghe"* và mở khóa tức thì (`Unlock`).
-6. **🌐 Mở Website & Quản lý nguồn (`Web Push & Power Control`):**
-   * Đẩy nhanh 1 đường dẫn URL tự mở trên máy học sinh; hỗ trợ Tắt máy (`Shutdown`), Khởi động lại (`Restart`), Đăng xuất (`Logoff`) cho dàn máy PC.
-7. **📤 Phát File / 📥 Thu Bài & 💬 Tương tác nhanh (`File Transfer, Hand-Raise & Chat`):**
-   * Gửi tài liệu xuống các máy học sinh, thu bài làm về máy Giáo viên, gửi thông báo nổi và nhận tín hiệu **✋ Giơ tay** từ PC/Android.
+## 2. [RULE] QSC_DUAL_PLATFORM_STUDENT_PARITY: Đồng Bộ Kép Máy Học Sinh Windows PC & Android
+Mọi tính năng điều hành lớp học từ máy Giáo viên (`ClassroomShell` / `MonitorPage`) **BẮT BUỘC** phải thiết kế giao thức mạng (`CMD|...`) và hành vi tương ứng cho **CẢ 2 NỀN TẢNG MÁY HỌC SINH**:
+1. **Máy Học sinh Windows PC (`QASmartClass/StudentClient/Views/StudentShell.xaml.cs` — C# WPF .NET 9)**
+2. **Máy Học sinh Android (`QASmartClass.Android/` — Native Kotlin Android SDK + Coroutines)**
+   * **Chuẩn công nghệ Android bắt buộc:** Sử dụng **Native Kotlin** (`QASmartClass.Android`) để truy cập trực tiếp các API hệ thống Android (`MediaProjection` quay màn hình, `WindowManager` Lock Overlay, `PackageManager` mở ứng dụng, `AudioManager` tắt tiếng, Raw TCP/UDP Socket) mà không qua tầng trung gian nặng nề.
+   * Mỗi khi thêm/sửa một lệnh `CMD|...` trên máy Giáo viên, lập trình viên/AI **bắt buộc** kiểm tra và cập nhật hàm xử lý tại cả `StudentShell.xaml.cs` (Windows) lẫn `MainActivity.kt` / Services (Android).
 
 ---
 
-## 3. [RULE] QSC_COMMENT_NOT_DELETE: Ẩn Bằng Comment — Không Xóa Mã Nguồn Cũ
-* Khi ẩn hoặc tách các trang ERP/LMS cũ (Thời khóa biểu, Soạn giáo án cũ, Kiểm tra Quiz, Bài tập về nhà, Thư viện, Canteen, Nhân sự, Ban giám hiệu, Hồ sơ học bạ, Cổng đăng nhập 11 vai trò...), **BẮT BUỘC dùng comment** (`// [MYTHWARE_LITE]` trong C# hoặc `<!-- [MYTHWARE_LITE] ... -->` trong XAML/XML).
+## 3. [RULE] QSC_VEYON_MYTHWARE_FEATURE_MATRIX: Ma Trận 10 Nhóm Chức Năng Cốt Lõi (Giáo Viên $\rightarrow$ Windows PC & Android)
+
+| # | Nhóm Chức năng (Veyon / Mythware) | Lệnh Giao thức (`TCP 29877`) | Hành vi trên Học sinh **Windows PC** | Hành vi trên Học sinh **Android** |
+|---|---|---|---|---|
+| 1 | **🖥️ Giám sát màn hình trực tiếp (`Live Monitoring Grid`)** | `SCREEN_FRAME` / `CMD|REQUEST_SCREENSHOT` | Chụp màn hình Desktop nén JPEG gửi định kỳ & theo yêu cầu về lưới Veyon | Dùng `MediaProjection` (`ScreenCaptureService.kt`) hoặc chụp View gửi ảnh JPEG về lưới Veyon |
+| 2 | **📺 Chiếu bài giảng (`Fullscreen / Window / Region Broadcast`)** | `CMD|SCREEN_BROADCAST_START` / `STOP` / `UPDATE` | Mở cửa sổ nhận luồng MJPEG/Frame (`FORCE_WATCH` full-screen hoặc cửa sổ) | Hiển thị luồng hình ảnh bài giảng trực tiếp trên `imgBroadcastStream` + chế độ Full-screen |
+| 3 | **👨‍🎓 Học sinh trình bày (`Student Demo Relay`)** | `CMD|STUDENT_DEMO_START` / `STOP` | Máy HS được chọn đẩy luồng màn hình tốc độ cao lên GV để GV phát lại cho cả lớp | Máy Android được chọn tăng tốc `ScreenCaptureService` đẩy luồng lên GV để chiếu cho cả lớp |
+| 4 | **🔒 Khóa màn hình & 🔇 Im lặng (`Screen Lock & Mute`)** | `CMD|LOCK\|1`, `CMD|UNLOCK`, `CMD|BLACK_SCREEN\|1`, `CMD|MUTE_AUDIO\|1` | Phủ cửa sổ khóa Topmost toàn màn hình (chặn Alt+Tab/Taskbar) + tắt tiếng hệ thống | Bật `lockOverlay` toàn màn hình + `OverlayLockFallback` + `AudioManager` đưa âm lượng Media về 0 |
+| 5 | **👁️ Quan sát & 🖱️ Điều khiển từ xa (`Remote View & Control`)** | `CMD|REMOTE_CONTROL_START`, `CMD|MOUSE_EVENT`, `CMD|KEY_EVENT` | Xem nét cao 1-1; thực thi thao tác chuột/phím từ xa bằng `SendInput` Win32 | Xem nét cao 1-1 màn hình Android; hiển thị con trỏ chỉ dẫn trực quan (`Laser/Touch Pointer`) của GV trên màn hình (hoặc `AccessibilityService` nếu bật) |
+| 6 | **🌐 Mở Website (`Open Website`)** | `CMD|OPEN_URL\|<url>` | Mở trình duyệt mặc định (`Process.Start` với `UseShellExecute = true`) | Mở trình duyệt bằng `Intent(Intent.ACTION_VIEW, Uri.parse(url))` |
+| 7 | **🚀 Chạy Ứng dụng (`Start Application`)** | `CMD|START_APP\|<app_or_pkg>` | Khởi chạy đường dẫn `.exe` hoặc tên lệnh Windows (`calc`, `notepad`, `mspaint`...) | Khởi chạy theo `packageName` (`getLaunchIntentForPackage`) hoặc tên ứng dụng gợi ý |
+| 8 | **💬 Tin nhắn & ✋ Giơ tay (`Text Message, Chat & Hand-Raise`)** | `CMD|MESSAGE\|...`, `CMD|HAND_ACK`, `CMD|HAND_DOWN` | Hiện Popup thông báo nổi từ Giáo viên + khung Chat + trạng thái Giơ tay | Hiện Dialog/Banner thông báo từ Giáo viên + âm báo + Tab Chat & Giơ tay |
+| 9 | **📁 Truyền File & Thu bài (`File Transfer & Collect`)** | `CMD|FILE_OFFER\|...` / HTTP/TCP File | Nhận file lưu vào thư mục `SmartClass_Received` và mở nhanh; nộp file bài làm | Tải file từ Giáo viên về `Downloads/QASmartClass` và mở bằng `FileProvider`; chọn file/ảnh nộp bài |
+| 10 | **⚡ Quản lý Nguồn & Phiên (`Power / Session Control`)** | `CMD|REBOOT_PC`, `CMD|SHUTDOWN_PC`, `CMD|LOGOFF_PC`, `CMD|KICK` | Thực thi `shutdown /r`, `shutdown /s`, `shutdown /l` hoặc ngắt kết nối khỏi lớp | Với Android: Đăng xuất phiên lớp học (`LOGOFF`/`KICK`), khóa thiết bị (`DevicePolicyManager.lockNow()` nếu cấp quyền) hoặc đóng ứng dụng an toàn |
+
+---
+
+## 4. [RULE] QSC_COMMENT_NOT_DELETE: Ẩn Bằng Comment — Không Xóa Mã Nguồn Cũ
+* Khi ẩn hoặc tách các trang ERP/LMS cũ, **BẮT BUỘC dùng comment** (`// [MYTHWARE_LITE]` trong C#/Kotlin hoặc `<!-- [MYTHWARE_LITE] ... -->` trong XAML/XML).
 * **Tuyệt đối không xóa trắng** các hàm hoặc tệp mã nguồn cũ để có thể khôi phục hoặc tham khảo lại bất cứ lúc nào.
 
 ---
 
-## 4. [RULE] QSC_ZERO_DB_DEPENDENCY: Kết Nối Mạng LAN Trực Tiếp (Zero-Config LAN/Wi-Fi)
+## 5. [RULE] QSC_ZERO_DB_DEPENDENCY: Kết Nối Mạng LAN Trực Tiếp (Zero-Config LAN/Wi-Fi)
 1. **Cắm mạng là chạy (Zero-Config Discovery):**
-   * Máy Giáo viên và Học sinh (PC & Android) tự động tìm thấy nhau qua **UDP Broadcast (`Cổng 29876`)** hoặc nhập trực tiếp địa chỉ IP máy Giáo viên để kết nối vào **TCP Control (`29877`)**, **Screen Broadcast (`29878`)**, và **File Transfer (`29879`)**.
-2. **Không phụ thuộc Database Lớp học / Thời khóa biểu:**
-   * Mọi thiết bị PC và Android vừa kết nối mạng LAN/Wi-Fi phải xuất hiện ngay lập tức trên Lưới giám sát màn hình (`Live Screen Grid`) của Giáo viên mà **không cần** tạo lớp học trong SQLite, không cần xếp thời khóa biểu hay đăng nhập tài khoản học sinh.
-
----
-
-## 5. [RULE] QSC_CLEAN_SLATE_UI: Chuẩn Giao Diện Mới Cho PC & Android
-1. **Giao diện Máy Giáo Viên (`ClassroomShell`):**
-   * Thiết kế trên **1 cửa sổ duy nhất** theo phong cách Mythware hiện đại:
-     * **Top Command Ribbon:** Thanh công cụ ngang trên cùng chứa các nút chức năng lớn, rõ ràng, bấm ăn ngay bằng 1 chạm trên màn hình 86 inch.
-     * **Center Live Screen Matrix:** Toàn bộ không gian chính giữa dành cho Lưới màn hình trực tiếp của Học sinh (PC & Android), kèm bộ lọc (`Tất cả` / `Chỉ PC` / `Chỉ Android`), chọn nhanh (`Chọn tất cả` / `Bỏ chọn`) và thanh trượt phóng to/thu nhỏ ô màn hình.
-     * **Bottom Status Bar:** Hiển thị IP máy Giáo viên, trạng thái phát màn hình, tổng số máy PC & Android đang kết nối và số học sinh đang giơ tay.
-2. **Giao diện Máy Học Sinh PC (`StudentShell`) & Android (`QASmartClass.Android`):**
-   * Giao diện tối giản, tập trung vào: **Tự động dò & Kết nối IP Giáo viên** $\rightarrow$ **Xem màn hình Giáo viên phát sang (Full-screen / Zoom)** + **Truyền màn hình thiết bị về máy Giáo viên (`ScreenCaptureService` / `MediaProjection`)** + **Khóa màn hình khi có lệnh** + **Thanh công cụ gọn nhẹ (`✋ Giơ tay`, `💬 Chat`, `📁 Nhận/Nộp File`)**.
-
+   * Máy Giáo viên và Học sinh (Windows PC & Android) tự động tìm thấy nhau qua **UDP Broadcast (`Cổng 29876`)** hoặc nhập trực tiếp địa chỉ IP + Mã lớp để kết nối vào **TCP Control (`29877`)**, **Screen Broadcast (`29878` / HTTP Stream)**, và **File Transfer (`29879`)**.
+2. **Phân biệt Phòng học & Chống vào nhầm lớp:**
+   * Hỗ trợ chọn đúng Phòng học/Lớp học khi có nhiều giáo viên cùng dạy trên 1 mạng LAN, hiển thị thẻ xác nhận tên Giáo viên + Lớp trước khi vào, và cho phép cả Học sinh tự rời lớp lẫn Giáo viên mời ra (`CMD|KICK`) nếu vào nhầm.

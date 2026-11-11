@@ -98,7 +98,8 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="sidebarColumn" Width="255"/>
+            <!-- [MYTHWARE_LITE] Ẩn Sidebar ERP 255px bên trái, dành 100% không gian cho Mythware Classroom -->
+            <ColumnDefinition x:Name="sidebarColumn" Width="0"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -645,7 +646,66 @@
                         <Border Width="1" Height="16" Background="#E0E0E0" Margin="0,0,12,0"/>
                         
                         <TextBlock x:Name="txtPageTitle" Text="{DynamicResource Shell_HomeTitle}"
-                                   VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" Foreground="#212121"/>
+                                   VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" Foreground="#212121" Margin="0,0,16,0"/>
+
+                        <!-- [MYTHWARE_LITE] Thanh điều phối Kênh (Channel 1-20), Tên Phòng và Mã PIN (tùy chọn) -->
+                        <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="8" Padding="8,4" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="📡 Kênh:" FontSize="12" FontWeight="Bold" Foreground="#1E40AF" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ComboBox x:Name="cmbMythwareChannel" Width="88" Height="26" FontSize="12" FontWeight="Bold"
+                                          Foreground="#1D4ED8" Background="White" BorderBrush="#93C5FD" BorderThickness="1"
+                                          VerticalContentAlignment="Center" SelectionChanged="MythwareChannel_SelectionChanged"
+                                          ToolTip="Chọn Kênh phát sóng để không trùng với phòng máy khác cùng mạng LAN">
+                                    <ComboBoxItem Content="Kênh 1" Tag="1" IsSelected="True"/>
+                                    <ComboBoxItem Content="Kênh 2" Tag="2"/>
+                                    <ComboBoxItem Content="Kênh 3" Tag="3"/>
+                                    <ComboBoxItem Content="Kênh 4" Tag="4"/>
+                                    <ComboBoxItem Content="Kênh 5" Tag="5"/>
+                                    <ComboBoxItem Content="Kênh 6" Tag="6"/>
+                                    <ComboBoxItem Content="Kênh 7" Tag="7"/>
+                                    <ComboBoxItem Content="Kênh 8" Tag="8"/>
+                                    <ComboBoxItem Content="Kênh 9" Tag="9"/>
+                                    <ComboBoxItem Content="Kênh 10" Tag="10"/>
+                                    <ComboBoxItem Content="Kênh 11" Tag="11"/>
+                                    <ComboBoxItem Content="Kênh 12" Tag="12"/>
+                                    <ComboBoxItem Content="Kênh 13" Tag="13"/>
+                                    <ComboBoxItem Content="Kênh 14" Tag="14"/>
+                                    <ComboBoxItem Content="Kênh 15" Tag="15"/>
+                                    <ComboBoxItem Content="Kênh 16" Tag="16"/>
+                                    <ComboBoxItem Content="Kênh 17" Tag="17"/>
+                                    <ComboBoxItem Content="Kênh 18" Tag="18"/>
+                                    <ComboBoxItem Content="Kênh 19" Tag="19"/>
+                                    <ComboBoxItem Content="Kênh 20" Tag="20"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" Padding="8,4" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="🏫 Phòng:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBox x:Name="txtMythwareRoomName" Text="Phòng Máy 01" Width="125" Height="24" FontSize="12" FontWeight="Bold"
+                                         Foreground="#0F172A" Background="White" BorderBrush="#CBD5E1" BorderThickness="1" Padding="6,2"
+                                         VerticalContentAlignment="Center" LostFocus="MythwareRoomInfo_Changed" KeyDown="MythwareRoomInfo_KeyDown"
+                                         ToolTip="Tên phòng/lớp hiển thị trên máy Học sinh (Nhấn Enter để cập nhật)"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#FEFCE8" BorderBrush="#FDE047" BorderThickness="1" CornerRadius="8" Padding="8,4" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <CheckBox x:Name="chkMythwareRequirePin" Content="🔒 Mã PIN:" FontSize="12" FontWeight="SemiBold" Foreground="#854D0E"
+                                          VerticalAlignment="Center" Margin="0,0,6,0" Checked="MythwarePin_CheckedChanged" Unchecked="MythwarePin_CheckedChanged"
+                                          ToolTip="Bật nếu muốn yêu cầu Học sinh nhập mã PIN 4 số khi vào lớp"/>
+                                <TextBox x:Name="txtMythwareRoomPin" Text="1234" Width="52" Height="24" MaxLength="8" FontSize="12" FontWeight="Bold"
+                                         Foreground="#854D0E" Background="White" BorderBrush="#FACC15" BorderThickness="1" Padding="4,2"
+                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsEnabled="False"
+                                         LostFocus="MythwareRoomInfo_Changed" KeyDown="MythwareRoomInfo_KeyDown"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="8" Padding="10,5" Margin="0,0,8,0"
+                                ToolTip="Địa chỉ IP máy Giáo viên để Học sinh kết nối trực tiếp">
+                            <TextBlock x:Name="txtMythwareTeacherIp" Text="🌐 IP GV: --" FontSize="12" FontWeight="Bold" Foreground="#047857" VerticalAlignment="Center"/>
+                        </Border>
                     </StackPanel>
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock x:Name="txtClock" Text="--:--" Foreground="#9E9E9E" FontSize="13"

@@ -27,39 +27,68 @@ namespace QASmartClass.Classroom.Views
         private readonly Func<ScreenSourceInfo, bool> _isCurrent;
         private readonly StackPanel _topExtraPanel = new() { Margin = new Thickness(6, 4, 6, 8), Visibility = Visibility.Collapsed };
         private readonly WrapPanel _cards = new() { Margin = new Thickness(4) };
-        private readonly Button _btnShare = new() { Content = "Chia sẻ nguồn này", IsEnabled = false };
+        private readonly Button _btnShare = new() { Content = "🚀 Chia sẻ nguồn này", IsEnabled = false };
         private readonly CheckBox _chkAutoOpenQaPage = new()
         {
             Content = "Tự động mở trang này trên màn hình Giáo viên để thao tác ngay",
             IsChecked = true,
-            FontSize = 13.5,
+            FontSize = 13,
             FontWeight = FontWeights.SemiBold,
             Foreground = new SolidColorBrush(Color.FromRgb(0x1E, 0x29, 0x3B)),
-            Margin = new Thickness(4, 2, 4, 6),
+            Margin = new Thickness(4, 2, 4, 2),
             Visibility = Visibility.Collapsed
+        };
+        private readonly CheckBox _chkAutoMinimizeShell = new()
+        {
+            Content = "Tự động thu nhỏ cửa sổ Quản lý lớp khi bắt đầu chiếu (để lộ bài giảng / màn hình chính)",
+            IsChecked = false,
+            FontSize = 12.5,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x1E, 0x29, 0x3B)),
+            Margin = new Thickness(4, 2, 4, 2)
+        };
+        private readonly CheckBox _chkHideShellFromStudents = new()
+        {
+            Content = "Ẩn cửa sổ Quản lý lớp khỏi màn hình Học sinh (Học sinh chỉ thấy nội dung phía sau cửa sổ QASmartClass)",
+            IsChecked = false,
+            FontSize = 12.5,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69)),
+            Margin = new Thickness(4, 2, 4, 2)
         };
         private readonly TextBlock _empty = new() { Foreground = Brushes.Gray, FontSize = 14, Margin = new Thickness(12), Visibility = Visibility.Collapsed };
 
+        private readonly ToggleButton_ _tabAll = new("🌟 Tất cả (Màn hình & Cửa sổ)");
         private readonly ToggleButton_ _tabScreen = new("🖥️ Toàn màn hình");
-        private readonly ToggleButton_ _tabRegion = new("✂️ Chọn vùng màn hình");
-        private readonly ToggleButton_ _tabQaPage = new("📑 Trang trong QA SmartClass");
         private readonly ToggleButton_ _tabWindow = new("🪟 Cửa sổ ứng dụng");
+        private readonly ToggleButton_ _tabQaPage = new("📑 Trang trong QA SmartClass");
+        private readonly ToggleButton_ _tabRegion = new("✂️ Chọn vùng màn hình");
 
         private ScreenSourceKind _tab = ScreenSourceKind.Screen;
+        private bool _isAllTab = true;
         private Border? _selectedCard;
         private int _loadVersion;
 
         /// <summary>Nguồn được chọn (null nếu hủy).</summary>
         public ScreenSourceInfo? Selected { get; private set; }
 
+        /// <summary>Có tự động thu nhỏ cửa sổ Quản lý lớp sau khi bấm Chia sẻ hay không.</summary>
+        public bool AutoMinimizeClassroomShell { get; private set; }
+
+        /// <summary>Có ẩn cửa sổ Quản lý lớp khỏi luồng chụp màn hình của Học sinh hay không.</summary>
+        public bool HideClassroomShellFromStudents { get; private set; }
+
         public ScreenSourcePickerWindow(
             IntPtr excludeHwnd,
             Func<ScreenSourceInfo, bool> isCurrent,
-            ScreenSourceKind initialTab = ScreenSourceKind.Screen)
+            ScreenSourceKind initialTab = ScreenSourceKind.Screen,
+            bool initialHideClassroomShell = false)
         {
             _excludeHwnd = excludeHwnd;
             _isCurrent = isCurrent;
             _tab = initialTab;
+            _isAllTab = (initialTab == ScreenSourceKind.Screen);
+            _chkHideShellFromStudents.IsChecked = initialHideClassroomShell;
 
             Title = "Chọn nguồn chiếu màn hình & trang bài giảng";
             Width = 980; Height = 680; MinWidth = 560; MinHeight = 460;
@@ -93,14 +122,16 @@ namespace QASmartClass.Classroom.Views
             root.Children.Add(headerStack);
 
             var tabs = new WrapPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 10) };
-            _tabScreen.Click += (_, _) => SwitchTab(ScreenSourceKind.Screen);
-            _tabRegion.Click += (_, _) => SwitchTab(ScreenSourceKind.Region);
-            _tabQaPage.Click += (_, _) => SwitchTab(ScreenSourceKind.QaClassPage);
-            _tabWindow.Click += (_, _) => SwitchTab(ScreenSourceKind.Window);
+            _tabAll.Click += (_, _) => { _isAllTab = true; SwitchTab(ScreenSourceKind.Screen); };
+            _tabScreen.Click += (_, _) => { _isAllTab = false; SwitchTab(ScreenSourceKind.Screen); };
+            _tabWindow.Click += (_, _) => { _isAllTab = false; SwitchTab(ScreenSourceKind.Window); };
+            _tabQaPage.Click += (_, _) => { _isAllTab = false; SwitchTab(ScreenSourceKind.QaClassPage); };
+            _tabRegion.Click += (_, _) => { _isAllTab = false; SwitchTab(ScreenSourceKind.Region); };
+            tabs.Children.Add(_tabAll);
             tabs.Children.Add(_tabScreen);
-            tabs.Children.Add(_tabRegion);
-            tabs.Children.Add(_tabQaPage);
             tabs.Children.Add(_tabWindow);
+            tabs.Children.Add(_tabQaPage);
+            tabs.Children.Add(_tabRegion);
             Grid.SetRow(tabs, 1);
             root.Children.Add(tabs);
 
@@ -127,10 +158,14 @@ namespace QASmartClass.Classroom.Views
             footerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             footerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            Grid.SetColumn(_chkAutoOpenQaPage, 0);
-            footerGrid.Children.Add(_chkAutoOpenQaPage);
+            var leftOptsStack = new StackPanel { Orientation = Orientation.Vertical, VerticalAlignment = VerticalAlignment.Center };
+            leftOptsStack.Children.Add(_chkAutoOpenQaPage);
+            leftOptsStack.Children.Add(_chkAutoMinimizeShell);
+            leftOptsStack.Children.Add(_chkHideShellFromStudents);
+            Grid.SetColumn(leftOptsStack, 0);
+            footerGrid.Children.Add(leftOptsStack);
 
-            var footerBtns = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+            var footerBtns = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
             var btnCustomRegion = MakeButton("✂️ Kéo chọn vùng màn hình…", false);
             btnCustomRegion.Background = new SolidColorBrush(Color.FromRgb(0xE0, 0xF2, 0xFE));
             btnCustomRegion.Foreground = new SolidColorBrush(Color.FromRgb(0x03, 0x69, 0xA1));
@@ -173,6 +208,8 @@ namespace QASmartClass.Classroom.Views
                 var selector = new ScreenRegionSelectorWindow();
                 if (selector.ShowDialog() == true && selector.SelectedRegion != null)
                 {
+                    AutoMinimizeClassroomShell = _chkAutoMinimizeShell.IsChecked == true;
+                    HideClassroomShellFromStudents = _chkHideShellFromStudents.IsChecked == true;
                     Selected = selector.SelectedRegion;
                     DialogResult = true;
                     return;
@@ -196,6 +233,8 @@ namespace QASmartClass.Classroom.Views
                 {
                     info.AutoNavigateToPage = _chkAutoOpenQaPage.IsChecked == true;
                 }
+                AutoMinimizeClassroomShell = _chkAutoMinimizeShell.IsChecked == true;
+                HideClassroomShellFromStudents = _chkHideShellFromStudents.IsChecked == true;
                 Selected = info;
                 DialogResult = true;
             }
@@ -204,12 +243,15 @@ namespace QASmartClass.Classroom.Views
         private void SwitchTab(ScreenSourceKind kind)
         {
             _tab = kind;
-            _tabScreen.IsChecked = kind == ScreenSourceKind.Screen;
-            _tabRegion.IsChecked = kind == ScreenSourceKind.Region;
-            _tabQaPage.IsChecked = kind == ScreenSourceKind.QaClassPage;
-            _tabWindow.IsChecked = kind == ScreenSourceKind.Window;
+            _tabAll.IsChecked = _isAllTab && kind == ScreenSourceKind.Screen;
+            _tabScreen.IsChecked = !_isAllTab && kind == ScreenSourceKind.Screen;
+            _tabRegion.IsChecked = !_isAllTab && kind == ScreenSourceKind.Region;
+            _tabQaPage.IsChecked = !_isAllTab && kind == ScreenSourceKind.QaClassPage;
+            _tabWindow.IsChecked = !_isAllTab && kind == ScreenSourceKind.Window;
 
             _chkAutoOpenQaPage.Visibility = kind == ScreenSourceKind.QaClassPage ? Visibility.Visible : Visibility.Collapsed;
+            _chkAutoMinimizeShell.Visibility = kind == ScreenSourceKind.QaClassPage ? Visibility.Collapsed : Visibility.Visible;
+            _chkHideShellFromStudents.Visibility = (kind == ScreenSourceKind.Screen || _isAllTab) ? Visibility.Visible : Visibility.Collapsed;
             _topExtraPanel.Children.Clear();
             _topExtraPanel.Visibility = Visibility.Collapsed;
 
@@ -265,13 +307,15 @@ namespace QASmartClass.Classroom.Views
                 _topExtraPanel.Visibility = Visibility.Visible;
             }
 
-            List<ScreenSourceInfo> items = kind switch
-            {
-                ScreenSourceKind.Screen => ScreenSourceEnumerator.GetScreens(),
-                ScreenSourceKind.Region => ScreenSourceEnumerator.GetRegionPresets(dpi.DpiScaleX, dpi.DpiScaleY),
-                ScreenSourceKind.QaClassPage => ScreenSourceEnumerator.GetQaClassPages(),
-                _ => ScreenSourceEnumerator.GetWindows(_excludeHwnd)
-            };
+            List<ScreenSourceInfo> items = _isAllTab
+                ? ScreenSourceEnumerator.GetAllShareableSources(_excludeHwnd, dpi.DpiScaleX, dpi.DpiScaleY)
+                : kind switch
+                {
+                    ScreenSourceKind.Screen => ScreenSourceEnumerator.GetScreens(),
+                    ScreenSourceKind.Region => ScreenSourceEnumerator.GetRegionPresets(dpi.DpiScaleX, dpi.DpiScaleY),
+                    ScreenSourceKind.QaClassPage => ScreenSourceEnumerator.GetQaClassPages(),
+                    _ => ScreenSourceEnumerator.GetWindows(_excludeHwnd)
+                };
 
             if (items.Count == 0)
             {
@@ -285,7 +329,7 @@ namespace QASmartClass.Classroom.Views
             int screenNo = 0;
             foreach (var it in items)
             {
-                string label = it.Kind == ScreenSourceKind.Screen
+                string label = (it.Kind == ScreenSourceKind.Screen && string.IsNullOrWhiteSpace(it.Title))
                     ? $"Màn hình {++screenNo}{(it.IsPrimary ? " (chính)" : "")} — {it.Width}×{it.Height}"
                     : it.Title;
 
@@ -293,70 +337,56 @@ namespace QASmartClass.Classroom.Views
                 {
                     Background = new SolidColorBrush(Color.FromRgb(0x0D, 0x1B, 0x2A)),
                     CornerRadius = new CornerRadius(8),
-                    Height = 128,
-                    Margin = new Thickness(0, 0, 0, 8)
+                    Height = 136,
+                    Margin = new Thickness(0, 0, 0, 8),
+                    ClipToBounds = true
                 };
 
                 var thumb = new Image { Stretch = Stretch.Uniform };
                 RenderOptions.SetBitmapScalingMode(thumb, BitmapScalingMode.HighQuality);
 
-                if (it.Kind == ScreenSourceKind.QaClassPage)
+                var overlayGrid = new Grid();
+                var iconBadge = new StackPanel
                 {
-                    // Tạo giao diện thẻ trang QA SmartClass trực quan kèm ảnh chụp trực tiếp nếu trang đã mở
-                    var overlayGrid = new Grid();
-                    var iconBadge = new StackPanel
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+                iconBadge.Children.Add(new TextBlock
+                {
+                    Text = it.IconGlyph,
+                    FontSize = 34,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                });
+                iconBadge.Children.Add(new TextBlock
+                {
+                    Text = it.Kind switch
                     {
-                        VerticalAlignment = VerticalAlignment.Center,
-                        HorizontalAlignment = HorizontalAlignment.Center
-                    };
-                    iconBadge.Children.Add(new TextBlock
-                    {
-                        Text = it.IconGlyph,
-                        FontSize = 36,
-                        HorizontalAlignment = HorizontalAlignment.Center
-                    });
-                    iconBadge.Children.Add(new TextBlock
-                    {
-                        Text = it.PageFormId == "CURRENT" ? "TỰ ĐỘNG THEO TAB" : $"TRANG QA SMARTCLASS",
-                        FontSize = 10.5,
-                        FontWeight = FontWeights.Bold,
-                        Foreground = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD)),
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        Margin = new Thickness(0, 4, 0, 0)
-                    });
-                    overlayGrid.Children.Add(iconBadge);
-                    overlayGrid.Children.Add(thumb);
-                    hold.Child = overlayGrid;
+                        ScreenSourceKind.Screen => "TOÀN MÀN HÌNH",
+                        ScreenSourceKind.Window => "CỬA SỔ ỨNG DỤNG",
+                        ScreenSourceKind.Region => "VÙNG MÀN HÌNH",
+                        _ => it.PageFormId == "CURRENT" ? "TỰ ĐỘNG THEO TAB" : "TRANG QA SMARTCLASS"
+                    },
+                    FontSize = 10,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD)),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 4, 0, 0)
+                });
+                overlayGrid.Children.Add(iconBadge);
+                overlayGrid.Children.Add(thumb);
+                hold.Child = overlayGrid;
 
-                    // Nếu ClassroomShell đang mở, thử lấy ảnh xem trước của trang đó
-                    if (Application.Current?.MainWindow is ClassroomShell shell || Owner is ClassroomShell)
-                    {
-                        var targetShell = (Owner as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
-                        if (targetShell != null)
-                        {
-                            var pageBmp = targetShell.TryGetQaPagePreviewBitmap(it.PageFormId, 320);
-                            if (pageBmp != null)
-                            {
-                                thumb.Source = pageBmp;
-                                iconBadge.Visibility = Visibility.Collapsed;
-                            }
-                        }
-                    }
-                }
-                else
+                var captured = it;
+                Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    hold.Child = thumb;
-                    var captured = it;
-                    Task.Run(() =>
+                    if (version != _loadVersion) return;
+                    var bmp = ScreenSourceEnumerator.CaptureSourcePreview(captured, Owner);
+                    if (bmp != null)
                     {
-                        var bmp = ScreenSourceEnumerator.CaptureThumbnail(captured);
-                        if (bmp == null) return;
-                        Dispatcher.BeginInvoke(new Action(() =>
-                        {
-                            if (version == _loadVersion) thumb.Source = bmp;
-                        }));
-                    });
-                }
+                        thumb.Source = bmp;
+                        iconBadge.Visibility = Visibility.Collapsed;
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Background);
 
                 var name = new TextBlock
                 {
@@ -407,6 +437,11 @@ namespace QASmartClass.Classroom.Views
                 card.TouchUp += (_, _) => SelectCard(card);
                 card.KeyDown += (_, e) => { if (e.Key == Key.Space) { SelectCard(card); e.Handled = true; } };
                 _cards.Children.Add(card);
+            }
+
+            if (_selectedCard == null && _cards.Children.Count > 0 && _cards.Children[0] is Border firstCard)
+            {
+                SelectCard(firstCard);
             }
         }
 

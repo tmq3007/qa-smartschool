@@ -31,6 +31,8 @@ namespace QASmartClass.Services
         private readonly ConcurrentDictionary<int, FrameAssembly> _activeAssemblies = new();
         private int _lastAssembledFrameIndex = -1;
         private long _lastAssembledTimestamp = 0; // Ticks (UTC) của frame hoàn chỉnh gần nhất
+        private readonly ConcurrentQueue<byte[]> _completedFramesQueue = new();
+        private readonly AutoResetEvent _frameReadySignal = new(false);
 
         public event Action<byte[]>? FrameReceived;
 
@@ -88,12 +90,14 @@ namespace QASmartClass.Services
                     if (!string.IsNullOrEmpty(localIP) && localIP != "127.0.0.1")
                     {
                         _udpSender = new UdpClient(new IPEndPoint(IPAddress.Parse(localIP), 0));
+                        _udpSender.Client.SendBufferSize = 2 * 1024 * 1024;
                         _udpSender.JoinMulticastGroup(IPAddress.Parse(MulticastIP), MulticastTTL);
                         Log.Information("[UdpBroadcast] Sender bound to physical interface {LocalIP}. Target multicast: {IP}:{Port} (TTL: {TTL})", localIP, MulticastIP, MulticastPort, MulticastTTL);
                     }
                     else
                     {
                         _udpSender = new UdpClient();
+                        _udpSender.Client.SendBufferSize = 2 * 1024 * 1024;
                         _udpSender.JoinMulticastGroup(IPAddress.Parse(MulticastIP), MulticastTTL);
                         Log.Information("[UdpBroadcast] Sender initialized on default interface. Target: {IP}:{Port} (TTL: {TTL})", MulticastIP, MulticastPort, MulticastTTL);
                     }
@@ -155,6 +159,7 @@ namespace QASmartClass.Services
                 // LoadConfigFromDb(); // Cấu hình động từ GV qua SESSION_CONFIG, tránh ghi đè từ DB local của HS
                 _udpReceiver = new UdpClient();
                 _udpReceiver.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                _udpReceiver.Client.ReceiveBufferSize = 4 * 1024 * 1024;
                 
                 // Bind to local wildcard port
                 _udpReceiver.Client.Bind(new IPEndPoint(IPAddress.Any, MulticastPort));
@@ -188,6 +193,7 @@ namespace QASmartClass.Services
 
                 _receiverCts = new CancellationTokenSource();
                 _ = Task.Run(() => ReceiveLoopAsync(_receiverCts.Token));
+                _ = Task.Run(() => DispatchFrameLoopAsync(_receiverCts.Token));
                 _ = Task.Run(() => CleanupLoopAsync(_receiverCts.Token));
 
                 Log.Information("[UdpBroadcast] Receiver started on port {Port}, joined multicast group {IP}", MulticastPort, MulticastIP);
@@ -291,7 +297,12 @@ namespace QASmartClass.Services
                         {
                             _lastAssembledFrameIndex = frameIdx;
                             _lastAssembledTimestamp = assembly.Timestamp;
-                            FrameReceived?.Invoke(reassembled);
+                            while (_completedFramesQueue.Count >= 30)
+                            {
+                                _completedFramesQueue.TryDequeue(out _);
+                            }
+                            _completedFramesQueue.Enqueue(reassembled);
+                            _frameReadySignal.Set();
 
                             // Record telemetry metrics
                             double latencyMs = (DateTime.UtcNow.Ticks - assembly.Timestamp) / 10000.0;
@@ -321,6 +332,31 @@ namespace QASmartClass.Services
                     if (!token.IsCancellationRequested)
                     {
                         Log.Warning("[UdpBroadcast] ReceiveLoopAsync error: {Msg}", ex.Message);
+                    }
+                }
+            }
+        }
+
+        private void DispatchFrameLoopAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    if (!_frameReadySignal.WaitOne(100)) continue;
+                    while (!token.IsCancellationRequested && _completedFramesQueue.TryDequeue(out var frame))
+                    {
+                        if (frame != null && frame.Length > 0)
+                        {
+                            FrameReceived?.Invoke(frame);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (!token.IsCancellationRequested)
+                    {
+                        Log.Debug("[UdpBroadcast] DispatchFrameLoopAsync error: {Msg}", ex.Message);
                     }
                 }
             }

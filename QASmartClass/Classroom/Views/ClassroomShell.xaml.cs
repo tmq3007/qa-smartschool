@@ -208,6 +208,21 @@ namespace QASmartClass.Classroom.Views
 
 				await StartNetworkAsync();
 
+				// [MYTHWARE_LITE] Tự động kích hoạt phiên lớp học & đồng bộ Kênh phát sóng ngay khi mở máy Giáo viên
+				SyncMythwareHeaderToBeacon();
+				try
+				{
+					if (ClassroomAppContext.Session != null && !ClassroomAppContext.Session.IsSessionActive)
+					{
+						string roomName = txtMythwareRoomName?.Text?.Trim() ?? "Phòng Máy 01";
+						await ClassroomAppContext.Session.StartSessionAsync(roomName, "Giáo viên");
+					}
+				}
+				catch (Exception exSess)
+				{
+					Log.Debug("[Mythware] Auto-start session skipped: {Err}", exSess.Message);
+				}
+
 				// Tải trước các trang cốt lõi vào Cache khi CPU rảnh để lần mở đầu tiên đạt tốc độ tức thì
 				PrewarmCorePages();
 
@@ -964,7 +979,7 @@ namespace QASmartClass.Classroom.Views
 
 									{
 
-										ShowToast(studentName, displayText, "CHAT");
+										ShowToast(studentName, displayText, "CHAT", channel);
 
 										try
 
@@ -1259,12 +1274,13 @@ namespace QASmartClass.Classroom.Views
 			if (formId == _currentPage) return;
 
 			// Hỗ trợ chuyển tab nhanh trong Hub điều khiển lớp nếu Hub đang hiển thị
-			if (contentFrame.Content is ClassControlHub hub && (formId == "FHUB" || formId == "F_HUB" || formId == "F4" || formId == "F5" || formId == "F16" || formId == "F11" || formId == "F30" || formId == "F12"))
+			if (contentFrame.Content is ClassControlHub hub && (formId == "FHUB" || formId == "F_HUB" || formId == "F4" || formId == "F5" || formId == "F16" || formId == "F13" || formId == "F11" || formId == "F30" || formId == "F12"))
 			{
+				if (formId == "F13") ResetBadge();
 				hub.SelectTabByFormId(formId);
 				_currentPage = formId;
 				UpdateActiveButtonStyles(formId);
-				txtPageTitle.Text = "🖥️ Điều khiển lớp";
+				txtPageTitle.Text = formId == "F13" ? "💬 Tin nhắn & Thông báo" : "🖥️ Điều khiển lớp";
 				return;
 			}
 
@@ -1726,7 +1742,8 @@ namespace QASmartClass.Classroom.Views
 				"F10" => new GroupPage(),
 				"F11" => new ClassControlHub("Files"),
 				"F12" => new ClassControlHub("Monitor"),  // Remote merged into Monitor
-				"F13" => new MessagingPage(),
+				// [MYTHWARE_LITE] "F13" => new MessagingPage(),
+				"F13" => _pageCache.TryGetValue("FHUB", out var existingHub) && existingHub is ClassControlHub ch ? ch : new ClassControlHub("Messaging"),
 				"F14" => new QuestionBankPage(),
 				"F15" => new StudentPage(showRosterFirst: true),
 				"F15S" => new StudentPage(showRosterFirst: false),
@@ -2765,10 +2782,85 @@ namespace QASmartClass.Classroom.Views
 			return role is "Admin" or "HieuTruong" or "HieuPho";
 		}
 
-		/// <summary>Trang chủ mặc định theo quyền của người dùng (Admin: F1, GV: F26 Thời khóa biểu/Lịch trình)</summary>
+		/// <summary>Trang chủ mặc định theo quyền của người dùng (Mythware Mode: mở thẳng màn Điều khiển & Giám sát lớp FHUB)</summary>
 		public string GetDefaultLandingPage()
 		{
-			return CanAccessDashboard() ? "F1" : "F26";
+			// [MYTHWARE_LITE] return CanAccessDashboard() ? "F1" : "F26";
+			return "FHUB";
+		}
+
+		// ═══════════════════════════════════════════════════════════
+		//  [MYTHWARE_LITE] MULTI-CHANNEL & ROOM BEACON HANDLERS
+		// ═══════════════════════════════════════════════════════════
+
+		private void MythwareChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			SyncMythwareHeaderToBeacon();
+		}
+
+		private void MythwarePin_CheckedChanged(object sender, RoutedEventArgs e)
+		{
+			if (txtMythwareRoomPin != null && chkMythwareRequirePin != null)
+			{
+				txtMythwareRoomPin.IsEnabled = chkMythwareRequirePin.IsChecked == true;
+			}
+			SyncMythwareHeaderToBeacon();
+		}
+
+		private void MythwareRoomInfo_Changed(object sender, RoutedEventArgs e)
+		{
+			SyncMythwareHeaderToBeacon();
+		}
+
+		private void MythwareRoomInfo_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter)
+			{
+				SyncMythwareHeaderToBeacon();
+				Keyboard.ClearFocus();
+			}
+		}
+
+		private void SyncMythwareHeaderToBeacon()
+		{
+			try
+			{
+				if (!IsLoaded) return;
+				var net = ClassroomAppContext.Network;
+				if (net == null) return;
+
+				int channelId = 1;
+				if (cmbMythwareChannel?.SelectedItem is ComboBoxItem cbi && int.TryParse(cbi.Tag?.ToString(), out int parsedCh))
+				{
+					channelId = parsedCh;
+				}
+
+				string roomName = txtMythwareRoomName?.Text?.Trim() ?? "Phòng Máy 01";
+				if (string.IsNullOrWhiteSpace(roomName)) roomName = $"Phòng Kênh {channelId}";
+
+				bool reqPin = chkMythwareRequirePin?.IsChecked == true;
+				string pin = txtMythwareRoomPin?.Text?.Trim() ?? "";
+
+				string teacherName = txtTeacherName?.Text?.Replace("GV.", "").Trim() ?? "Giáo viên";
+				if (string.IsNullOrWhiteSpace(teacherName)) teacherName = "Giáo viên";
+
+				net.UpdateBeaconInfo(channelId, roomName, teacherName, reqPin, pin);
+
+				if (txtMythwareTeacherIp != null)
+				{
+					txtMythwareTeacherIp.Text = $"🌐 IP GV: {net.ServerIP} (Kênh {channelId})";
+				}
+				if (txtHeaderClassCode != null)
+				{
+					txtHeaderClassCode.Text = reqPin && !string.IsNullOrEmpty(pin)
+						? $"🔑 PIN: {pin}"
+						: "🔓 Mở tự do";
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Debug("[Mythware] SyncMythwareHeaderToBeacon error: {Err}", ex.Message);
+			}
 		}
 
 		/// <summary>Áp dụng phân quyền hiển thị Sidebar theo vai trò</summary>
@@ -3038,7 +3130,7 @@ namespace QASmartClass.Classroom.Views
 
 		/// <summary>Show a toast notification overlay (auto-dismiss after 8s)</summary>
 
-		public void ShowToast(string studentName, string message, string type)
+		public void ShowToast(string studentName, string message, string type, string? targetChannel = null)
 
 		{
 
@@ -3289,6 +3381,10 @@ namespace QASmartClass.Classroom.Views
 				DismissToast(toast);
 
 				NavigateTo("F13");
+				if (!string.IsNullOrWhiteSpace(targetChannel) && contentFrame.Content is ClassControlHub hub)
+				{
+					hub.OpenChatWithStudent(targetChannel);
+				}
 
 			};
 
