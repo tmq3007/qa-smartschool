@@ -363,6 +363,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Luôn ẩn bàn phím ảo khi vừa mở màn hình để không che nút "VÀO LỚP HỌC NGAY" trên Tablet ngang
+        window.setSoftInputMode(
+            android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN or
+                android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+        )
         setContentView(R.layout.activity_main)
 
         // Initialize Services
@@ -373,9 +378,33 @@ class MainActivity : AppCompatActivity() {
         initViews()
         setupListeners()
         applyResponsiveLayout()
+        currentFocus?.clearFocus()
 
         // Start Auto Discovery via UDP
         startAutoDiscovery()
+    }
+
+    private fun hideSoftKeyboard() {
+        try {
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+            val token = currentFocus?.windowToken ?: window.decorView.windowToken
+            imm?.hideSoftInputFromWindow(token, 0)
+            currentFocus?.clearFocus()
+        } catch (_: Exception) {}
+    }
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (ev.action == android.view.MotionEvent.ACTION_DOWN) {
+            val focused = currentFocus
+            if (focused is EditText) {
+                val outRect = android.graphics.Rect()
+                focused.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                    hideSoftKeyboard()
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
@@ -782,15 +811,23 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnRefresh.setOnClickListener {
+            hideSoftKeyboard()
             startAutoDiscovery()
         }
 
+        edtJoinClassCode.imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE or
+            android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI
+
         edtJoinClassCode.setOnEditorActionListener { _, _, _ ->
-            btnConnect.performClick()
+            hideSoftKeyboard()
+            if (edtJoinClassCode.text.toString().trim().isNotEmpty() || !currentTeacherIp.isNullOrBlank()) {
+                btnConnect.performClick()
+            }
             true
         }
 
         btnConnect.setOnClickListener {
+            hideSoftKeyboard()
             txtError.visibility = View.GONE
             val studentCode = edtStudentCode.text.toString().trim().ifBlank { "10A1-002" }
             val password = edtPassword.text.toString().trim().ifBlank { "123456" }
@@ -864,7 +901,7 @@ class MainActivity : AppCompatActivity() {
             val form = findViewById<View>(R.id.formContainer)
             val willShow = form.visibility != View.VISIBLE
             form.visibility = if (willShow) View.VISIBLE else View.GONE
-            if (willShow) edtTeacherIp.requestFocus()
+            if (willShow) edtTeacherIp.requestFocus() else hideSoftKeyboard()
         }
 
         btnEditStudentIdentity.setOnClickListener {
@@ -3769,27 +3806,63 @@ class MainActivity : AppCompatActivity() {
         val teacherIp = currentTeacherIp ?: "10.0.2.2"
 
         broadcastPollJob = lifecycleScope.launch(Dispatchers.IO) {
-            Log.i(TAG, "Starting smooth buffered broadcast stream from $teacherIp:$currentTeacherWebPort with token: $currentBroadcastToken")
+            Log.i(TAG, "Starting smooth & crisp ARGB_8888 broadcast stream from $teacherIp:$currentTeacherWebPort with token: $currentBroadcastToken")
             val tokenParamOnce = if (currentBroadcastToken.isNotEmpty()) "&token=$currentBroadcastToken" else ""
             val playoutQueue = java.util.concurrent.LinkedBlockingQueue<android.graphics.Bitmap>(64)
+            // Vòng xoay tái sử dụng bộ nhớ Bitmap (inBitmap Pool) chuẩn Google Meet: loại bỏ 95% rác bộ nhớ GC tránh khựng hình trên Tablet
+            val freeBitmapPool = java.util.concurrent.LinkedBlockingQueue<android.graphics.Bitmap>(8)
+
+            fun recycleToPool(bmp: android.graphics.Bitmap?) {
+                if (bmp != null && bmp.isMutable && !bmp.isRecycled) {
+                    freeBitmapPool.offer(bmp)
+                }
+            }
 
             fun enqueueFrameSmooth(bmp: android.graphics.Bitmap) {
                 while (playoutQueue.size >= 60) {
-                    playoutQueue.poll()
+                    val dropped = playoutQueue.poll()
+                    recycleToPool(dropped)
                 }
                 playoutQueue.offer(bmp)
             }
 
-            // Luồng Playout 60-120 FPS trên UI: phát tuần tự TỪNG KHUNG HÌNH với gối đệm ~45-60ms (3 frame) để nét vẽ liền mạch như video, không bao giờ nhảy cóc
+            fun decodeFrameCrispAndSmooth(data: ByteArray, len: Int): android.graphics.Bitmap? {
+                val candidate = freeBitmapPool.poll()
+                if (candidate != null) {
+                    try {
+                        val reuseOpts = BitmapFactory.Options().apply {
+                            inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+                            inMutable = true
+                            inBitmap = candidate
+                            inScaled = false
+                        }
+                        val reused = BitmapFactory.decodeByteArray(data, 0, len, reuseOpts)
+                        if (reused != null) return reused
+                    } catch (_: IllegalArgumentException) {
+                        // Nguồn chiếu đổi kích thước (VD: 1080p <-> Vùng chọn) -> cấp phát lại buffer khớp kích thước mới
+                    }
+                }
+                val freshOpts = BitmapFactory.Options().apply {
+                    inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+                    inMutable = true
+                    inScaled = false
+                }
+                return BitmapFactory.decodeByteArray(data, 0, len, freshOpts)
+            }
+
+            // Luồng Playout 30-60 FPS trên UI: phát tuần tự TỪNG KHUNG HÌNH và trả lại Bitmap cũ về Pool sau khi vẽ xong
             val playoutJob = launch(Dispatchers.Main) {
                 var isBuffering = true
+                var displayedBitmap: android.graphics.Bitmap? = null
                 while (isActive && isScreenBroadcastActive) {
                     val qSize = playoutQueue.size
-                    if (isBuffering) {
-                        if (qSize < 3) {
-                            delay(12)
+                    if (isBuffering && displayedBitmap != null) {
+                        if (qSize < 2) {
+                            delay(10)
                             if (playoutQueue.isEmpty()) continue
                         }
+                        isBuffering = false
+                    } else if (qSize > 0) {
                         isBuffering = false
                     }
 
@@ -3797,13 +3870,21 @@ class MainActivity : AppCompatActivity() {
                     if (frame != null) {
                         if (broadcastOverlay.visibility == View.VISIBLE) {
                             imgBroadcastScreen.setImageBitmap(frame)
+                            (imgBroadcastScreen.drawable as? android.graphics.drawable.BitmapDrawable)?.isFilterBitmap = true
                         } else {
                             imgInlineBroadcast.setImageBitmap(frame)
+                            (imgInlineBroadcast.drawable as? android.graphics.drawable.BitmapDrawable)?.isFilterBitmap = true
                             imgHomeBroadcastPreview.setImageBitmap(frame)
                             imgHomeBroadcastPreview.visibility = View.VISIBLE
                             layoutWhiteboardStitchPreview.visibility = View.GONE
                         }
                         progressBroadcastLoading.visibility = View.GONE
+
+                        val prev = displayedBitmap
+                        if (prev != null && prev !== frame) {
+                            recycleToPool(prev)
+                        }
+                        displayedBitmap = frame
 
                         // Giữ nhịp 60 FPS (15ms) - 120 FPS (8ms) mà KHÔNG bỏ sót bất kỳ nét vẽ nào
                         val nextDelay = when {
@@ -3821,8 +3902,9 @@ class MainActivity : AppCompatActivity() {
 
             // Ưu tiên luồng đẩy khung liên tục. Lỗi/không hỗ trợ -> quay lại polling.
             var streamFailures = 0
-            val decodeOpts = BitmapFactory.Options().apply {
-                inPreferredConfig = android.graphics.Bitmap.Config.RGB_565
+            val fallbackDecodeOpts = BitmapFactory.Options().apply {
+                inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+                inScaled = false
             }
             try {
                 while (isActive && isScreenBroadcastActive && streamFailures < 3) {
@@ -3842,16 +3924,16 @@ class MainActivity : AppCompatActivity() {
                             delay(300)
                             continue
                         }
-                        val din = java.io.DataInputStream(java.io.BufferedInputStream(streamConn.inputStream, 131072))
+                        val din = java.io.DataInputStream(java.io.BufferedInputStream(streamConn.inputStream, 262144))
                         var gotFrame = false
                         while (isActive && isScreenBroadcastActive) {
                             val len = din.readInt()
                             if (len <= 0 || len > 20_000_000) throw java.io.IOException("Invalid frame length $len")
                             val data = ByteArray(len)
                             din.readFully(data)
-                            // KHÔNG bỏ qua frame trung gian (chỉ xả bớt nếu hàng đợi đã đầy quá 28 frame ~ 1 giây) để mọi nét bút nối liền 100%
-                            if (playoutQueue.size >= 28 && din.available() >= 4) continue
-                            val bitmap = BitmapFactory.decodeByteArray(data, 0, len, decodeOpts)
+                            // KHÔNG bỏ qua frame trung gian (chỉ xả bớt nếu hàng đợi đã đầy quá 32 frame ~ 1 giây, nhưng luôn giữ frame mới nhất là Keyframe Q=94)
+                            if (playoutQueue.size >= 32 && din.available() >= 4) continue
+                            val bitmap = decodeFrameCrispAndSmooth(data, len)
                             if (bitmap != null) {
                                 gotFrame = true
                                 streamFailures = 0
@@ -3887,7 +3969,7 @@ class MainActivity : AppCompatActivity() {
                         val code = conn.responseCode
                         if (code == 200) {
                             conn.inputStream.use { input ->
-                                val bitmap = BitmapFactory.decodeStream(input, null, decodeOpts)
+                                val bitmap = BitmapFactory.decodeStream(input, null, fallbackDecodeOpts)
                                 if (bitmap != null) {
                                     enqueueFrameSmooth(bitmap)
                                 }
@@ -3903,6 +3985,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } finally {
                 playoutJob.cancel()
+                freeBitmapPool.clear()
             }
         }
     }

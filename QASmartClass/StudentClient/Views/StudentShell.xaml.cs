@@ -9074,7 +9074,8 @@ namespace QASmartClass.StudentClient.Views
 		private void OnUdpFrameReceived(byte[] imgBytes)
 		{
 			var now = DateTime.UtcNow;
-			if ((now - _lastFrameRenderTime).TotalMilliseconds < 60)
+			// [MEET/MYTHWARE UNLOCK] Gỡ chốt chặn < 60ms (16 FPS) cũ để nhận đủ 100% khung 30-60 FPS và khung chốt nét Ultra-Sharp Q=94!
+			if ((now - _lastFrameRenderTime).TotalMilliseconds < 7)
 			{
 				return;
 			}
@@ -9671,9 +9672,14 @@ namespace QASmartClass.StudentClient.Views
 
 					HorizontalAlignment = HorizontalAlignment.Center,
 
-					VerticalAlignment = VerticalAlignment.Center
+					VerticalAlignment = VerticalAlignment.Center,
+
+					UseLayoutRounding = true,
+
+					SnapsToDevicePixels = true
 
 				};
+				RenderOptions.SetBitmapScalingMode(_broadcastImage, BitmapScalingMode.HighQuality);
 
 				_broadcastInkCanvas = new InkCanvas
 
@@ -17723,7 +17729,7 @@ namespace QASmartClass.StudentClient.Views
 					CaptureAndSendScreenshot();
 					try
 					{
-						await Task.Delay(80, cts.Token);
+						await Task.Delay(42, cts.Token); // ~24 FPS mượt chuẩn Mythware khi Học sinh chia sẻ màn hình cho cả lớp
 					}
 					catch
 					{
@@ -17882,9 +17888,9 @@ namespace QASmartClass.StudentClient.Views
 
 					NativeMethods.BitBlt(num3, 0, 0, num, num2, dC, 0, 0, 13369376);
 
-					int pixelWidth = 800;
+					int pixelWidth = _isPresentingStudentDemo ? Math.Min(num, 1600) : 800;
 
-					int pixelHeight = (int)((double)num2 * (800.0 / (double)num));
+					int pixelHeight = Math.Max(64, (int)Math.Round((double)num2 * ((double)pixelWidth / (double)num)));
 
 					BitmapSource source = Imaging.CreateBitmapSourceFromHBitmap(num4, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(pixelWidth, pixelHeight));
 
@@ -17900,7 +17906,7 @@ namespace QASmartClass.StudentClient.Views
 
 					{
 
-						QualityLevel = 60
+						QualityLevel = _isPresentingStudentDemo ? 84 : 60
 
 					};
 

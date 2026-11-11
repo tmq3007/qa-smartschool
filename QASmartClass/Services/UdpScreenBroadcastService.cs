@@ -26,6 +26,7 @@ namespace QASmartClass.Services
         private CancellationTokenSource? _receiverCts;
         private int _frameIndex = 0;
         private IPEndPoint _multicastEP;
+        private readonly SemaphoreSlim _sendLock = new(1, 1);
 
         // Assembly state on receiver
         private readonly ConcurrentDictionary<int, FrameAssembly> _activeAssemblies = new();
@@ -90,14 +91,14 @@ namespace QASmartClass.Services
                     if (!string.IsNullOrEmpty(localIP) && localIP != "127.0.0.1")
                     {
                         _udpSender = new UdpClient(new IPEndPoint(IPAddress.Parse(localIP), 0));
-                        _udpSender.Client.SendBufferSize = 2 * 1024 * 1024;
+                        _udpSender.Client.SendBufferSize = 8 * 1024 * 1024;
                         _udpSender.JoinMulticastGroup(IPAddress.Parse(MulticastIP), MulticastTTL);
                         Log.Information("[UdpBroadcast] Sender bound to physical interface {LocalIP}. Target multicast: {IP}:{Port} (TTL: {TTL})", localIP, MulticastIP, MulticastPort, MulticastTTL);
                     }
                     else
                     {
                         _udpSender = new UdpClient();
-                        _udpSender.Client.SendBufferSize = 2 * 1024 * 1024;
+                        _udpSender.Client.SendBufferSize = 8 * 1024 * 1024;
                         _udpSender.JoinMulticastGroup(IPAddress.Parse(MulticastIP), MulticastTTL);
                         Log.Information("[UdpBroadcast] Sender initialized on default interface. Target: {IP}:{Port} (TTL: {TTL})", MulticastIP, MulticastPort, MulticastTTL);
                     }
@@ -109,7 +110,7 @@ namespace QASmartClass.Services
             }
         }
 
-        public async Task SendFrameAsync(byte[] imgBytes)
+        public async Task SendFrameAsync(byte[] imgBytes, bool isKeyframe = false)
         {
             if (_udpSender == null)
             {
@@ -118,12 +119,16 @@ namespace QASmartClass.Services
 
             if (_udpSender == null || imgBytes == null || imgBytes.Length == 0) return;
 
+            int waitTimeoutMs = isKeyframe ? 200 : 25;
+            if (!await _sendLock.WaitAsync(waitTimeoutMs)) return;
+
             try
             {
                 int currentFrame = Interlocked.Increment(ref _frameIndex);
                 int totalSlices = (int)Math.Ceiling((double)imgBytes.Length / MaxSliceSize);
-                Log.Debug("[UdpBroadcast] Gửi Frame #{FrameIndex}: Kích thước={Size} bytes, Số phân mảnh={SlicesCount}, Khóa nén={Key}", 
-                    currentFrame, imgBytes.Length, totalSlices, EncryptionKey);
+                long timestamp = DateTime.UtcNow.Ticks;
+                Log.Debug("[UdpBroadcast] Gửi Frame #{FrameIndex} (Keyframe={IsKey}): Kích thước={Size} bytes, Số phân mảnh={SlicesCount}",
+                    currentFrame, isKeyframe, imgBytes.Length, totalSlices);
 
                 for (int i = 0; i < totalSlices; i++)
                 {
@@ -135,18 +140,31 @@ namespace QASmartClass.Services
                     Buffer.BlockCopy(BitConverter.GetBytes(currentFrame), 0, packet, 0, 4);
                     Buffer.BlockCopy(BitConverter.GetBytes((short)i), 0, packet, 4, 2);
                     Buffer.BlockCopy(BitConverter.GetBytes((short)totalSlices), 0, packet, 6, 2);
-                    long timestamp = DateTime.UtcNow.Ticks;
                     Buffer.BlockCopy(BitConverter.GetBytes(timestamp), 0, packet, 8, 8);
                     Buffer.BlockCopy(imgBytes, offset, packet, 16, size);
                     CipherBytesInPlace(packet, 16, size, EncryptionKey);
 
                     await _udpSender.SendAsync(packet, packet.Length, _multicastEP);
                     AppPerformanceMonitor.Instance.RecordBytesTransmitted(packet.Length);
+
+                    // Micro-pacing mỗi 16 gói (~22 KB) khi truyền khung hình lớn (> 48 mảnh) để Switch & Router Wi-Fi không tràn hàng đợi rớt mảnh
+                    if (totalSlices > 48 && (i & 15) == 15 && i + 1 < totalSlices)
+                    {
+                        await Task.Yield();
+                        if (isKeyframe && (i & 63) == 63)
+                        {
+                            await Task.Delay(1);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Log.Warning("[UdpBroadcast] SendFrameAsync error: {Msg}", ex.Message);
+            }
+            finally
+            {
+                _sendLock.Release();
             }
         }
 
@@ -159,7 +177,7 @@ namespace QASmartClass.Services
                 // LoadConfigFromDb(); // Cấu hình động từ GV qua SESSION_CONFIG, tránh ghi đè từ DB local của HS
                 _udpReceiver = new UdpClient();
                 _udpReceiver.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                _udpReceiver.Client.ReceiveBufferSize = 4 * 1024 * 1024;
+                _udpReceiver.Client.ReceiveBufferSize = 8 * 1024 * 1024;
                 
                 // Bind to local wildcard port
                 _udpReceiver.Client.Bind(new IPEndPoint(IPAddress.Any, MulticastPort));

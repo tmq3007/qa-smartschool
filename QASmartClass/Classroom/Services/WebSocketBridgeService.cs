@@ -362,9 +362,9 @@ namespace QASmartClass.Classroom.Services
                     var now = DateTime.UtcNow;
                     double sinceLastSentMs = (now - lastSentUtc).TotalMilliseconds;
 
-                    // Lấy tuần tự TỪNG KHUNG HÌNH trong Ring Buffer (không bỏ sót bất kỳ frame trung gian nào để nét vẽ liền mạch 100%)
-                    bool hasNextSequential = state.TryGetNextSequentialFrame(ref lastVersion, out byte[] frame);
-                    bool needKeepAlive = !hasNextSequential && state.IsScreenBroadcastActive && sinceLastSentMs >= 2500;
+                    // Lấy tuần tự TỪNG KHUNG HÌNH trong Ring Buffer; nếu 1 máy Wi-Fi yếu tụt lại > 30 khung (~1s) thì tự bắt kịp êm tới Keyframe siêu nét mới nhất
+                    bool hasNextSequential = state.TryGetNextSequentialFrame(ref lastVersion, out byte[] frame, out _, maxAllowedLag: 30);
+                    bool needKeepAlive = !hasNextSequential && state.IsScreenBroadcastActive && sinceLastSentMs >= 1500;
                     if (needKeepAlive)
                     {
                         frame = state.ScreenCaptureBytes;

@@ -32,54 +32,71 @@ namespace QASmartClass.Services
         }
         private byte[] _screenCaptureBytes = Array.Empty<byte>();
         private long _frameVersion;
+        private bool _lastFrameIsKeyframe;
         private const int MaxRingFrames = 64; // ~1.0s sequential frame buffer at 60 FPS
-        private readonly System.Collections.Generic.Queue<(long Version, byte[] Bytes)> _frameRingBuffer = new(MaxRingFrames);
+        private readonly System.Collections.Generic.Queue<(long Version, byte[] Bytes, bool IsKeyframe)> _frameRingBuffer = new(MaxRingFrames);
 
         public long FrameVersion => System.Threading.Interlocked.Read(ref _frameVersion);
+        public bool LastFrameIsKeyframe { get { lock (_lock) return _lastFrameIsKeyframe; } }
+
         public byte[] ScreenCaptureBytes
         {
             get { lock (_lock) return _screenCaptureBytes; }
-            set
+            set => PushBroadcastFrame(value, isKeyframe: false);
+        }
+
+        /// <summary>
+        /// Đẩy khung hình mới vào bộ đệm vòng tuần tự, gắn cờ IsKeyframe = true cho khung chốt nét Ultra-Sharp (Q=94).
+        /// </summary>
+        public void PushBroadcastFrame(byte[] value, bool isKeyframe)
+        {
+            long ver = System.Threading.Interlocked.Increment(ref _frameVersion);
+            lock (_lock)
             {
-                long ver = System.Threading.Interlocked.Increment(ref _frameVersion);
-                lock (_lock)
+                _screenCaptureBytes = value ?? Array.Empty<byte>();
+                _lastFrameIsKeyframe = isKeyframe;
+                if (value != null && value.Length > 0)
                 {
-                    _screenCaptureBytes = value;
-                    if (value != null && value.Length > 0)
+                    while (_frameRingBuffer.Count >= MaxRingFrames)
                     {
-                        while (_frameRingBuffer.Count >= MaxRingFrames)
-                        {
-                            _frameRingBuffer.Dequeue();
-                        }
-                        _frameRingBuffer.Enqueue((ver, value));
+                        _frameRingBuffer.Dequeue();
                     }
+                    _frameRingBuffer.Enqueue((ver, value, isKeyframe));
                 }
             }
         }
 
         /// <summary>
-        /// Lấy tuần tự từng khung hình kế tiếp từ bộ đệm vòng (Ring Buffer) để phát mượt 30 FPS không bị nhảy cóc qua các nét vẽ.
+        /// Lấy tuần tự từng khung hình kế tiếp từ bộ đệm vòng (Ring Buffer) để phát mượt 30-60 FPS không bị nhảy cóc qua các nét vẽ.
+        /// Nếu client mạng Wi-Fi yếu bị tụt lại quá xa (> maxAllowedLag khung), tự động tua thông minh tới khung mới nhất / Keyframe siêu nét gần nhất.
         /// </summary>
         public bool TryGetNextSequentialFrame(ref long lastSentVersion, out byte[] frameBytes)
+        {
+            return TryGetNextSequentialFrame(ref lastSentVersion, out frameBytes, out _, maxAllowedLag: 64);
+        }
+
+        public bool TryGetNextSequentialFrame(ref long lastSentVersion, out byte[] frameBytes, out bool isKeyframe, int maxAllowedLag = 30)
         {
             lock (_lock)
             {
                 frameBytes = Array.Empty<byte>();
+                isKeyframe = false;
                 if (_frameRingBuffer.Count == 0)
                 {
                     if (_screenCaptureBytes.Length > 0 && _frameVersion > lastSentVersion)
                     {
                         lastSentVersion = _frameVersion;
                         frameBytes = _screenCaptureBytes;
+                        isKeyframe = _lastFrameIsKeyframe;
                         return true;
                     }
                     return false;
                 }
 
-                // Lần đầu kết nối: lấy khung cách hiện tại tối đa 2 frame để tạo gối đệm mượt ngay lập tức
+                // Lần đầu kết nối: ưu tiên lấy khung gần cuối (cách 1-2 frame) để vào hình tức thì và có gối đệm mượt
                 if (lastSentVersion <= 0)
                 {
-                    (long Version, byte[] Bytes) chosen = default;
+                    (long Version, byte[] Bytes, bool IsKeyframe) chosen = default;
                     int idx = 0;
                     int targetIdx = Math.Max(0, _frameRingBuffer.Count - 2);
                     foreach (var item in _frameRingBuffer)
@@ -95,17 +112,47 @@ namespace QASmartClass.Services
                     {
                         lastSentVersion = chosen.Version;
                         frameBytes = chosen.Bytes;
+                        isKeyframe = chosen.IsKeyframe;
                         return true;
                     }
                 }
 
-                // Tìm chính xác frame kế tiếp (lastSentVersion + 1) hoặc frame đầu tiên lớn hơn lastSentVersion trong Ring Buffer
+                // Adaptive Backpressure (kiểu Google Meet): Nếu 1 máy Wi-Fi yếu bị trễ quá xa (> maxAllowedLag khung ~ 1 giây),
+                // tua êm tới Keyframe siêu nét mới nhất (hoặc cách đỉnh 2 frame) để cắt đứt độ trễ tích lũy.
+                if (maxAllowedLag > 0 && (_frameVersion - lastSentVersion) > maxAllowedLag)
+                {
+                    (long Version, byte[] Bytes, bool IsKeyframe) bestCatchup = default;
+                    int idx = 0;
+                    int fallbackIdx = Math.Max(0, _frameRingBuffer.Count - 2);
+                    foreach (var item in _frameRingBuffer)
+                    {
+                        if (item.Version > lastSentVersion && item.IsKeyframe)
+                        {
+                            bestCatchup = item; // Ưu tiên khung chốt nét Ultra-Sharp mới nhất
+                        }
+                        else if (idx == fallbackIdx && bestCatchup.Bytes == null)
+                        {
+                            bestCatchup = item;
+                        }
+                        idx++;
+                    }
+                    if (bestCatchup.Bytes != null && bestCatchup.Bytes.Length > 0)
+                    {
+                        lastSentVersion = bestCatchup.Version;
+                        frameBytes = bestCatchup.Bytes;
+                        isKeyframe = bestCatchup.IsKeyframe;
+                        return true;
+                    }
+                }
+
+                // Phát tuần tự 100% từng khung hình cho các máy mạng bình thường/mạnh
                 foreach (var item in _frameRingBuffer)
                 {
                     if (item.Version > lastSentVersion)
                     {
                         lastSentVersion = item.Version;
                         frameBytes = item.Bytes;
+                        isKeyframe = item.IsKeyframe;
                         return true;
                     }
                 }
