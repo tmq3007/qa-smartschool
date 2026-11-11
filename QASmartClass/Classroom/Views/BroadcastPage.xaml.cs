@@ -10,6 +10,7 @@ using QASmartClass.Data;
 using Serilog;
 using QASmartClass.Classroom.Services;
 using QASmartClass.Classroom.Helpers;
+using QASmartTouch.Services.Camera;
 
 namespace QASmartClass.Classroom.Views
 {
@@ -102,6 +103,16 @@ namespace QASmartClass.Classroom.Views
                 QASmartClass.Services.VncBroadcastService.Instance.TimerTick += OnVncBroadcastTimerTick;
                 ScreenShareController.Instance.StopRequested -= OnStopShareRequested;
                 ScreenShareController.Instance.StopRequested += OnStopShareRequested;
+                LiveBroadcastMediaService.Instance.StateChanged -= OnLiveBroadcastMediaStateChanged;
+                LiveBroadcastMediaService.Instance.StateChanged += OnLiveBroadcastMediaStateChanged;
+                if (ClassroomAppContext.Network != null)
+                {
+                    ClassroomAppContext.Network.StudentConnected -= OnBroadcastNetworkStudentConnected;
+                    ClassroomAppContext.Network.StudentConnected += OnBroadcastNetworkStudentConnected;
+                    ClassroomAppContext.Network.StudentDisconnected -= OnBroadcastNetworkStudentDisconnected;
+                    ClassroomAppContext.Network.StudentDisconnected += OnBroadcastNetworkStudentDisconnected;
+                }
+                SyncMeetPageMediaUi();
 
                 // Sync VNC UI state
                 SyncVncUiState(QASmartClass.Services.VncBroadcastService.Instance.IsVncBroadcasting);
@@ -109,6 +120,12 @@ namespace QASmartClass.Classroom.Views
             Unloaded += (_, _) =>
             {
                 _cacheRefreshTimer.Stop();
+                LiveBroadcastMediaService.Instance.StateChanged -= OnLiveBroadcastMediaStateChanged;
+                if (ClassroomAppContext.Network != null)
+                {
+                    ClassroomAppContext.Network.StudentConnected -= OnBroadcastNetworkStudentConnected;
+                    ClassroomAppContext.Network.StudentDisconnected -= OnBroadcastNetworkStudentDisconnected;
+                }
 
                 // Nếu GV đang phát màn hình hoặc chiếu trang QA SmartClass và chỉ chuyển tab trong ClassroomShell,
                 // giữ nguyên luồng phát chạy ngầm cho tới khi GV bấm Dừng phát hoặc kết thúc tiết.
@@ -450,6 +467,8 @@ namespace QASmartClass.Classroom.Views
 
                 using (var db = new QASmartClass.Data.AppDbContext())
                 {
+                    System.Collections.Generic.List<QASmartClass.Data.Student>? baseList = null;
+
                     if (!string.IsNullOrEmpty(activeClass))
                     {
                         var filtered = db.Students?
@@ -457,11 +476,11 @@ namespace QASmartClass.Classroom.Views
                             .ToList();
                         if (filtered != null && filtered.Any())
                         {
-                            return VietnameseNameHelper.SortByVietnameseName(filtered, s => s.FullName);
+                            baseList = filtered;
                         }
                     }
 
-                    if (ClassroomAppContext.ClassRoster.ActiveRoster != null)
+                    if (baseList == null && ClassroomAppContext.ClassRoster.ActiveRoster != null)
                     {
                         var activeRosterId = ClassroomAppContext.ClassRoster.ActiveRoster.Id;
                         var links = db.ClassRosterStudents
@@ -482,18 +501,73 @@ namespace QASmartClass.Classroom.Views
 
                         if (rosterStudents.Any())
                         {
-                            return VietnameseNameHelper.SortByVietnameseName(rosterStudents, s => s.FullName);
+                            baseList = rosterStudents;
                         }
                     }
 
-                    var all = db.Students?.ToList() ?? new System.Collections.Generic.List<QASmartClass.Data.Student>();
-                    return VietnameseNameHelper.SortByVietnameseName(all, s => s.FullName);
+                    baseList ??= db.Students?.ToList() ?? new System.Collections.Generic.List<QASmartClass.Data.Student>();
+                    return MergeLiveNetworkStudents(baseList);
                 }
             }
             catch
             {
-                return new System.Collections.Generic.List<QASmartClass.Data.Student>();
+                return MergeLiveNetworkStudents(new System.Collections.Generic.List<QASmartClass.Data.Student>());
             }
+        }
+
+        private System.Collections.Generic.List<QASmartClass.Data.Student> MergeLiveNetworkStudents(
+            System.Collections.Generic.List<QASmartClass.Data.Student> dbList)
+        {
+            var merged = new System.Collections.Generic.List<QASmartClass.Data.Student>(dbList);
+            var onlineClients = ClassroomAppContext.Network?.GetConnectedStudents();
+            if (onlineClients != null)
+            {
+                foreach (var c in onlineClients)
+                {
+                    var existing = merged.FirstOrDefault(s =>
+                        !string.IsNullOrWhiteSpace(s.StudentCode) &&
+                        s.StudentCode.Equals(c.Code, StringComparison.OrdinalIgnoreCase));
+                    if (existing != null)
+                    {
+                        existing.IsOnline = true;
+                        existing.IPAddress = c.IPAddress;
+                        existing.PCName = c.PCName;
+                    }
+                    else
+                    {
+                        merged.Add(new QASmartClass.Data.Student
+                        {
+                            StudentCode = c.Code,
+                            FullName = string.IsNullOrWhiteSpace(c.Name) ? c.Code : c.Name,
+                            PCName = c.PCName,
+                            IPAddress = c.IPAddress,
+                            ClassName = ClassroomAppContext.Network?.CurrentClassName ?? "",
+                            IsOnline = true
+                        });
+                    }
+                }
+            }
+            return VietnameseNameHelper.SortByVietnameseName(merged, s => s.FullName);
+        }
+
+        private void OnBroadcastNetworkStudentConnected(object? sender, Services.StudentConnectedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                LoadRecipientCount();
+                if (rbIndividual?.IsChecked == true) LoadStudentList();
+                else UpdateRecipientCount();
+            }));
+        }
+
+        private void OnBroadcastNetworkStudentDisconnected(object? sender, string code)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                LoadRecipientCount();
+                if (rbIndividual?.IsChecked == true) LoadStudentList();
+                else UpdateRecipientCount();
+            }));
         }
 
         private void CacheRefreshTimer_Tick(object? sender, EventArgs e)
@@ -616,6 +690,8 @@ namespace QASmartClass.Classroom.Views
                 _isBroadcasting = false;
                 _isPaused = false;
                 _seconds = 0;
+                _lastCompositedCamSeq = -1;
+                _ = LiveBroadcastMediaService.Instance.StopSessionAsync();
                 
                 // Dừng bộ giám sát tài nguyên (V2.2.4)
                 QASmartClass.Services.AppPerformanceMonitor.Instance.Stop();
@@ -880,8 +956,12 @@ namespace QASmartClass.Classroom.Views
             ApplyScreenCaptureExclusion(shouldExclude);
             _isFirstCapture = true;
             _lastFrameSampleHash = 0;
+            _lastCompositedCamSeq = -1;
             _settlementKeyframeSent = false;
             _lastMotionDetectedUtc = DateTime.UtcNow;
+
+            // Khởi động luồng Âm thanh (Hệ thống + Micro) & Camera PiP chuẩn Google Meet
+            _ = LiveBroadcastMediaService.Instance.StartSessionAsync();
 
             // CR-06 FIX: Use fast JPEG encoding for real-time low-latency screen broadcast
             _cachedCompressionFormat = "JPEG";
@@ -1035,6 +1115,8 @@ namespace QASmartClass.Classroom.Views
         /// </summary>
         private int _captureIndex = -1;
         private uint _lastFrameSampleHash = 0;
+        private long _lastCompositedCamSeq = -1;
+        private bool _suppressMeetPageMediaEvents = false;
         private byte[]? _lastEncodedFrameBytes = null;
         private byte[]? _lastSettlementBytes = null;
         private DateTime _lastEncodedFrameUtc = DateTime.MinValue;
@@ -1591,6 +1673,17 @@ namespace QASmartClass.Classroom.Views
                             }
                         }
 
+                        // Ghép ô Camera Giáo viên (Google Meet 16:9 / SmartTouch Circle) lên luồng hình ảnh phát sóng nếu Camera đang bật
+                        bool camActive = LiveBroadcastMediaService.Instance.IsCameraEnabled;
+                        long currentCamSeq = LiveBroadcastMediaService.Instance.LatestCameraFrameSeq;
+                        bool hasCameraChange = (camActive && currentCamSeq != _lastCompositedCamSeq)
+                                            || (!camActive && _lastCompositedCamSeq != -1);
+                        if (camActive && bmpSource != null)
+                        {
+                            bmpSource = LiveBroadcastMediaService.Instance.CompositeCameraTileIfActive(bmpSource);
+                        }
+                        _lastCompositedCamSeq = camActive ? currentCamSeq : -1;
+
                         // Double-buffer: alternating file names to avoid lock
                         int idx = System.Threading.Interlocked.Increment(ref _captureIndex) % 2;
                         string filePath = System.IO.Path.Combine(_captureDir, $"broadcast_{idx}.jpg");
@@ -1601,7 +1694,7 @@ namespace QASmartClass.Classroom.Views
                         // Số 3 (Idle Zero-Skip): Khi màn hình tiếp tục đứng yên -> nghỉ gửi khung trùng lặp (0% CPU thừa, tiết kiệm >90% băng thông), chỉ nhịp Keep-Alive mỗi 1.2s.
                         var nowUtc = DateTime.UtcNow;
                         uint currentSampleHash = ComputeFastSampleHash(bmpSource);
-                        bool hasVisualChange = _isFirstCapture || currentSampleHash == 0 || currentSampleHash != _lastFrameSampleHash;
+                        bool hasVisualChange = _isFirstCapture || hasCameraChange || currentSampleHash == 0 || currentSampleHash != _lastFrameSampleHash;
                         bool isUltraSharpKeyframe = false;
                         byte[]? imgBytes = null;
 
@@ -1718,7 +1811,7 @@ namespace QASmartClass.Classroom.Views
                         int ttl = QASmartClass.Services.UdpScreenBroadcastService.MulticastTTL;
                         string key = QASmartClass.Services.UdpScreenBroadcastService.EncryptionKey;
 
-                        string cmd = $"CMD|{cmdType}|{filePath}|PROTOCOL={protocol}|PORT={multicastPort}|KEY={key}|TTL={ttl}|{(isForceWatch ? "FORCE_WATCH|" : "")}{webPort}|{token}";
+                        string cmd = $"CMD|{cmdType}|{filePath}|PROTOCOL={protocol}|PORT={multicastPort}|KEY={key}|TTL={ttl}|AUDIO={(LiveBroadcastMediaService.Instance.IsAnyAudioActive ? "1" : "0")}|{(isForceWatch ? "FORCE_WATCH|" : "")}{webPort}|{token}";
                         if (!string.IsNullOrEmpty(lessonTitle))
                         {
                             cmd += $"|TITLE={System.Uri.EscapeDataString(lessonTitle)}";
@@ -4058,6 +4151,111 @@ namespace QASmartClass.Classroom.Views
                 screenLiveState.Visibility = Visibility.Collapsed;
                 txtStatus.Text = "Đã dừng phát VNC";
                 txtStatus.Foreground = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  GOOGLE MEET AUDIO & CAMERA CONTROLS ON BROADCAST PAGE
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void OnLiveBroadcastMediaStateChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(SyncMeetPageMediaUi));
+        }
+
+        private void SyncMeetPageMediaUi()
+        {
+            if (btnMeetPageSysAudio == null || btnMeetPageMic == null || btnMeetPageCam == null) return;
+            _suppressMeetPageMediaEvents = true;
+            try
+            {
+                var svc = LiveBroadcastMediaService.Instance;
+
+                bool sysOn = svc.HasSystemAudioHardware && svc.IsSystemAudioEnabled;
+                btnMeetPageSysAudio.IsEnabled = svc.HasSystemAudioHardware;
+                btnMeetPageSysAudio.Content = !svc.HasSystemAudioHardware
+                    ? "🔇 Không có loa"
+                    : (sysOn ? "🔊 Tiếng máy: BẬT" : "🔈 Tiếng máy: TẮT");
+                btnMeetPageSysAudio.Background = new SolidColorBrush(!svc.HasSystemAudioHardware
+                    ? Color.FromRgb(0x30, 0x31, 0x34)
+                    : (sysOn ? Color.FromRgb(0x1A, 0x73, 0xE8) : Color.FromRgb(0xEA, 0x43, 0x35)));
+
+                bool micOn = svc.HasMicrophoneHardware && svc.IsMicrophoneEnabled;
+                btnMeetPageMic.IsEnabled = svc.HasMicrophoneHardware;
+                btnMeetPageMic.Content = !svc.HasMicrophoneHardware
+                    ? "🚫 Không Mic"
+                    : (micOn ? "🎙️ Micro: BẬT" : "🔇 Micro: TẮT");
+                btnMeetPageMic.Background = new SolidColorBrush(!svc.HasMicrophoneHardware
+                    ? Color.FromRgb(0x30, 0x31, 0x34)
+                    : (micOn ? Color.FromRgb(0x3C, 0x40, 0x43) : Color.FromRgb(0xEA, 0x43, 0x35)));
+
+                cmbMeetPageMic.ItemsSource = svc.AvailableMicrophones;
+                cmbMeetPageMic.IsEnabled = svc.HasMicrophoneHardware;
+                if (svc.HasMicrophoneHardware)
+                {
+                    cmbMeetPageMic.SelectedItem = svc.AvailableMicrophones.FirstOrDefault(m => m.DeviceId == svc.SelectedMicrophoneId)
+                                               ?? svc.AvailableMicrophones.FirstOrDefault();
+                }
+
+                bool camOn = svc.HasCameraHardware && svc.IsCameraEnabled;
+                btnMeetPageCam.IsEnabled = svc.HasCameraHardware || svc.IsScanningCameras;
+                btnMeetPageCam.Content = svc.IsScanningCameras && !svc.HasCameraHardware
+                    ? "📷 Đang dò..."
+                    : (!svc.HasCameraHardware ? "🚫 Không Cam" : (camOn ? "📷 Camera: BẬT" : "🚫 Camera: TẮT"));
+                btnMeetPageCam.Background = new SolidColorBrush(!svc.HasCameraHardware && !svc.IsScanningCameras
+                    ? Color.FromRgb(0x30, 0x31, 0x34)
+                    : (camOn ? Color.FromRgb(0x3C, 0x40, 0x43) : Color.FromRgb(0xEA, 0x43, 0x35)));
+
+                cmbMeetPageCam.ItemsSource = svc.AvailableCameras;
+                cmbMeetPageCam.IsEnabled = svc.HasCameraHardware;
+                if (svc.HasCameraHardware)
+                {
+                    cmbMeetPageCam.SelectedItem = svc.AvailableCameras.FirstOrDefault(c => c.DeviceId == svc.SelectedCameraId)
+                                               ?? svc.AvailableCameras.FirstOrDefault();
+                }
+            }
+            finally
+            {
+                _suppressMeetPageMediaEvents = false;
+            }
+        }
+
+        private void MeetPageSysAudio_Click(object sender, RoutedEventArgs e)
+        {
+            var svc = LiveBroadcastMediaService.Instance;
+            svc.SetSystemAudioEnabled(!svc.IsSystemAudioEnabled);
+            SyncMeetPageMediaUi();
+        }
+
+        private void MeetPageMic_Click(object sender, RoutedEventArgs e)
+        {
+            var svc = LiveBroadcastMediaService.Instance;
+            svc.SetMicrophoneEnabled(!svc.IsMicrophoneEnabled);
+            SyncMeetPageMediaUi();
+        }
+
+        private async void MeetPageCam_Click(object sender, RoutedEventArgs e)
+        {
+            var svc = LiveBroadcastMediaService.Instance;
+            await svc.SetCameraEnabledAsync(!svc.IsCameraEnabled);
+            SyncMeetPageMediaUi();
+        }
+
+        private void CmbMeetPageMic_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressMeetPageMediaEvents) return;
+            if (cmbMeetPageMic.SelectedItem is AudioEndpointOption opt)
+            {
+                LiveBroadcastMediaService.Instance.SelectMicrophone(opt.DeviceId);
+            }
+        }
+
+        private async void CmbMeetPageCam_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressMeetPageMediaEvents) return;
+            if (cmbMeetPageCam.SelectedItem is CameraEndpointOption cam)
+            {
+                await LiveBroadcastMediaService.Instance.SelectCameraAsync(cam.DeviceId);
             }
         }
     }

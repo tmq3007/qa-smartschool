@@ -264,7 +264,11 @@ namespace QASmartClass.Classroom.Services
                                        version.Contains("Android", StringComparison.OrdinalIgnoreCase) ||
                                        studentCode.StartsWith("AND", StringComparison.OrdinalIgnoreCase);
 
-                if (string.IsNullOrWhiteSpace(pcName) || pcName == "?")
+                if (string.IsNullOrWhiteSpace(pcName) ||
+                    pcName == "?" ||
+                    pcName.Equals("Android_Tablet", StringComparison.OrdinalIgnoreCase) ||
+                    pcName.Equals("Android", StringComparison.OrdinalIgnoreCase) ||
+                    pcName.Equals("PC", StringComparison.OrdinalIgnoreCase))
                 {
                     pcName = isAndroidDevice ? $"Android-{ipSuffix}" : $"PC-{ipSuffix}";
                 }
@@ -278,6 +282,47 @@ namespace QASmartClass.Classroom.Services
                 if (string.IsNullOrWhiteSpace(studentName) || studentName == "Unknown" || studentName == "Học sinh")
                 {
                     studentName = isAndroidDevice ? $"Android ({ipSuffix})" : pcName;
+                }
+
+                // Bảo vệ Đa học sinh: Nếu 2 thiết bị vật lý khác nhau cùng gửi trùng mã mặc định (vd: 10A1-002),
+                // tách mã định danh cho thiết bị thứ 2 để CẢ HAI học sinh đều hiện trong danh sách lớp và không đá nhau!
+                if (_clients.TryGetValue(studentCode, out var existingByCode) && existingByCode.TcpClient?.Connected == true)
+                {
+                    bool sameMac = !string.IsNullOrWhiteSpace(macAddress) &&
+                                   !string.IsNullOrWhiteSpace(existingByCode.MacAddress) &&
+                                   string.Equals(macAddress, existingByCode.MacAddress, StringComparison.OrdinalIgnoreCase);
+                    bool sameEndpointDevice = string.Equals(existingByCode.IPAddress, remoteIP, StringComparison.OrdinalIgnoreCase) &&
+                                              string.Equals(existingByCode.PCName, pcName, StringComparison.OrdinalIgnoreCase);
+
+                    if (!sameMac && !sameEndpointDevice)
+                    {
+                        string rawTag = pcName.StartsWith("Android-", StringComparison.OrdinalIgnoreCase)
+                            ? pcName.Substring("Android-".Length)
+                            : ipSuffix;
+                        string cleanTag = new string(rawTag.Where(ch => char.IsLetterOrDigit(ch)).ToArray());
+                        if (string.IsNullOrEmpty(cleanTag)) cleanTag = ipSuffix;
+                        if (cleanTag.Length > 6) cleanTag = cleanTag.Substring(cleanTag.Length - 6);
+
+                        string baseCode = studentCode.Length > 14 ? studentCode.Substring(0, 14) : studentCode;
+                        string candidateCode = $"{baseCode}_{cleanTag}";
+                        int suffixSeq = 2;
+                        while (_clients.TryGetValue(candidateCode, out var collision) &&
+                               collision.TcpClient?.Connected == true &&
+                               !(string.Equals(collision.IPAddress, remoteIP, StringComparison.OrdinalIgnoreCase) &&
+                                 string.Equals(collision.PCName, pcName, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            candidateCode = $"{baseCode}_{cleanTag}{suffixSeq++}";
+                        }
+
+                        Log.Information("[MultiStudent] Phát hiện thiết bị mới ({PC} @ {IP}) trùng mã '{OldCode}' với {ExistingPC} @ {ExistingIP} -> cấp mã riêng '{NewCode}'",
+                            pcName, remoteIP, studentCode, existingByCode.PCName, existingByCode.IPAddress, candidateCode);
+
+                        studentCode = candidateCode;
+                        if (string.Equals(studentName, existingByCode.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            studentName = $"{studentName} ({pcName})";
+                        }
+                    }
                 }
 
                 /* // [MYTHWARE_LITE] Tạm ẩn 3 lớp kiểm tra ClassCode bắt buộc + Tài khoản & Mật khẩu SQLite cũ
@@ -740,6 +785,21 @@ namespace QASmartClass.Classroom.Services
             else if (line.StartsWith("HAND|"))
             {
                 info.IsHandRaised = !line.Contains("DOWN", StringComparison.OrdinalIgnoreCase);
+                MessageReceived?.Invoke(this, new StudentMessageEventArgs
+                {
+                    StudentCode = info.Code, Message = line
+                });
+            }
+            else if (line.StartsWith("CMD|FOCUS_STATUS|") || line.StartsWith("FOCUS_STATUS|"))
+            {
+                var fParts = line.Split('|');
+                int offset = line.StartsWith("CMD|") ? 2 : 1;
+                if (fParts.Length >= offset + 2)
+                {
+                    info.IsFocusedInClass = fParts[offset] == "1" || fParts[offset].Equals("true", StringComparison.OrdinalIgnoreCase);
+                    info.ForegroundApp = fParts[offset + 1].Trim();
+                    info.CurrentTabPage = fParts.Length >= offset + 3 ? fParts[offset + 2].Trim() : string.Empty;
+                }
                 MessageReceived?.Invoke(this, new StudentMessageEventArgs
                 {
                     StudentCode = info.Code, Message = line
@@ -1449,6 +1509,9 @@ namespace QASmartClass.Classroom.Services
         public string LastScreenshotBase64 { get; set; } = string.Empty;
         public bool IsHandRaised       { get; set; }
         public bool IsLocked           { get; set; }
+        public bool IsFocusedInClass   { get; set; } = true;
+        public string ForegroundApp    { get; set; } = string.Empty;
+        public string CurrentTabPage   { get; set; } = string.Empty;
         public bool IsAndroid          => PCName.Contains("Android", StringComparison.OrdinalIgnoreCase) || Version.Contains("Android", StringComparison.OrdinalIgnoreCase) || Code.StartsWith("AND", StringComparison.OrdinalIgnoreCase);
 
         private static readonly Random _rng = new Random();

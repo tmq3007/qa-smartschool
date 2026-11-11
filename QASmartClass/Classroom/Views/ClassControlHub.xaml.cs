@@ -86,6 +86,16 @@ namespace QASmartClass.Classroom.Views
                 }
             }
 
+            if (ClassroomAppContext.Network != null)
+            {
+                ClassroomAppContext.Network.StudentConnected -= OnNetworkStudentChanged;
+                ClassroomAppContext.Network.StudentConnected += OnNetworkStudentChanged;
+                ClassroomAppContext.Network.StudentDisconnected -= OnNetworkStudentDisconnected;
+                ClassroomAppContext.Network.StudentDisconnected += OnNetworkStudentDisconnected;
+                ClassroomAppContext.Network.MessageReceived -= OnNetworkMessageForHub;
+                ClassroomAppContext.Network.MessageReceived += OnNetworkMessageForHub;
+            }
+
             UpdateLiveBroadcastUI();
             UpdateSessionStatusUI();
         }
@@ -96,6 +106,42 @@ namespace QASmartClass.Classroom.Views
             if (_sessionService.ConnectedStudents != null)
             {
                 _sessionService.ConnectedStudents.CollectionChanged -= ConnectedStudents_CollectionChanged;
+            }
+            if (ClassroomAppContext.Network != null)
+            {
+                ClassroomAppContext.Network.StudentConnected -= OnNetworkStudentChanged;
+                ClassroomAppContext.Network.StudentDisconnected -= OnNetworkStudentDisconnected;
+                ClassroomAppContext.Network.MessageReceived -= OnNetworkMessageForHub;
+            }
+        }
+
+        private void OnNetworkStudentChanged(object? sender, Services.StudentConnectedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                UpdateSessionStatusUI();
+                if (popupConnectedStudents?.IsOpen == true) PopulateConnectedStudentsPopup();
+            }));
+        }
+
+        private void OnNetworkStudentDisconnected(object? sender, string code)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                UpdateSessionStatusUI();
+                if (popupConnectedStudents?.IsOpen == true) PopulateConnectedStudentsPopup();
+            }));
+        }
+
+        private void OnNetworkMessageForHub(object? sender, Services.StudentMessageEventArgs e)
+        {
+            if (e?.Message != null && (e.Message.StartsWith("CMD|FOCUS_STATUS|") || e.Message.StartsWith("FOCUS_STATUS|")))
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    UpdateSessionStatusUI();
+                    if (popupConnectedStudents?.IsOpen == true) PopulateConnectedStudentsPopup();
+                }));
             }
         }
 
@@ -157,10 +203,32 @@ namespace QASmartClass.Classroom.Views
 
         private void UpdateSessionStatusUI()
         {
-            int netCount = ClassroomAppContext.Network?.ConnectedCount ?? 0;
+            var clients = ClassroomAppContext.Network?.GetConnectedStudents();
+            int netCount = clients?.Count ?? (ClassroomAppContext.Network?.ConnectedCount ?? 0);
             int sessCount = _sessionService.ConnectedStudents?.Count ?? 0;
             int count = Math.Max(netCount, sessCount);
-            txtStudentCount.Text = $"👥 {count} Học sinh";
+            int offTaskCount = clients?.Count(c => !c.IsFocusedInClass) ?? 0;
+
+            if (offTaskCount > 0)
+            {
+                txtStudentCount.Text = $"👥 {count} HS (⚠️ {offTaskCount})";
+                if (pillStudentRoster != null)
+                {
+                    pillStudentRoster.Background = new SolidColorBrush(Color.FromRgb(255, 247, 237)); // #FFF7ED
+                    pillStudentRoster.BorderBrush = new SolidColorBrush(Color.FromRgb(253, 186, 116)); // #FDBA74
+                    txtStudentCount.Foreground = new SolidColorBrush(Color.FromRgb(194, 65, 12)); // #C2410C
+                }
+            }
+            else
+            {
+                txtStudentCount.Text = $"👥 {count} Học sinh";
+                if (pillStudentRoster != null)
+                {
+                    pillStudentRoster.Background = new SolidColorBrush(Color.FromRgb(239, 246, 255)); // #EFF6FF
+                    pillStudentRoster.BorderBrush = new SolidColorBrush(Color.FromRgb(191, 219, 254)); // #BFDBFE
+                    txtStudentCount.Foreground = new SolidColorBrush(Color.FromRgb(29, 78, 216)); // #1D4ED8
+                }
+            }
 
             if (_sessionService.IsSilenceActive)
             {
@@ -566,6 +634,113 @@ namespace QASmartClass.Classroom.Views
             {
                 EnsureMonitorPageLoaded()?.TriggerVeyonScreenshot();
             }), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void PillStudentRoster_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            PopulateConnectedStudentsPopup();
+            popupConnectedStudents.IsOpen = !popupConnectedStudents.IsOpen;
+        }
+
+        private void PopupGoToMonitor_Click(object sender, RoutedEventArgs e)
+        {
+            popupConnectedStudents.IsOpen = false;
+            SelectTab("Monitor");
+        }
+
+        private void PopulateConnectedStudentsPopup()
+        {
+            if (pnlPopupStudents == null || txtPopupStudentHeader == null) return;
+            pnlPopupStudents.Children.Clear();
+
+            var clients = ClassroomAppContext.Network?.GetConnectedStudents() ?? Array.Empty<Services.ClientInfo>();
+            txtPopupStudentHeader.Text = $"👥 Danh sách Học sinh ({clients.Count})";
+
+            if (clients.Count == 0)
+            {
+                pnlPopupStudents.Children.Add(new TextBlock
+                {
+                    Text = "Hiện chưa có học sinh nào kết nối vào lớp học.",
+                    FontSize = 12,
+                    Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+                    FontStyle = FontStyles.Italic,
+                    Margin = new Thickness(4, 10, 4, 10),
+                    TextWrapping = TextWrapping.Wrap
+                });
+                return;
+            }
+
+            foreach (var c in clients)
+            {
+                bool offTask = !c.IsFocusedInClass;
+                string icon = c.IsAndroid ? "🤖" : "🪟";
+                string statusText = offTask
+                    ? $"⚠️ Đang ở: {ConnectedStudent.FriendlyAppName(string.IsNullOrWhiteSpace(c.ForegroundApp) ? "unknown" : c.ForegroundApp)}"
+                    : (string.IsNullOrWhiteSpace(c.CurrentTabPage) ? "🟢 Đang trong lớp học" : $"🟢 Trong lớp • {c.CurrentTabPage}");
+
+                var card = new Border
+                {
+                    Background = offTask
+                        ? new SolidColorBrush(Color.FromRgb(254, 242, 242))
+                        : new SolidColorBrush(Color.FromRgb(248, 250, 252)),
+                    BorderBrush = offTask
+                        ? new SolidColorBrush(Color.FromRgb(252, 165, 165))
+                        : new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+                    BorderThickness = new Thickness(1),
+                    CornerRadius = new CornerRadius(6),
+                    Padding = new Thickness(8, 6, 8, 6),
+                    Margin = new Thickness(0, 0, 0, 5),
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    Tag = c.Code
+                };
+
+                var sp = new StackPanel();
+                var topDock = new DockPanel { LastChildFill = true };
+                var codeText = new TextBlock
+                {
+                    Text = $"{icon} {c.PCName} • {c.IPAddress}",
+                    FontSize = 10.5,
+                    Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+                DockPanel.SetDock(codeText, Dock.Right);
+                topDock.Children.Add(codeText);
+
+                topDock.Children.Add(new TextBlock
+                {
+                    Text = string.IsNullOrWhiteSpace(c.Name) ? c.Code : c.Name,
+                    FontSize = 12,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(15, 23, 42)),
+                    TextTrimming = TextTrimming.CharacterEllipsis
+                });
+
+                sp.Children.Add(topDock);
+                sp.Children.Add(new TextBlock
+                {
+                    Text = statusText,
+                    FontSize = 11,
+                    FontWeight = offTask ? FontWeights.SemiBold : FontWeights.Normal,
+                    Foreground = offTask
+                        ? new SolidColorBrush(Color.FromRgb(185, 28, 28))
+                        : new SolidColorBrush(Color.FromRgb(5, 150, 105)),
+                    Margin = new Thickness(0, 2, 0, 0)
+                });
+
+                card.Child = sp;
+                string studentCode = c.Code;
+                card.MouseLeftButtonDown += (_, _) =>
+                {
+                    popupConnectedStudents.IsOpen = false;
+                    SelectTab("Monitor");
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        EnsureMonitorPageLoaded()?.OpenStudentActionByCode(studentCode);
+                    }), System.Windows.Threading.DispatcherPriority.Loaded);
+                };
+
+                pnlPopupStudents.Children.Add(card);
+            }
         }
 
         private void VeyonPowerControl_Click(object sender, RoutedEventArgs e)

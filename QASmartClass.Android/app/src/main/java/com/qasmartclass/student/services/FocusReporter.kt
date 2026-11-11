@@ -19,37 +19,39 @@ class FocusReporter(private val context: Context, private val outputStreamProvid
     @Volatile
     var appInForeground: Boolean = true
 
+    private fun dispatchCurrentFocusStatus() {
+        val usageApp = getForegroundAppPackage()
+        val foregroundApp = if (appInForeground) context.packageName
+                            else if (usageApp != context.packageName) usageApp else "unknown"
+        val isWatching = appInForeground
+                      || foregroundApp == "com.qasmartclass.vncviewer"
+                      || foregroundApp == "com.qasmartclass.student"
+
+        try {
+            val os = outputStreamProvider()
+            if (os != null) {
+                val page = currentPage.replace("|", " ").replace("\n", " ").trim()
+                val focusCmd = "CMD|FOCUS_STATUS|${if (isWatching) 1 else 0}|$foregroundApp|$page\n"
+                netExecutor.execute {
+                    try {
+                        synchronized(os) {
+                            os.write(focusCmd.toByteArray(Charsets.UTF_8))
+                            os.flush()
+                        }
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+    }
+
     private val reportRunnable = object : Runnable {
         override fun run() {
-            val usageApp = getForegroundAppPackage()
-            val foregroundApp = if (appInForeground) context.packageName
-                                else if (usageApp != context.packageName) usageApp else "unknown"
-            val isWatching = appInForeground
-                          || foregroundApp == "com.qasmartclass.vncviewer"
-                          || foregroundApp == "com.qasmartclass.student"
-
-            try {
-                val os = outputStreamProvider()
-                if (os != null) {
-                    val page = currentPage.replace("|", " ").replace("\n", " ").trim()
-                    val focusCmd = "CMD|FOCUS_STATUS|${if (isWatching) 1 else 0}|$foregroundApp|$page\n"
-                    netExecutor.execute {
-                        try {
-                            synchronized(os) {
-                                os.write(focusCmd.toByteArray(Charsets.UTF_8))
-                                os.flush()
-                            }
-                        } catch (ex: Exception) {
-                            ex.printStackTrace()
-                        }
-                    }
-
-                }
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-            }
-
-            handler.postDelayed(this, 3000) // Every 3s
+            dispatchCurrentFocusStatus()
+            handler.postDelayed(this, 3000) // Kiểm tra ngầm mỗi 3 giây
         }
     }
 
@@ -63,6 +65,10 @@ class FocusReporter(private val context: Context, private val outputStreamProvid
         } catch (e: Exception) {
             return context.packageName
         }
+    }
+
+    fun reportNow() {
+        dispatchCurrentFocusStatus()
     }
 
     fun startReporting() {

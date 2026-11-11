@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -34,6 +37,7 @@ namespace QASmartClass.Classroom.Services
 
         // ─── State ───
         private HttpListener? _httpListener;
+        private TcpListener? _tcpListener;
         private CancellationTokenSource? _cts;
         private readonly ConcurrentDictionary<string, WebSocketClient> _wsClients = new();
         private readonly ConcurrentDictionary<string, System.Collections.Generic.List<DateTime>> _clientRequestTimes = new();
@@ -104,7 +108,7 @@ namespace QASmartClass.Classroom.Services
         //  START / STOP
         // ═══════════════════════════════════════════════════════════
 
-        /// <summary>Bắt đầu HTTP + WebSocket server</summary>
+        /// <summary>Bắt đầu HTTP + WebSocket server (User-Mode TcpListener 0.0.0.0 — không cần Admin/URLACL, thông suốt LAN & QA SmartTouch Android)</summary>
         public async Task StartAsync(string className, string teacherName)
         {
             if (IsRunning) return;
@@ -113,9 +117,7 @@ namespace QASmartClass.Classroom.Services
             _teacherName = teacherName;
             _cts = new CancellationTokenSource();
 
-            // Detect LAN IPs for fallback binding
             var localIPs = NetworkDiscoveryService.GetActiveLocalIPv4Addresses();
-            var lanIP = localIPs.Count > 0 ? localIPs[0] : "";
 
             int port = 8080;
             bool success = false;
@@ -123,115 +125,54 @@ namespace QASmartClass.Classroom.Services
             {
                 try
                 {
-                    // Ensure firewall and urlacl if running as administrator
                     EnsureFirewallRulesAndUrlAcl(port);
 
+                    // Dùng trực tiếp User-Mode TcpListener(IPAddress.Any, port) thuộc tiến trình QASmartClass.exe:
+                    // 1) Không bị HTTP.SYS chặn ErrorCode=5 (Access Denied) khi chạy asInvoker (không Admin), không rớt về loopback 127.0.0.1.
+                    // 2) Được hưởng trực tiếp rule Windows Firewall của QASmartClass.exe (giống TCP 29877 & 29879), không bị kẹt ở System (PID 4).
+                    // 3) Lắng nghe đồng thời cả 127.0.0.1 (Android Emulator) và mọi card mạng LAN/Wi-Fi/OPS Bridge (QA SmartTouch Android).
+                    _tcpListener = new TcpListener(IPAddress.Any, port);
+                    _tcpListener.Start();
+
+                    WebPort = port;
+                    success = true;
+                    IsRunning = true;
+
+                    Log.Information("WebSocketBridge: Started User-Mode TcpListener on ALL interfaces 0.0.0.0:{Port} (LAN IPs: {IPs}) — WebRoot: {Path}",
+                        port, string.Join(", ", localIPs), _webRootPath);
+
+                    _ = AcceptTcpLoopAsync(_cts.Token);
+                }
+                catch (SocketException sockEx) when (
+                    sockEx.SocketErrorCode == SocketError.AddressAlreadyInUse ||
+                    sockEx.SocketErrorCode == SocketError.AccessDenied)
+                {
+                    Log.Warning("WebSocketBridge: TCP port {Port} unavailable ({Code}), trying next...", port, sockEx.SocketErrorCode);
+                    try { _tcpListener?.Stop(); } catch { }
+                    _tcpListener = null;
+                    port++;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("WebSocketBridge: Unexpected error starting TcpListener on port {Port}: {Err}", port, ex.Message);
+                    try { _tcpListener?.Stop(); } catch { }
+                    _tcpListener = null;
+                    break;
+                }
+
+                /* // [MYTHWARE_LITE] Giữ lại khối HttpListener cũ (HTTP.SYS yêu cầu quyền Admin/urlacl nên tự hạ về loopback 127.0.0.1 làm thiết bị Android LAN không xem được màn hình chia sẻ)
+                try
+                {
                     _httpListener = new HttpListener();
                     _httpListener.Prefixes.Add($"http://+:{port}/");
                     _httpListener.Start();
                     WebPort = port;
                     success = true;
                     IsRunning = true;
-
-                    Log.Information("WebSocketBridge: Started on ALL interfaces :{Port} — WebRoot: {Path}",
-                        port, _webRootPath);
-
                     _ = AcceptLoopAsync(_cts.Token);
                 }
-                catch (HttpListenerException ex) when (ex.ErrorCode == 5)
-                {
-                    // Access denied on + (wildcard) — requires admin or netsh urlacl
-                    Log.Warning("WebSocketBridge: Access denied on +:{Port}. Trying specific IPs...", port);
-
-                    try
-                    {
-                        _httpListener?.Close();
-                        _httpListener = new HttpListener();
-
-                        bool addedAnyPhysical = false;
-                        foreach (var ip in localIPs)
-                        {
-                            if (!string.IsNullOrEmpty(ip) && ip != "127.0.0.1")
-                            {
-                                try
-                                {
-                                    _httpListener.Prefixes.Add($"http://{ip}:{port}/");
-                                    Log.Information("WebSocketBridge: Adding prefix http://{IP}:{Port}/", ip, port);
-                                    addedAnyPhysical = true;
-                                }
-                                catch (Exception exPrefix)
-                                {
-                                    Log.Warning("WebSocketBridge: Failed to add prefix for {IP}:{Port}: {Err}", ip, port, exPrefix.Message);
-                                }
-                            }
-                        }
-
-                        _httpListener.Prefixes.Add($"http://localhost:{port}/");
-                        _httpListener.Prefixes.Add($"http://127.0.0.1:{port}/");
-
-                        try
-                        {
-                            _httpListener.Start();
-                            WebPort = port;
-                            success = true;
-                            IsRunning = true;
-
-                            var boundTo = addedAnyPhysical ? (string.Join(", ", localIPs) + " + localhost") : "localhost";
-                            Log.Information("WebSocketBridge: Started on {Bound}:{Port}", boundTo, port);
-                            _ = AcceptLoopAsync(_cts.Token);
-                        }
-                        catch (HttpListenerException exStart) when (exStart.ErrorCode == 5)
-                        {
-                            Log.Warning("WebSocketBridge: Access denied starting with specific IPs on port {Port}. Retrying with loopback only...", port);
-                            _httpListener?.Close();
-                            _httpListener = new HttpListener();
-                            _httpListener.Prefixes.Add($"http://localhost:{port}/");
-                            _httpListener.Prefixes.Add($"http://127.0.0.1:{port}/");
-                            _httpListener.Start();
-                            WebPort = port;
-                            success = true;
-                            IsRunning = true;
-                            Log.Information("WebSocketBridge: Started on loopback only :{Port}", port);
-                            _ = AcceptLoopAsync(_cts.Token);
-                        }
-                    }
-                    catch (HttpListenerException ex2)
-                    {
-                        if (ex2.ErrorCode == 32 || ex2.ErrorCode == 183 || ex2.Message.Contains("in use") || ex2.Message.Contains("already"))
-                        {
-                            Log.Warning("WebSocketBridge: Port {Port} is in use on specific IP, trying next...", port);
-                            port++;
-                            _httpListener?.Close();
-                            _httpListener = null;
-                        }
-                        else
-                        {
-                            Log.Error("WebSocketBridge: Cannot bind to {IPs}:{Port} — Error: {Err}",
-                                string.Join(", ", localIPs), port, ex2.Message);
-                            break;
-                        }
-                    }
-                }
-                catch (HttpListenerException ex)
-                {
-                    if (ex.ErrorCode == 32 || ex.ErrorCode == 183 || ex.Message.Contains("in use") || ex.Message.Contains("already"))
-                    {
-                        Log.Warning("WebSocketBridge: Port {Port} is in use on wildcard, trying next...", port);
-                        port++;
-                        _httpListener?.Close();
-                        _httpListener = null;
-                    }
-                    else
-                    {
-                        Log.Error("WebSocketBridge: Failed to start on wildcard port {Port}: {Err}", port, ex.Message);
-                        break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("WebSocketBridge: Unexpected error on port {Port}: {Err}", port, ex.Message);
-                    break;
-                }
+                catch (HttpListenerException) { }
+                */
             }
 
             if (!success)
@@ -260,6 +201,19 @@ namespace QASmartClass.Classroom.Services
             }
             _wsClients.Clear();
 
+            if (_tcpListener != null)
+            {
+                try
+                {
+                    _tcpListener.Stop();
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning("WebSocketBridge: Error stopping tcp listener: {Err}", ex.Message);
+                }
+                _tcpListener = null;
+            }
+
             if (_httpListener != null)
             {
                 try
@@ -287,6 +241,562 @@ namespace QASmartClass.Classroom.Services
             IsRunning = false;
 
             Log.Information("WebSocketBridge: Stopped");
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  USER-MODE TCP HTTP/1.1 + WEBSOCKET SERVER (LAN & ANDROID)
+        // ═══════════════════════════════════════════════════════════
+
+        private async Task AcceptTcpLoopAsync(CancellationToken ct)
+        {
+            try
+            {
+                while (!ct.IsCancellationRequested)
+                {
+                    var listener = _tcpListener;
+                    if (listener == null) break;
+
+                    TcpClient tcpClient;
+                    try
+                    {
+                        tcpClient = await listener.AcceptTcpClientAsync(ct);
+                    }
+                    catch (OperationCanceledException) { break; }
+                    catch (ObjectDisposedException) { break; }
+                    catch (SocketException) when (ct.IsCancellationRequested) { break; }
+                    catch (Exception ex)
+                    {
+                        if (!ct.IsCancellationRequested)
+                            Log.Warning("WebSocketBridge: TCP accept error: {Err}", ex.Message);
+                        break;
+                    }
+
+                    _ = Task.Run(() => HandleTcpHttpConnectionAsync(tcpClient, ct), ct);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!ct.IsCancellationRequested)
+                    Log.Error("WebSocketBridge: Unexpected error in AcceptTcpLoop: {Err}", ex.Message);
+            }
+        }
+
+        private async Task HandleTcpHttpConnectionAsync(TcpClient tcpClient, CancellationToken ct)
+        {
+            bool ownershipTransferred = false;
+            try
+            {
+                tcpClient.NoDelay = true;
+                string clientIP = (tcpClient.Client.RemoteEndPoint as IPEndPoint)?.Address.ToString() ?? "unknown";
+                var stream = tcpClient.GetStream();
+
+                // Đọc HTTP header tối đa 16KB với timeout 10s
+                var headerBuf = new byte[16384];
+                int totalRead = 0;
+                int headerEndIdx = -1;
+                using var readCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                readCts.CancelAfter(TimeSpan.FromSeconds(10));
+
+                while (totalRead < headerBuf.Length)
+                {
+                    int n = await stream.ReadAsync(headerBuf.AsMemory(totalRead, headerBuf.Length - totalRead), readCts.Token);
+                    if (n <= 0) return;
+                    totalRead += n;
+                    headerEndIdx = FindHeaderTerminator(headerBuf, totalRead);
+                    if (headerEndIdx >= 0) break;
+                }
+
+                if (headerEndIdx < 0)
+                {
+                    SendSimpleTcpHttpResponse(stream, 400, "Bad Request", "text/plain; charset=utf-8", Encoding.UTF8.GetBytes("Header too large"));
+                    return;
+                }
+
+                string rawHeaders = Encoding.ASCII.GetString(headerBuf, 0, headerEndIdx);
+                string[] lines = rawHeaders.Split(new[] { "\r\n" }, StringSplitOptions.None);
+                if (lines.Length == 0 || string.IsNullOrWhiteSpace(lines[0])) return;
+
+                string[] reqLineParts = lines[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (reqLineParts.Length < 2) return;
+
+                string method = reqLineParts[0].ToUpperInvariant();
+                string rawTarget = reqLineParts[1];
+
+                var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    int colon = lines[i].IndexOf(':');
+                    if (colon > 0)
+                    {
+                        string hName = lines[i].Substring(0, colon).Trim();
+                        string hVal = lines[i].Substring(colon + 1).Trim();
+                        headers[hName] = hVal;
+                    }
+                }
+
+                if (method == "OPTIONS")
+                {
+                    SendSimpleTcpHttpResponse(stream, 204, "No Content", "text/plain", Array.Empty<byte>());
+                    return;
+                }
+
+                // Tách path & query string
+                string urlPath = rawTarget;
+                var query = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                int qIdx = rawTarget.IndexOf('?');
+                if (qIdx >= 0)
+                {
+                    urlPath = rawTarget.Substring(0, qIdx);
+                    string qs = rawTarget.Substring(qIdx + 1);
+                    foreach (var pair in qs.Split('&', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        int eq = pair.IndexOf('=');
+                        if (eq > 0)
+                        {
+                            string k = Uri.UnescapeDataString(pair.Substring(0, eq).Replace('+', ' '));
+                            string v = Uri.UnescapeDataString(pair.Substring(eq + 1).Replace('+', ' '));
+                            query[k] = v;
+                        }
+                        else
+                        {
+                            query[Uri.UnescapeDataString(pair)] = "";
+                        }
+                    }
+                }
+                urlPath = Uri.UnescapeDataString(string.IsNullOrEmpty(urlPath) ? "/" : urlPath);
+
+                // 1. Kiểm tra nâng cấp WebSocket (RFC 6455)
+                if (headers.TryGetValue("Upgrade", out var upgradeVal) &&
+                    upgradeVal.Contains("websocket", StringComparison.OrdinalIgnoreCase) &&
+                    headers.TryGetValue("Sec-WebSocket-Key", out var secWsKey) &&
+                    !string.IsNullOrWhiteSpace(secWsKey))
+                {
+                    string acceptKey = Convert.ToBase64String(
+                        SHA1.HashData(Encoding.ASCII.GetBytes(secWsKey.Trim() + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")));
+
+                    byte[] wsHandshake = Encoding.ASCII.GetBytes(
+                        "HTTP/1.1 101 Switching Protocols\r\n" +
+                        "Upgrade: websocket\r\n" +
+                        "Connection: Upgrade\r\n" +
+                        $"Sec-WebSocket-Accept: {acceptKey}\r\n\r\n");
+
+                    await stream.WriteAsync(wsHandshake, ct);
+                    await stream.FlushAsync(ct);
+
+                    using var ws = WebSocket.CreateFromStream(
+                        stream,
+                        new WebSocketCreationOptions
+                        {
+                            IsServer = true,
+                            KeepAliveInterval = TimeSpan.FromSeconds(30)
+                        });
+
+                    await RunWebSocketSessionAsync(ws, clientIP, ct);
+                    return;
+                }
+
+                // 2. Endpoint kiểm tra nhanh trạng thái kết nối từ trình duyệt / thiết bị Android QA SmartTouch
+                if (urlPath.Equals("/api/status", StringComparison.OrdinalIgnoreCase))
+                {
+                    var bState = QASmartClass.Services.BroadcastStateService.Instance;
+                    byte[] statusJson = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+                    {
+                        ok = true,
+                        port = WebPort,
+                        className = _className,
+                        teacherName = _teacherName,
+                        isBroadcasting = bState.IsScreenBroadcastActive,
+                        isAudioActive = LiveBroadcastMediaService.Instance.IsAnyAudioActive,
+                        isCameraActive = LiveBroadcastMediaService.Instance.IsCameraEnabled,
+                        clientIP
+                    }));
+                    SendSimpleTcpHttpResponse(stream, 200, "OK", "application/json; charset=utf-8", statusJson);
+                    return;
+                }
+
+                // 3. Endpoint đẩy khung hình tốc độ cao /api/broadcast_stream (dành cho Android Emulator, QA SmartTouch IFP & LAN)
+                if (urlPath.Equals("/api/broadcast_stream", StringComparison.OrdinalIgnoreCase))
+                {
+                    string streamToken = query.TryGetValue("token", out var stTok) ? stTok : "";
+                    string streamServerToken = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
+                    if (!string.IsNullOrEmpty(streamServerToken) && streamToken != streamServerToken)
+                    {
+                        SendSimpleTcpHttpResponse(stream, 401, "Unauthorized", "text/plain; charset=utf-8",
+                            Encoding.UTF8.GetBytes("401 Unauthorized - Invalid Broadcast Token"));
+                        return;
+                    }
+
+                    ownershipTransferred = true;
+                    _ = Task.Factory.StartNew(
+                        () => StreamBroadcastFramesTcp(tcpClient, stream, clientIP, ct),
+                        TaskCreationOptions.LongRunning);
+                    return;
+                }
+
+                // 3b. Endpoint đẩy luồng âm thanh độ trễ thấp /api/audio_stream (24kHz 16-bit PCM Mono — Hệ thống + Micro Giáo viên)
+                if (urlPath.Equals("/api/audio_stream", StringComparison.OrdinalIgnoreCase))
+                {
+                    string audioToken = query.TryGetValue("token", out var auTok) ? auTok : "";
+                    string audioServerToken = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
+                    if (!string.IsNullOrEmpty(audioServerToken) && audioToken != audioServerToken)
+                    {
+                        SendSimpleTcpHttpResponse(stream, 401, "Unauthorized", "text/plain; charset=utf-8",
+                            Encoding.UTF8.GetBytes("401 Unauthorized - Invalid Broadcast Token"));
+                        return;
+                    }
+
+                    ownershipTransferred = true;
+                    _ = Task.Factory.StartNew(
+                        () => StreamBroadcastAudioTcp(tcpClient, stream, clientIP, ct),
+                        TaskCreationOptions.LongRunning);
+                    return;
+                }
+
+                // 4. Endpoint lấy ảnh đơn /api/broadcast_image (HTTP Pull fallback cho Android & Windows PC)
+                if (urlPath.Equals("/api/broadcast_image", StringComparison.OrdinalIgnoreCase))
+                {
+                    string clientToken = query.TryGetValue("token", out var imgTok) ? imgTok : "";
+                    string serverToken = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
+                    if (!string.IsNullOrEmpty(serverToken) && clientToken != serverToken)
+                    {
+                        SendSimpleTcpHttpResponse(stream, 401, "Unauthorized", "text/plain; charset=utf-8",
+                            Encoding.UTF8.GetBytes("401 Unauthorized - Invalid Broadcast Token"));
+                        Log.Warning("WebSocketBridge: Unauthorized request from IP {IP} for /api/broadcast_image (invalid token)", clientIP);
+                        return;
+                    }
+
+                    var nowTime = DateTime.Now;
+                    var limitTime = nowTime.AddMinutes(-1);
+                    var requestList = _clientRequestTimes.GetOrAdd(clientIP, _ => new List<DateTime>());
+                    lock (requestList)
+                    {
+                        requestList.RemoveAll(t => t < limitTime);
+                        if (requestList.Count >= 1800)
+                        {
+                            SendSimpleTcpHttpResponse(stream, 429, "Too Many Requests", "text/plain; charset=utf-8",
+                                Encoding.UTF8.GetBytes("429 Too Many Requests"));
+                            return;
+                        }
+                        requestList.Add(nowTime);
+                    }
+
+                    byte[] content = QASmartClass.Services.BroadcastStateService.Instance.ScreenCaptureBytes;
+                    if (content == null || content.Length == 0)
+                    {
+                        string path = QASmartClass.Services.BroadcastStateService.Instance.ScreenCapturePath;
+                        if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                        {
+                            content = File.ReadAllBytes(path);
+                        }
+                    }
+
+                    if (content != null && content.Length > 0)
+                    {
+                        SendSimpleTcpHttpResponse(stream, 200, "OK", "image/jpeg", content);
+                    }
+                    else
+                    {
+                        SendSimpleTcpHttpResponse(stream, 404, "Not Found", "text/plain; charset=utf-8",
+                            Encoding.UTF8.GetBytes("No active screen broadcast"));
+                    }
+                    return;
+                }
+
+                // 5. Endpoint phát file /api/file_broadcast
+                if (urlPath.Equals("/api/file_broadcast", StringComparison.OrdinalIgnoreCase))
+                {
+                    string clientToken = query.TryGetValue("token", out var fTok) ? fTok : "";
+                    string serverToken = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
+                    if (!string.IsNullOrEmpty(serverToken) && clientToken != serverToken)
+                    {
+                        SendSimpleTcpHttpResponse(stream, 401, "Unauthorized", "text/plain; charset=utf-8",
+                            Encoding.UTF8.GetBytes("401 Unauthorized - Invalid Broadcast Token"));
+                        return;
+                    }
+
+                    string path = QASmartClass.Services.BroadcastStateService.Instance.FileBroadcastPath;
+                    string reqName = query.TryGetValue("name", out var nm) ? nm : "";
+                    if (!string.IsNullOrEmpty(reqName))
+                    {
+                        var filesDict = QASmartClass.Services.BroadcastStateService.Instance.ActiveBroadcastFiles;
+                        lock (filesDict)
+                        {
+                            if (filesDict.TryGetValue(reqName, out var matchedPath))
+                            {
+                                path = matchedPath;
+                            }
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                    {
+                        byte[] content = File.ReadAllBytes(path);
+                        SendSimpleTcpHttpResponse(stream, 200, "OK", GetMimeType(path), content);
+                    }
+                    else
+                    {
+                        SendSimpleTcpHttpResponse(stream, 404, "Not Found", "text/plain; charset=utf-8",
+                            Encoding.UTF8.GetBytes("No active file broadcast"));
+                    }
+                    return;
+                }
+
+                // 6. Phục vụ file tĩnh StudentWebApp
+                if (urlPath == "/") urlPath = "/index.html";
+                string filePath = Path.Combine(_webRootPath, urlPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+
+                string fullRoot = Path.GetFullPath(_webRootPath);
+                if (!fullRoot.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                    fullRoot += Path.DirectorySeparatorChar;
+
+                string fullTarget = Path.GetFullPath(filePath);
+                if (!fullTarget.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    SendSimpleTcpHttpResponse(stream, 403, "Forbidden", "text/plain; charset=utf-8",
+                        Encoding.UTF8.GetBytes("403 Forbidden"));
+                    return;
+                }
+
+                if (File.Exists(fullTarget))
+                {
+                    byte[] content = File.ReadAllBytes(fullTarget);
+                    SendSimpleTcpHttpResponse(stream, 200, "OK", GetMimeType(fullTarget), content);
+                }
+                else
+                {
+                    SendSimpleTcpHttpResponse(stream, 404, "Not Found", "text/plain; charset=utf-8",
+                        Encoding.UTF8.GetBytes("404 Not Found"));
+                }
+            }
+            catch (Exception ex) when (ex is IOException || ex is SocketException || ex is OperationCanceledException || ex is ObjectDisposedException)
+            {
+                // Kết nối đóng tự nhiên từ phía client
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("WebSocketBridge: TCP HTTP connection error: {Err}", ex.Message);
+            }
+            finally
+            {
+                if (!ownershipTransferred)
+                {
+                    try { tcpClient.Close(); } catch { }
+                    try { tcpClient.Dispose(); } catch { }
+                }
+            }
+        }
+
+        private static int FindHeaderTerminator(byte[] buf, int length)
+        {
+            for (int i = 0; i <= length - 4; i++)
+            {
+                if (buf[i] == (byte)'\r' &&
+                    buf[i + 1] == (byte)'\n' &&
+                    buf[i + 2] == (byte)'\r' &&
+                    buf[i + 3] == (byte)'\n')
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        private static void SendSimpleTcpHttpResponse(NetworkStream stream, int statusCode, string statusText, string contentType, byte[] body)
+        {
+            string header =
+                $"HTTP/1.1 {statusCode} {statusText}\r\n" +
+                $"Content-Type: {contentType}\r\n" +
+                $"Content-Length: {body.Length}\r\n" +
+                "Access-Control-Allow-Origin: *\r\n" +
+                "Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n" +
+                "Access-Control-Allow-Headers: *\r\n" +
+                "Cache-Control: no-cache, no-store\r\n" +
+                "Connection: close\r\n\r\n";
+
+            byte[] headerBytes = Encoding.ASCII.GetBytes(header);
+            stream.Write(headerBytes, 0, headerBytes.Length);
+            if (body.Length > 0)
+            {
+                stream.Write(body, 0, body.Length);
+            }
+            stream.Flush();
+        }
+
+        private void StreamBroadcastFramesTcp(TcpClient tcpClient, NetworkStream stream, string clientIP, CancellationToken ct)
+        {
+            try
+            {
+                tcpClient.NoDelay = true;
+                tcpClient.SendBufferSize = 262144;
+                stream.WriteTimeout = 8000;
+
+                Log.Information("WebSocketBridge: Client {IP} connected to /api/broadcast_stream", clientIP);
+
+                byte[] respHeader = Encoding.ASCII.GetBytes(
+                    "HTTP/1.1 200 OK\r\n" +
+                    "Content-Type: application/octet-stream\r\n" +
+                    "Transfer-Encoding: chunked\r\n" +
+                    "Cache-Control: no-cache, no-store\r\n" +
+                    "Access-Control-Allow-Origin: *\r\n" +
+                    "Connection: close\r\n\r\n");
+
+                stream.Write(respHeader, 0, respHeader.Length);
+                stream.Flush();
+
+                long lastVersion = -1;
+                var prefixBuf = new byte[32];
+                byte[] crlf = new byte[] { (byte)'\r', (byte)'\n' };
+                byte[] endChunk = Encoding.ASCII.GetBytes("0\r\n\r\n");
+                var idleSince = DateTime.UtcNow;
+                var lastSentUtc = DateTime.MinValue;
+
+                while (!ct.IsCancellationRequested)
+                {
+                    var state = QASmartClass.Services.BroadcastStateService.Instance;
+                    var now = DateTime.UtcNow;
+                    double sinceLastSentMs = (now - lastSentUtc).TotalMilliseconds;
+
+                    bool hasNextSequential = state.TryGetNextSequentialFrame(ref lastVersion, out byte[] frame, out _, maxAllowedLag: 30);
+                    bool needKeepAlive = !hasNextSequential && state.IsScreenBroadcastActive && sinceLastSentMs >= 1500;
+                    if (needKeepAlive)
+                    {
+                        frame = state.ScreenCaptureBytes;
+                    }
+
+                    if ((hasNextSequential || needKeepAlive) && frame != null && frame.Length > 0)
+                    {
+                        idleSince = now;
+                        int payloadLen = 4 + frame.Length;
+                        string chunkHex = payloadLen.ToString("X");
+                        int pIdx = 0;
+                        for (int i = 0; i < chunkHex.Length; i++)
+                        {
+                            prefixBuf[pIdx++] = (byte)chunkHex[i];
+                        }
+                        prefixBuf[pIdx++] = (byte)'\r';
+                        prefixBuf[pIdx++] = (byte)'\n';
+                        prefixBuf[pIdx++] = (byte)(frame.Length >> 24);
+                        prefixBuf[pIdx++] = (byte)(frame.Length >> 16);
+                        prefixBuf[pIdx++] = (byte)(frame.Length >> 8);
+                        prefixBuf[pIdx++] = (byte)frame.Length;
+
+                        stream.Write(prefixBuf, 0, pIdx);
+                        stream.Write(frame, 0, frame.Length);
+                        stream.Write(crlf, 0, 2);
+                        stream.Flush();
+
+                        lastSentUtc = DateTime.UtcNow;
+                        Thread.Sleep(4);
+                        continue;
+                    }
+
+                    if (!state.IsScreenBroadcastActive && (now - idleSince).TotalSeconds > 5) break;
+                    if ((now - idleSince).TotalSeconds > 20) break;
+                    Thread.Sleep(4);
+                }
+
+                stream.Write(endChunk, 0, endChunk.Length);
+                stream.Flush();
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("WebSocketBridge: broadcast_stream closed for {IP}: {Err}", clientIP, ex.Message);
+            }
+            finally
+            {
+                try { tcpClient.Close(); } catch { }
+                try { tcpClient.Dispose(); } catch { }
+            }
+        }
+
+        private void StreamBroadcastAudioTcp(TcpClient tcpClient, NetworkStream stream, string clientIP, CancellationToken ct)
+        {
+            try
+            {
+                tcpClient.NoDelay = true;
+                tcpClient.SendBufferSize = 32768;
+                stream.WriteTimeout = 8000;
+
+                Log.Information("WebSocketBridge: Client {IP} connected to /api/audio_stream (24kHz PCM16 Mono)", clientIP);
+
+                byte[] respHeader = Encoding.ASCII.GetBytes(
+                    "HTTP/1.1 200 OK\r\n" +
+                    "Content-Type: application/octet-stream\r\n" +
+                    "Transfer-Encoding: chunked\r\n" +
+                    "Cache-Control: no-cache, no-store\r\n" +
+                    "Access-Control-Allow-Origin: *\r\n" +
+                    "Connection: close\r\n\r\n");
+
+                stream.Write(respHeader, 0, respHeader.Length);
+                stream.Flush();
+
+                long audioCursorSeq = -1;
+                var prefixBuf = new byte[16];
+                byte[] crlf = new byte[] { (byte)'\r', (byte)'\n' };
+                byte[] endChunk = Encoding.ASCII.GetBytes("0\r\n\r\n");
+                byte[] keepAliveSilence = new byte[LiveBroadcastMediaService.BYTES_PER_PACKET];
+                var stoppedSince = DateTime.UtcNow;
+                var lastSentUtc = DateTime.UtcNow;
+
+                while (!ct.IsCancellationRequested)
+                {
+                    var state = QASmartClass.Services.BroadcastStateService.Instance;
+                    var now = DateTime.UtcNow;
+
+                    if (state.IsScreenBroadcastActive)
+                    {
+                        stoppedSince = now;
+                    }
+                    else if ((now - stoppedSince).TotalSeconds > 4)
+                    {
+                        break;
+                    }
+
+                    bool hasPacket = LiveBroadcastMediaService.Instance.TryGetNextAudioPacket(ref audioCursorSeq, out byte[] pcm);
+                    bool needKeepAlive = !hasPacket && state.IsScreenBroadcastActive && (now - lastSentUtc).TotalMilliseconds >= 1500;
+                    if (needKeepAlive)
+                    {
+                        pcm = keepAliveSilence;
+                    }
+
+                    if ((hasPacket || needKeepAlive) && pcm != null && pcm.Length > 0)
+                    {
+                        int payloadLen = 2 + pcm.Length;
+                        string chunkHex = payloadLen.ToString("X");
+                        int pIdx = 0;
+                        for (int i = 0; i < chunkHex.Length; i++)
+                        {
+                            prefixBuf[pIdx++] = (byte)chunkHex[i];
+                        }
+                        prefixBuf[pIdx++] = (byte)'\r';
+                        prefixBuf[pIdx++] = (byte)'\n';
+                        prefixBuf[pIdx++] = (byte)((pcm.Length >> 8) & 0xFF);
+                        prefixBuf[pIdx++] = (byte)(pcm.Length & 0xFF);
+
+                        stream.Write(prefixBuf, 0, pIdx);
+                        stream.Write(pcm, 0, pcm.Length);
+                        stream.Write(crlf, 0, 2);
+                        stream.Flush();
+
+                        lastSentUtc = DateTime.UtcNow;
+                        continue;
+                    }
+
+                    Thread.Sleep(5);
+                }
+
+                stream.Write(endChunk, 0, endChunk.Length);
+                stream.Flush();
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("WebSocketBridge: audio_stream closed for {IP}: {Err}", clientIP, ex.Message);
+            }
+            finally
+            {
+                try { tcpClient.Close(); } catch { }
+                try { tcpClient.Dispose(); } catch { }
+            }
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -659,15 +1169,24 @@ namespace QASmartClass.Classroom.Services
 
         private async Task HandleWebSocketAsync(HttpListenerContext httpContext, CancellationToken ct)
         {
-            WebSocketContext? wsContext = null;
+            try
+            {
+                var wsContext = await httpContext.AcceptWebSocketAsync(null);
+                var remoteIP = httpContext.Request.RemoteEndPoint?.Address.ToString() ?? "?";
+                await RunWebSocketSessionAsync(wsContext.WebSocket, remoteIP, ct);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("WebSocket accept error: {Err}", ex.Message);
+            }
+        }
+
+        private async Task RunWebSocketSessionAsync(WebSocket ws, string remoteIP, CancellationToken ct)
+        {
             WebSocketClient? client = null;
 
             try
             {
-                wsContext = await httpContext.AcceptWebSocketAsync(null);
-                var ws = wsContext.WebSocket;
-                var remoteIP = httpContext.Request.RemoteEndPoint?.Address.ToString() ?? "?";
-
                 Log.Information("WebSocket client connected from {IP}", remoteIP);
 
                 var buffer = new byte[524288]; // 512KB — enough for screenshot base64 (was 128KB)
@@ -1344,6 +1863,8 @@ namespace QASmartClass.Classroom.Services
 
                 RunCommand("netsh", $"advfirewall firewall delete rule name=\"QA SmartClass Server\"");
                 RunCommand("netsh", $"advfirewall firewall add rule name=\"QA SmartClass Server\" dir=in action=allow program=\"{exePath}\" enable=yes profile=any");
+                RunCommand("netsh", $"advfirewall firewall delete rule name=\"QA SmartClass Broadcast TCP\"");
+                RunCommand("netsh", $"advfirewall firewall add rule name=\"QA SmartClass Broadcast TCP\" dir=in action=allow protocol=TCP localport={port},29877,29879 enable=yes profile=any");
 
                 RunCommand("netsh", $"http delete urlacl url=http://+:{port}/");
                 RunCommand("netsh", $"http add urlacl url=http://+:{port}/ user=Everyone");

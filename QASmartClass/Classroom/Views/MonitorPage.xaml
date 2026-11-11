@@ -173,10 +173,28 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- Section 3: Toast Notification & Quick Utilities -->
+                    <!-- Section 3: Persistent Off-Task Banner (No Blinking), Action Toast & Quick Utilities -->
                     <StackPanel Grid.Row="2" Margin="0,0,0,6">
-                        <Border x:Name="toastPopup" Background="#EA580C" CornerRadius="6"
-                                Padding="10,8" Margin="0,0,0,8" Visibility="Collapsed">
+                        <!-- Banner theo dõi ngầm: Còn ở ứng dụng/thiết bị khác thì giữ nguyên không nháy, quay về lớp thì tự ẩn ngay -->
+                        <Border x:Name="offTaskBanner" Background="#EA580C" CornerRadius="6"
+                                Padding="10,8" Margin="0,0,0,6" Visibility="Collapsed">
+                            <StackPanel>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="Lọc xem" Background="#C2410C"
+                                            BorderThickness="0" Foreground="White" FontSize="10.5" FontWeight="SemiBold"
+                                            Cursor="Hand" Click="FilterOffTaskBanner_Click" Padding="6,2" Margin="6,0,0,0"
+                                            Template="{StaticResource LightBtn}"/>
+                                    <TextBlock x:Name="txtOffTaskBannerTitle" Text="" FontSize="11.5"
+                                               FontWeight="Bold" Foreground="White" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                </DockPanel>
+                                <TextBlock x:Name="txtOffTaskBannerDetail" Text="" FontSize="11"
+                                           Foreground="#FEF3C7" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Toast thông báo thao tác tức thời (không dùng cho cảnh báo lặp lại) -->
+                        <Border x:Name="toastPopup" Background="#0369A1" CornerRadius="6"
+                                Padding="10,8" Margin="0,0,0,6" Visibility="Collapsed">
                             <StackPanel>
                                 <DockPanel>
                                     <Button DockPanel.Dock="Right" Content="✕" Background="Transparent"
@@ -186,7 +204,7 @@
                                                FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
                                 </DockPanel>
                                 <TextBlock x:Name="txtToastDetail" Text="" FontSize="11"
-                                           Foreground="#FEF3C7" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                           Foreground="#E0F2FE" Margin="0,2,0,0" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
 
@@ -202,14 +220,80 @@
                         </UniformGrid>
                     </StackPanel>
 
-                    <!-- Section 4: Activity Log -->
+                    <!-- Section 4: Live Connected Students List + Activity Log -->
                     <Grid Grid.Row="3">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="1.35*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="0.9*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="📋 NHẬT KÝ SỰ KIỆN" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="0,2,0,6"/>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+
+                        <TextBlock x:Name="txtLeftStudentListHeader" Grid.Row="0" Text="👥 DANH SÁCH HỌC SINH (0)"
+                                   FontSize="11" FontWeight="Bold" Foreground="#0F172A" Margin="0,2,0,5"/>
+
+                        <Border Grid.Row="1" Background="White" BorderBrush="#CBD5E1" BorderThickness="1"
+                                CornerRadius="6" Padding="4" Margin="0,0,0,8">
+                            <Grid>
+                                <TextBlock x:Name="txtEmptyStudentListHint"
+                                           Text="Chưa có học sinh kết nối vào lớp"
+                                           FontSize="11" Foreground="#94A3B8" FontStyle="Italic"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           TextWrapping="Wrap" TextAlignment="Center" Margin="8"/>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl x:Name="lstConnectedStudents">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,0,0,4" CornerRadius="5" Padding="7,5" Cursor="Hand"
+                                                        MouseLeftButtonDown="Thumbnail_Click"
+                                                        ToolTip="Nhấp để mở điều khiển học sinh này">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="#F8FAFC"/>
+                                                            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                                            <Setter Property="BorderThickness" Value="1"/>
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="#EFF6FF"/>
+                                                                    <Setter Property="BorderBrush" Value="#60A5FA"/>
+                                                                </Trigger>
+                                                                <DataTrigger Binding="{Binding HasAlert}" Value="True">
+                                                                    <Setter Property="Background" Value="#FEF2F2"/>
+                                                                    <Setter Property="BorderBrush" Value="#FCA5A5"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <StackPanel>
+                                                        <DockPanel LastChildFill="True">
+                                                            <Border DockPanel.Dock="Right" CornerRadius="4" Padding="5,1"
+                                                                    Background="#FEE2E2" Visibility="{Binding OffTaskVisibility}" VerticalAlignment="Center">
+                                                                <TextBlock Text="⚠️ Ngoài bài" FontSize="9.5" FontWeight="Bold" Foreground="#B91C1C"/>
+                                                            </Border>
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <Ellipse Width="7" Height="7" Fill="{Binding StatusDotColor}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                                <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="Bold" Foreground="#0F172A"
+                                                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </DockPanel>
+                                                        <DockPanel Margin="12,2,0,0" LastChildFill="True">
+                                                            <TextBlock DockPanel.Dock="Right" Text="{Binding DisplayIP}" FontSize="9.5"
+                                                                       Foreground="#94A3B8" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding CurrentAppLabel}" FontSize="10"
+                                                                       Foreground="{Binding CurrentAppForeground}"
+                                                                       TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                                        </DockPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+
+                        <TextBlock Grid.Row="2" Text="📋 NHẬT KÝ SỰ KIỆN" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,5"/>
+                        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
                             <ItemsControl x:Name="activityLog">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>

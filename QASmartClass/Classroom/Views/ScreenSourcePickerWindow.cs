@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using QASmartClass.Classroom.Services;
+using QASmartTouch.Services.Camera;
 
 namespace QASmartClass.Classroom.Views
 {
@@ -68,6 +71,13 @@ namespace QASmartClass.Classroom.Views
         private bool _isAllTab = true;
         private Border? _selectedCard;
         private int _loadVersion;
+        private bool _suppressMediaUiEvents;
+
+        private readonly ToggleButton _btnMeetSysAudio = new();
+        private readonly ToggleButton _btnMeetMic = new();
+        private readonly ComboBox _cmbMeetMic = new();
+        private readonly ToggleButton _btnMeetCam = new();
+        private readonly ComboBox _cmbMeetCam = new();
 
         /// <summary>Nguồn được chọn (null nếu hủy).</summary>
         public ScreenSourceInfo? Selected { get; private set; }
@@ -91,7 +101,7 @@ namespace QASmartClass.Classroom.Views
             _chkHideShellFromStudents.IsChecked = initialHideClassroomShell;
 
             Title = "Chọn nguồn chiếu màn hình & trang bài giảng";
-            Width = 980; Height = 680; MinWidth = 560; MinHeight = 460;
+            Width = 1020; Height = 740; MinWidth = 560; MinHeight = 480;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             Background = Brushes.White;
             FontFamily = new FontFamily("Segoe UI");
@@ -101,6 +111,7 @@ namespace QASmartClass.Classroom.Views
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
             var headerStack = new StackPanel { Orientation = Orientation.Vertical };
@@ -154,7 +165,11 @@ namespace QASmartClass.Classroom.Views
             Grid.SetRow(frame, 2);
             root.Children.Add(frame);
 
-            var footerGrid = new Grid { Margin = new Thickness(0, 14, 0, 0) };
+            var meetAvStrip = BuildGoogleMeetAvStrip();
+            Grid.SetRow(meetAvStrip, 3);
+            root.Children.Add(meetAvStrip);
+
+            var footerGrid = new Grid { Margin = new Thickness(0, 12, 0, 0) };
             footerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             footerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
@@ -172,8 +187,13 @@ namespace QASmartClass.Classroom.Views
             btnCustomRegion.Click += (_, _) => LaunchInteractiveRegionSelector();
 
             var btnRefresh = MakeButton("↻ Làm mới", false);
-            btnRefresh.ToolTip = "Quét lại danh sách màn hình và cửa sổ";
-            btnRefresh.Click += (_, _) => SwitchTab(_tab);
+            btnRefresh.ToolTip = "Quét lại danh sách màn hình, cửa sổ, Micro và Camera";
+            btnRefresh.Click += (_, _) =>
+            {
+                LiveBroadcastMediaService.Instance.RefreshAudioHardwareCatalog();
+                _ = LiveBroadcastMediaService.Instance.RefreshCameraHardwareCatalogAsync();
+                SwitchTab(_tab);
+            };
 
             var btnCancel = MakeButton("Hủy", false);
             btnCancel.Click += (_, _) => { Selected = null; DialogResult = false; };
@@ -188,7 +208,7 @@ namespace QASmartClass.Classroom.Views
             Grid.SetColumn(footerBtns, 1);
             footerGrid.Children.Add(footerBtns);
 
-            Grid.SetRow(footerGrid, 3);
+            Grid.SetRow(footerGrid, 4);
             root.Children.Add(footerGrid);
 
             Content = root;
@@ -197,7 +217,190 @@ namespace QASmartClass.Classroom.Views
                 if (e.Key == Key.Escape) { Selected = null; DialogResult = false; e.Handled = true; }
                 else if (e.Key == Key.Enter && _btnShare.IsEnabled) { Confirm(); e.Handled = true; }
             };
-            Loaded += (_, _) => SwitchTab(_tab);
+            EventHandler mediaStateHandler = (_, _) => Dispatcher.BeginInvoke(new Action(SyncGoogleMeetAvStripUi));
+            LiveBroadcastMediaService.Instance.StateChanged += mediaStateHandler;
+            Closed += (_, _) => LiveBroadcastMediaService.Instance.StateChanged -= mediaStateHandler;
+            Loaded += (_, _) =>
+            {
+                LiveBroadcastMediaService.Instance.RefreshAudioHardwareCatalog();
+                SyncGoogleMeetAvStripUi();
+                SwitchTab(_tab);
+            };
+        }
+
+        private Border BuildGoogleMeetAvStrip()
+        {
+            var container = new Border
+            {
+                Margin = new Thickness(0, 10, 0, 0),
+                Background = new SolidColorBrush(Color.FromRgb(0x20, 0x21, 0x24)), // Google Meet Surface #202124
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0x3C, 0x40, 0x43)),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(14),
+                Padding = new Thickness(14, 10, 14, 10)
+            };
+
+            var wrap = new WrapPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            // 1. Nút bật/tắt Chia sẻ âm thanh hệ thống (Chuẩn Google Meet "Also share system audio")
+            StyleMeetPillToggle(_btnMeetSysAudio);
+            _btnMeetSysAudio.Click += (_, _) =>
+            {
+                if (_suppressMediaUiEvents) return;
+                LiveBroadcastMediaService.Instance.SetSystemAudioEnabled(_btnMeetSysAudio.IsChecked == true);
+                SyncGoogleMeetAvStripUi();
+            };
+            wrap.Children.Add(_btnMeetSysAudio);
+
+            // 2. Nút Micro + Chọn nguồn Micro
+            StyleMeetPillToggle(_btnMeetMic);
+            _btnMeetMic.Click += (_, _) =>
+            {
+                if (_suppressMediaUiEvents) return;
+                LiveBroadcastMediaService.Instance.SetMicrophoneEnabled(_btnMeetMic.IsChecked == true);
+                SyncGoogleMeetAvStripUi();
+            };
+            wrap.Children.Add(_btnMeetMic);
+
+            _cmbMeetMic.Width = 205;
+            _cmbMeetMic.MinHeight = 36;
+            _cmbMeetMic.Margin = new Thickness(0, 2, 10, 2);
+            _cmbMeetMic.VerticalContentAlignment = VerticalAlignment.Center;
+            _cmbMeetMic.FontSize = 12.5;
+            _cmbMeetMic.ToolTip = "Chọn nguồn Micro thu tiếng giảng bài của Giáo viên";
+            _cmbMeetMic.SelectionChanged += (_, _) =>
+            {
+                if (_suppressMediaUiEvents) return;
+                if (_cmbMeetMic.SelectedItem is AudioEndpointOption opt)
+                {
+                    LiveBroadcastMediaService.Instance.SelectMicrophone(opt.DeviceId);
+                }
+            };
+            wrap.Children.Add(_cmbMeetMic);
+
+            // 3. Nút Camera + Chọn Camera
+            StyleMeetPillToggle(_btnMeetCam);
+            _btnMeetCam.Click += async (_, _) =>
+            {
+                if (_suppressMediaUiEvents) return;
+                await LiveBroadcastMediaService.Instance.SetCameraEnabledAsync(_btnMeetCam.IsChecked == true);
+                SyncGoogleMeetAvStripUi();
+            };
+            wrap.Children.Add(_btnMeetCam);
+
+            _cmbMeetCam.Width = 195;
+            _cmbMeetCam.MinHeight = 36;
+            _cmbMeetCam.Margin = new Thickness(0, 2, 0, 2);
+            _cmbMeetCam.VerticalContentAlignment = VerticalAlignment.Center;
+            _cmbMeetCam.FontSize = 12.5;
+            _cmbMeetCam.ToolTip = "Chọn thiết bị Camera Giáo viên hiển thị góc màn hình";
+            _cmbMeetCam.SelectionChanged += async (_, _) =>
+            {
+                if (_suppressMediaUiEvents) return;
+                if (_cmbMeetCam.SelectedItem is CameraEndpointOption cam)
+                {
+                    await LiveBroadcastMediaService.Instance.SelectCameraAsync(cam.DeviceId);
+                }
+            };
+            wrap.Children.Add(_cmbMeetCam);
+
+            container.Child = wrap;
+            return container;
+        }
+
+        private static void StyleMeetPillToggle(ToggleButton btn)
+        {
+            btn.MinHeight = 38;
+            btn.Padding = new Thickness(13, 6, 13, 6);
+            btn.Margin = new Thickness(0, 2, 8, 2);
+            btn.FontSize = 12.5;
+            btn.FontWeight = FontWeights.SemiBold;
+            btn.Cursor = Cursors.Hand;
+            btn.BorderThickness = new Thickness(1);
+        }
+
+        private void SyncGoogleMeetAvStripUi()
+        {
+            _suppressMediaUiEvents = true;
+            try
+            {
+                var svc = LiveBroadcastMediaService.Instance;
+
+                // System Audio Pill
+                _btnMeetSysAudio.IsEnabled = svc.HasSystemAudioHardware;
+                _btnMeetSysAudio.IsChecked = svc.HasSystemAudioHardware && svc.IsSystemAudioEnabled;
+                _btnMeetSysAudio.Content = !svc.HasSystemAudioHardware
+                    ? "🔇 Không có loa hệ thống"
+                    : (svc.IsSystemAudioEnabled ? "🔊 Chia sẻ âm thanh hệ thống: BẬT" : "🔈 Âm thanh hệ thống: TẮT");
+                ApplyMeetPillVisual(_btnMeetSysAudio, svc.HasSystemAudioHardware && svc.IsSystemAudioEnabled, isSystemAudio: true);
+
+                // Microphone Pill + Selector
+                _btnMeetMic.IsEnabled = svc.HasMicrophoneHardware;
+                _btnMeetMic.IsChecked = svc.HasMicrophoneHardware && svc.IsMicrophoneEnabled;
+                _btnMeetMic.Content = !svc.HasMicrophoneHardware
+                    ? "🚫 Không có Micro"
+                    : (svc.IsMicrophoneEnabled ? "🎙️ Micro: BẬT" : "🔇 Micro: TẮT");
+                ApplyMeetPillVisual(_btnMeetMic, svc.HasMicrophoneHardware && svc.IsMicrophoneEnabled, isSystemAudio: false);
+
+                _cmbMeetMic.ItemsSource = svc.AvailableMicrophones;
+                _cmbMeetMic.IsEnabled = svc.HasMicrophoneHardware;
+                if (svc.HasMicrophoneHardware)
+                {
+                    _cmbMeetMic.SelectedItem = svc.AvailableMicrophones.FirstOrDefault(m => m.DeviceId == svc.SelectedMicrophoneId)
+                                            ?? svc.AvailableMicrophones.FirstOrDefault();
+                }
+
+                // Camera Pill + Selector
+                bool camAvailable = svc.HasCameraHardware || svc.IsScanningCameras;
+                _btnMeetCam.IsEnabled = camAvailable;
+                _btnMeetCam.IsChecked = svc.HasCameraHardware && svc.IsCameraEnabled;
+                _btnMeetCam.Content = svc.IsScanningCameras && !svc.HasCameraHardware
+                    ? "📷 Đang dò Camera..."
+                    : (!svc.HasCameraHardware ? "🚫 Không có Camera" : (svc.IsCameraEnabled ? "📷 Camera: BẬT" : "📷 Camera: TẮT"));
+                ApplyMeetPillVisual(_btnMeetCam, svc.HasCameraHardware && svc.IsCameraEnabled, isSystemAudio: false);
+
+                _cmbMeetCam.ItemsSource = svc.AvailableCameras;
+                _cmbMeetCam.IsEnabled = svc.HasCameraHardware;
+                if (svc.HasCameraHardware)
+                {
+                    _cmbMeetCam.SelectedItem = svc.AvailableCameras.FirstOrDefault(c => c.DeviceId == svc.SelectedCameraId)
+                                            ?? svc.AvailableCameras.FirstOrDefault();
+                }
+            }
+            finally
+            {
+                _suppressMediaUiEvents = false;
+            }
+        }
+
+        private static void ApplyMeetPillVisual(ToggleButton btn, bool isActive, bool isSystemAudio)
+        {
+            if (!btn.IsEnabled)
+            {
+                btn.Background = new SolidColorBrush(Color.FromRgb(0x30, 0x31, 0x34));
+                btn.Foreground = new SolidColorBrush(Color.FromRgb(0x9A, 0xA0, 0xA6));
+                btn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x5F, 0x63, 0x68));
+                return;
+            }
+
+            if (isActive)
+            {
+                btn.Background = isSystemAudio
+                    ? new SolidColorBrush(Color.FromRgb(0x1A, 0x73, 0xE8)) // Google Meet Active Blue
+                    : new SolidColorBrush(Color.FromRgb(0x3C, 0x40, 0x43)); // Google Meet Active Pill
+                btn.Foreground = Brushes.White;
+                btn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x8A, 0xB4, 0xF8));
+            }
+            else
+            {
+                btn.Background = new SolidColorBrush(Color.FromRgb(0xEA, 0x43, 0x35)); // Google Meet Muted Red #EA4335
+                btn.Foreground = Brushes.White;
+                btn.BorderBrush = new SolidColorBrush(Color.FromRgb(0xEA, 0x43, 0x35));
+            }
         }
 
         private void LaunchInteractiveRegionSelector()

@@ -515,7 +515,19 @@ namespace QASmartClass.StudentClient.Services
                     }
                     if (ackParts.Length >= 6)
                     {
-                        SessionSalt = ackParts[5];
+                        SessionSalt = ackParts[5].Split("ENC_CMD")[0].Trim();
+                    }
+                    if (ackParts.Length >= 7 && !string.IsNullOrWhiteSpace(ackParts[6]))
+                    {
+                        StudentName = ackParts[6].Trim();
+                    }
+                    if (ackParts.Length >= 8)
+                    {
+                        string srvCode = ackParts[7].Split('\n')[0].Split("ENC_CMD")[0].Trim();
+                        if (!string.IsNullOrWhiteSpace(srvCode))
+                        {
+                            StudentCode = srvCode;
+                        }
                     }
                     if (ackParts.Length >= 3 && long.TryParse(ackParts[2], out long serverTimestamp))
                     {
@@ -879,10 +891,53 @@ namespace QASmartClass.StudentClient.Services
             return "unknown";
         }
 
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        private static (bool IsInStudentApp, string ForegroundAppName) CheckWindowsFocusSilent()
+        {
+            try
+            {
+                IntPtr hwnd = GetForegroundWindow();
+                if (hwnd == IntPtr.Zero) return (true, "QASmartClass");
+                GetWindowThreadProcessId(hwnd, out uint fgPid);
+                if (fgPid == 0 || fgPid == (uint)Environment.ProcessId)
+                {
+                    return (true, "QASmartClass");
+                }
+
+                try
+                {
+                    using var proc = System.Diagnostics.Process.GetProcessById((int)fgPid);
+                    string pName = proc.ProcessName ?? "Ứng dụng khác";
+                    if (pName.Equals("QASmartClass", StringComparison.OrdinalIgnoreCase) ||
+                        pName.Equals("QASmartTouch", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (true, pName);
+                    }
+                    return (false, pName);
+                }
+                catch
+                {
+                    return (false, "Ứng dụng khác");
+                }
+            }
+            catch
+            {
+                return (true, "QASmartClass");
+            }
+        }
+
         private async Task HeartbeatLoopAsync(CancellationToken ct)
         {
             Interlocked.Exchange(ref _lastReceivedPacketTicks, DateTime.UtcNow.Ticks);
             int secondsPassed = 0;
+            int focusSecondsPassed = 0;
+            bool? lastReportedFocus = null;
+            string lastReportedFgApp = "";
 
             int maxIdleSeconds = 30;
             try
@@ -910,15 +965,31 @@ namespace QASmartClass.StudentClient.Services
                         break;
                     }
 
+                    // Kiểm tra ngầm cửa sổ đang focus trên Windows PC (phát ngay khi đổi trạng thái, định kỳ mỗi 3s)
+                    var (inStudentApp, fgApp) = CheckWindowsFocusSilent();
+                    bool focusChanged = lastReportedFocus != inStudentApp ||
+                                        (!inStudentApp && !string.Equals(lastReportedFgApp, fgApp, StringComparison.OrdinalIgnoreCase));
+                    if (focusChanged || focusSecondsPassed >= 3)
+                    {
+                        if (_stream != null && _tcpClient?.Connected == true)
+                        {
+                            string safeFg = fgApp.Replace("|", " ").Replace("\n", " ").Trim();
+                            await SendAsync($"CMD|FOCUS_STATUS|{(inStudentApp ? 1 : 0)}|{safeFg}|Windows PC");
+                            lastReportedFocus = inStudentApp;
+                            lastReportedFgApp = safeFg;
+                        }
+                        focusSecondsPassed = 0;
+                    }
+
                     if (secondsPassed >= 10)
                     {
                         if (_stream != null && _tcpClient?.Connected == true)
                         {
-                            var hb = $"HB|{StudentCode}|online";
+                            var hb = $"HB|{StudentCode}|online\n";
                             await _stream.WriteAsync(Encoding.UTF8.GetBytes(hb), ct);
                             bool hpOk = CheckHeadphonesConnected();
                             bool micOk = CheckMicConnected();
-                            var periMsg = $"PERIPHERAL_STATUS|Headphones={(hpOk ? "OK" : "Error")}|Mic={(micOk ? "OK" : "Error")}";
+                            var periMsg = $"PERIPHERAL_STATUS|Headphones={(hpOk ? "OK" : "Error")}|Mic={(micOk ? "OK" : "Error")}\n";
                             await _stream.WriteAsync(Encoding.UTF8.GetBytes(periMsg), ct);
                         }
                         secondsPassed = 0;
@@ -926,6 +997,7 @@ namespace QASmartClass.StudentClient.Services
 
                     await Task.Delay(1000, ct);
                     secondsPassed++;
+                    focusSecondsPassed++;
                 }
                 catch (OperationCanceledException) { break; }
                 catch (Exception ex)

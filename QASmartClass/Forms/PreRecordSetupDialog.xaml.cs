@@ -308,24 +308,8 @@ namespace QASmartTouch.Forms
             }
             catch { }
 
-            // Khử nhiễu nền cực nhỏ (Noise gate < 0.8%) để khi im lặng thanh về 0 tuyệt đối
-            double targetPercent = 0.0;
-            if (rawPeak > 0.008f)
-            {
-                // Ánh xạ phi tuyến (Log/Power curve) giúp giọng nói bình thường hiển thị nhạy và trực quan trên thang 0-100%
-                targetPercent = Math.Min(100.0, Math.Pow(rawPeak, 0.55) * 115.0);
-            }
-
-            // Làm mượt chuyển động (Attack nhanh khi nói, Decay êm khi ngắt lời)
-            if (targetPercent >= _smoothedLevel)
-            {
-                _smoothedLevel = _smoothedLevel * 0.3 + targetPercent * 0.7;
-            }
-            else
-            {
-                _smoothedLevel = _smoothedLevel * 0.65 + targetPercent * 0.35;
-                if (_smoothedLevel < 1.0) _smoothedLevel = 0.0;
-            }
+            double targetPercent = MediaDeviceCatalogService.ComputeNormalizedMeterPercent(rawPeak);
+            _smoothedLevel = MediaDeviceCatalogService.SmoothMeterLevel(_smoothedLevel, targetPercent);
 
             pbAudioMeter.Value = _smoothedLevel;
 

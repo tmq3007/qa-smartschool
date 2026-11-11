@@ -233,6 +233,7 @@ namespace QASmartClass.StudentClient.Views
 
 
 		private Grid? _broadcastOverlay;
+		private readonly QASmartClass.StudentClient.Services.StudentBroadcastAudioPlayer _broadcastAudioPlayer = new();
 
 
 
@@ -9581,6 +9582,39 @@ namespace QASmartClass.StudentClient.Views
 
 				dockPanel.Children.Insert(0, button);
 
+				string? audioTeacherIp = (((App)Application.Current)?.StudentNetwork)?.ServerIP;
+				_broadcastAudioPlayer.Start(audioTeacherIp, _currentTeacherWebPort, _currentBroadcastToken);
+
+				Button btnAudioMute = new Button
+				{
+					Content = _broadcastAudioPlayer.IsMuted ? "🔇 Đã tắt loa" : "🔊 Đang bật loa",
+					FontSize = 13.5,
+					FontWeight = FontWeights.SemiBold,
+					Padding = new Thickness(14.0, 8.0, 14.0, 8.0),
+					Margin = new Thickness(0.0, 0.0, 10.0, 0.0),
+					Background = new SolidColorBrush(_broadcastAudioPlayer.IsMuted
+						? Color.FromRgb(0xEA, 0x43, 0x35)
+						: Color.FromRgb(0x1A, 0x73, 0xE8)),
+					Foreground = Brushes.White,
+					BorderThickness = new Thickness(0.0),
+					Cursor = Cursors.Hand,
+					VerticalAlignment = VerticalAlignment.Center,
+					FontFamily = _broadcastFont,
+					ToolTip = _broadcastAudioPlayer.IsSameMachineDefaultMuted
+						? "Đang chạy cùng máy Giáo viên — mặc định tắt loa HS để chống vọng âm (Bấm để bật/tắt)"
+						: "Bật / Tắt âm thanh bài giảng từ máy Giáo viên"
+				};
+				btnAudioMute.Click += (_, _) =>
+				{
+					_broadcastAudioPlayer.IsMuted = !_broadcastAudioPlayer.IsMuted;
+					btnAudioMute.Content = _broadcastAudioPlayer.IsMuted ? "🔇 Đã tắt loa" : "🔊 Đang bật loa";
+					btnAudioMute.Background = new SolidColorBrush(_broadcastAudioPlayer.IsMuted
+						? Color.FromRgb(0xEA, 0x43, 0x35)
+						: Color.FromRgb(0x1A, 0x73, 0xE8));
+				};
+				DockPanel.SetDock(btnAudioMute, Dock.Right);
+				dockPanel.Children.Insert(1, btnAudioMute);
+
 				border.Child = dockPanel;
 
 				_broadcastImage = new Image
@@ -10493,6 +10527,12 @@ namespace QASmartClass.StudentClient.Views
 
 
 				if (_pulseStoryboard != null) { _pulseStoryboard.Stop(); _pulseStoryboard = null; }
+
+				try
+				{
+					_broadcastAudioPlayer.Stop();
+				}
+				catch { }
 
 				try
 				{

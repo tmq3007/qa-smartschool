@@ -934,6 +934,21 @@
                                     android:stateListAnimator="@null" />
 
                                 <androidx.appcompat.widget.AppCompatButton
+                                    android:id="@+id/btnInlineBroadcastAudio"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="32dp"
+                                    android:minWidth="0dp"
+                                    android:layout_marginStart="8dp"
+                                    android:paddingHorizontal="10dp"
+                                    android:background="@drawable/bg_m3_chip_selected"
+                                    android:text="🔊 Tiếng"
+                                    android:textAllCaps="false"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#1A73E8"
+                                    android:stateListAnimator="@null" />
+
+                                <androidx.appcompat.widget.AppCompatButton
                                     android:id="@+id/btnLectureSnapshot"
                                     android:layout_width="wrap_content"
                                     android:layout_height="32dp"
@@ -1917,13 +1932,32 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- GOOGLE MEET FLOATING BOTTOM PILL BAR (Tự ẩn sau 4s, chạm màn hình hiện lại) -->
+        <!-- Nút Thu nhỏ cố định góc trên phải — luôn hiển thị 1-chạm trên màn hình lớn / Tablet -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnTopMinimizeBroadcast"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:minWidth="0dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="18dp"
+            android:paddingHorizontal="16dp"
+            android:background="@drawable/bg_meet_bottom_bar"
+            android:text="↙ Thu nhỏ"
+            android:textAllCaps="false"
+            android:textColor="#93C5FD"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:elevation="14dp"
+            android:stateListAnimator="@null" />
+
+        <!-- GOOGLE MEET FLOATING BOTTOM PILL BAR (Chạm màn hình để ẩn/hiện tùy ý) -->
         <LinearLayout
             android:id="@+id/floatingBroadcastDock"
             android:layout_width="wrap_content"
             android:layout_height="54dp"
             android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="32dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bg_meet_bottom_bar"
@@ -1955,6 +1989,21 @@
                 android:text="📸 Chụp lưu"
                 android:textAllCaps="false"
                 android:textColor="#F8FAFC"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:stateListAnimator="@null" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnFullscreenMuteAudio"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:minWidth="0dp"
+                android:layout_marginStart="8dp"
+                android:paddingHorizontal="16dp"
+                android:background="@drawable/bg_meet_circle_btn"
+                android:text="🔊 Bật tiếng"
+                android:textAllCaps="false"
+                android:textColor="#8AB4F8"
                 android:textSize="13sp"
                 android:textStyle="bold"
                 android:stateListAnimator="@null" />

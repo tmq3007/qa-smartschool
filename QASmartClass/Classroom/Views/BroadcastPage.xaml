@@ -348,6 +348,21 @@
                                     <TextBlock Text="👁️ Xem trước nguồn đang chọn" FontSize="10.5" FontWeight="Bold" Foreground="#38BDF8"/>
                                 </Border>
                             </Grid>
+                        </Border>
+                        <!-- Google Meet Audio & Camera Controls -->
+                        <Border Background="#202124" CornerRadius="10" Padding="12,10" Margin="0,0,0,8" BorderBrush="#3C4043" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="🎙️ Âm thanh &amp; Camera (Google Meet)" FontSize="12.5" FontWeight="Bold" Foreground="White" Margin="0,0,0,7"/>
+                                <WrapPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <Button x:Name="btnMeetPageSysAudio" Content="🔊 Tiếng máy: BẬT" MinHeight="34" Padding="10,5" Margin="0,0,6,6" FontSize="11.5" FontWeight="SemiBold" Background="#1A73E8" Foreground="White" BorderThickness="0" Cursor="Hand" Click="MeetPageSysAudio_Click" Template="{StaticResource RoundBtn}" ToolTip="Chia sẻ âm thanh hệ thống (video, bài nghe trên máy Giáo viên)"/>
+                                    <Button x:Name="btnMeetPageMic" Content="🔇 Micro: TẮT" MinHeight="34" Padding="10,5" Margin="0,0,6,6" FontSize="11.5" FontWeight="SemiBold" Background="#EA4335" Foreground="White" BorderThickness="0" Cursor="Hand" Click="MeetPageMic_Click" Template="{StaticResource RoundBtn}" ToolTip="Bật / Tắt Micro thu giọng giảng của Giáo viên"/>
+                                    <Button x:Name="btnMeetPageCam" Content="🚫 Camera: TẮT" MinHeight="34" Padding="10,5" Margin="0,0,0,6" FontSize="11.5" FontWeight="SemiBold" Background="#EA4335" Foreground="White" BorderThickness="0" Cursor="Hand" Click="MeetPageCam_Click" Template="{StaticResource RoundBtn}" ToolTip="Bật / Tắt Camera Giáo viên (PiP góc màn hình Học sinh)"/>
+                                </WrapPanel>
+                                <TextBlock Text="Nguồn Micro:" FontSize="11" FontWeight="SemiBold" Foreground="#8AB4F8" Margin="0,0,0,3"/>
+                                <ComboBox x:Name="cmbMeetPageMic" MinHeight="32" FontSize="11.5" Margin="0,0,0,6" SelectionChanged="CmbMeetPageMic_SelectionChanged"/>
+                                <TextBlock Text="Nguồn Camera:" FontSize="11" FontWeight="SemiBold" Foreground="#8AB4F8" Margin="0,0,0,3"/>
+                                <ComboBox x:Name="cmbMeetPageCam" MinHeight="32" FontSize="11.5" SelectionChanged="CmbMeetPageCam_SelectionChanged"/>
+                            </StackPanel>
                         </Border>
                         <TextBlock x:Name="txtPickedSource" Text="Nguồn hiện tại: Toàn màn hình (màn hình chính)" FontSize="12" Foreground="#546E7A" TextWrapping="Wrap" Margin="0,0,0,10"/>
                         <RadioButton x:Name="rbFullScreen" Content="Toàn màn hình" IsChecked="True" FontSize="14" Margin="0,0,0,6"

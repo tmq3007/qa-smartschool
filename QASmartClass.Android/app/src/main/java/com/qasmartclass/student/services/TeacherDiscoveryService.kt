@@ -24,23 +24,27 @@ class TeacherDiscoveryService {
         private const val TAG = "TeacherDiscovery"
     }
 
-    private var socket: DatagramSocket? = null
+    @Volatile
+    private var activeSocket: DatagramSocket? = null
+    @Volatile
     private var isListening = false
 
     suspend fun discoverTeacher(timeoutMs: Int = 15000): TeacherBeaconInfo? = withContext(Dispatchers.IO) {
+        var localSocket: DatagramSocket? = null
         try {
             isListening = true
-            socket = DatagramSocket(null).apply {
+            localSocket = DatagramSocket(null).apply {
                 reuseAddress = true
                 soTimeout = timeoutMs
                 bind(InetSocketAddress(DISCOVERY_PORT))
             }
+            activeSocket = localSocket
 
             val buffer = ByteArray(1024)
             val packet = DatagramPacket(buffer, buffer.size)
 
             Log.i(TAG, "Listening for UDP Beacon on port $DISCOVERY_PORT...")
-            socket?.receive(packet)
+            localSocket.receive(packet)
 
             val message = String(packet.data, 0, packet.length, Charsets.UTF_8).trim()
             Log.i(TAG, "Received beacon message: $message")
@@ -77,10 +81,20 @@ class TeacherDiscoveryService {
                     )
                 }
             }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Log.w(TAG, "Discovery timed out or error: ${e.message}")
+            if (isListening) {
+                Log.w(TAG, "Discovery timed out or error: ${e.message}")
+            }
         } finally {
-            stopListening()
+            try {
+                localSocket?.close()
+            } catch (_: Exception) {}
+            if (activeSocket === localSocket) {
+                activeSocket = null
+                isListening = false
+            }
         }
         return@withContext null
     }
@@ -92,19 +106,21 @@ class TeacherDiscoveryService {
     suspend fun discoverMultipleTeachers(windowMs: Int = 2200): List<TeacherBeaconInfo> = withContext(Dispatchers.IO) {
         val discovered = LinkedHashMap<String, TeacherBeaconInfo>()
         val startMs = System.currentTimeMillis()
+        var localSocket: DatagramSocket? = null
         try {
             isListening = true
-            socket = DatagramSocket(null).apply {
+            localSocket = DatagramSocket(null).apply {
                 reuseAddress = true
                 soTimeout = 700
                 bind(InetSocketAddress(DISCOVERY_PORT))
             }
+            activeSocket = localSocket
 
             val buffer = ByteArray(1024)
             while (isListening && (System.currentTimeMillis() - startMs) < windowMs) {
                 try {
                     val packet = DatagramPacket(buffer, buffer.size)
-                    socket?.receive(packet)
+                    localSocket.receive(packet)
                     val message = String(packet.data, 0, packet.length, Charsets.UTF_8).trim()
                     if (message.startsWith(BEACON_PREFIX)) {
                         val payload = message.substring(BEACON_PREFIX.length)
@@ -147,21 +163,32 @@ class TeacherDiscoveryService {
                     }
                 }
             }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Log.w(TAG, "discoverMultipleTeachers error: ${e.message}")
+            if (isListening) {
+                Log.w(TAG, "discoverMultipleTeachers error: ${e.message}")
+            }
         } finally {
-            stopListening()
+            try {
+                localSocket?.close()
+            } catch (_: Exception) {}
+            if (activeSocket === localSocket) {
+                activeSocket = null
+                isListening = false
+            }
         }
         return@withContext discovered.values.toList()
     }
 
     fun stopListening() {
         isListening = false
+        val s = activeSocket
+        activeSocket = null
         try {
-            socket?.close()
-        } catch (e: Exception) {
+            s?.close()
+        } catch (_: Exception) {
             // Ignore
         }
-        socket = null
     }
 }

@@ -192,10 +192,29 @@ class MainActivity : AppCompatActivity() {
     // Screen 3: Google Meet Fullscreen Broadcast Controls
     private lateinit var topBroadcastBadgeBar: LinearLayout
     private lateinit var floatingBroadcastDock: LinearLayout
+    private lateinit var btnInlineBroadcastAudio: Button
+    private lateinit var btnFullscreenMuteAudio: Button
     private lateinit var btnBroadcastVolume: Button
     private lateinit var btnFullscreenSnapshot: Button
     private var broadcastUiHideJob: Job? = null
+    private var broadcastAudioJob: Job? = null
+    @Volatile private var isBroadcastAudioMuted = false
     private var isForceBroadcastMode = false
+    @Volatile private var hasPromptedCaptureThisSession = false
+
+    private fun getDeviceShortTag(): String {
+        return try {
+            val aid = android.provider.Settings.Secure.getString(
+                contentResolver,
+                android.provider.Settings.Secure.ANDROID_ID
+            ).orEmpty().filter { it.isLetterOrDigit() }.uppercase()
+            if (aid.length >= 4) aid.takeLast(4) else "TAB1"
+        } catch (_: Exception) {
+            "TAB1"
+        }
+    }
+
+    private fun buildAndroidPcName(): String = "Android-${getDeviceShortTag()}"
 
     // Split-Screen Document + Quick Note Sidebar
     private lateinit var lectureSplitContainer: LinearLayout
@@ -312,6 +331,11 @@ class MainActivity : AppCompatActivity() {
     private var currentTeacherIp: String? = null
     private var tcpSocket: Socket? = null
     private var tcpOutputStream: OutputStream? = null
+    private var discoveryJob: Job? = null
+    private var connectionJob: Job? = null
+    private var reconnectJob: Job? = null
+    private val connectionGeneration = java.util.concurrent.atomic.AtomicLong(0L)
+    @Volatile private var isConnectingInProgress = false
     private var heartbeatJob: Job? = null
     private var isHandRaised = false
     private var currentHandRaiseReason = "Phát biểu"
@@ -717,6 +741,8 @@ class MainActivity : AppCompatActivity() {
         topBroadcastBadgeBar = findViewById(R.id.topBroadcastBadgeBar)
         txtBroadcastStatus = findViewById(R.id.txtBroadcastStatus)
         floatingBroadcastDock = findViewById(R.id.floatingBroadcastDock)
+        btnInlineBroadcastAudio = findViewById(R.id.btnInlineBroadcastAudio)
+        btnFullscreenMuteAudio = findViewById(R.id.btnFullscreenMuteAudio)
         btnFullscreenRaiseHand = findViewById(R.id.btnFullscreenRaiseHand)
         btnFullscreenSnapshot = findViewById(R.id.btnFullscreenSnapshot)
         btnBroadcastVolume = findViewById(R.id.btnBroadcastVolume)
@@ -737,11 +763,22 @@ class MainActivity : AppCompatActivity() {
         chkRemember.isChecked = remember
 
         val lastIp = prefs.getString(KEY_LAST_IP, "")
+        val devTag = getDeviceShortTag()
+        val defaultDeviceCode = "AND-$devTag"
+        val defaultDeviceName = "Máy HS ($devTag)"
+        val hasSavedCode = prefs.contains(KEY_STUDENT_CODE)
         val rawStudentName = prefs.getString(KEY_STUDENT_NAME, "") ?: ""
-        val rawStudentCode = prefs.getString(KEY_STUDENT_CODE, "10A1-002") ?: "10A1-002"
+        val rawStudentCode = if (hasSavedCode) {
+            prefs.getString(KEY_STUDENT_CODE, defaultDeviceCode) ?: defaultDeviceCode
+        } else {
+            defaultDeviceCode
+        }
         val lastStudentCode = sanitizeStudentCode(rawStudentCode)
         val lastPassword = prefs.getString(KEY_PASSWORD, "123456")
-        val resolvedInitName = resolveOfficialStudentName(lastStudentCode, rawStudentName)
+        val resolvedInitName = resolveOfficialStudentName(
+            lastStudentCode,
+            rawStudentName.ifBlank { if (!hasSavedCode) defaultDeviceName else "" }
+        )
 
         if (remember) {
             if (!lastIp.isNullOrBlank()) edtTeacherIp.setText(lastIp)
@@ -870,6 +907,15 @@ class MainActivity : AppCompatActivity() {
             toggleBroadcastControlsVisibility()
         }
 
+        btnInlineBroadcastAudio.setOnClickListener {
+            toggleBroadcastAudioMute()
+        }
+
+        btnFullscreenMuteAudio.setOnClickListener {
+            scheduleBroadcastControlsAutoHide()
+            toggleBroadcastAudioMute()
+        }
+
         btnBroadcastVolume.setOnClickListener {
             scheduleBroadcastControlsAutoHide()
             val audioMgr = getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager
@@ -975,8 +1021,10 @@ class MainActivity : AppCompatActivity() {
             openFullscreenBroadcastOverlay()
         }
         btnCloseBroadcast.setOnClickListener {
-            broadcastUiHideJob?.cancel()
-            broadcastOverlay.visibility = View.GONE
+            minimizeFullscreenBroadcastOverlay()
+        }
+        findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.setOnClickListener {
+            minimizeFullscreenBroadcastOverlay()
         }
 
         // Top Header Leave Class & Teacher Notice Quick Feedback
@@ -1015,8 +1063,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openFullscreenBroadcastOverlay() {
+        if (imgBroadcastScreen.drawable == null && imgInlineBroadcast.drawable != null) {
+            imgBroadcastScreen.setImageDrawable(imgInlineBroadcast.drawable)
+        }
+        val canMinimize = !isForceBroadcastMode
+        btnCloseBroadcast.visibility = if (canMinimize) View.VISIBLE else View.GONE
+        findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = if (canMinimize) View.VISIBLE else View.GONE
         broadcastOverlay.visibility = View.VISIBLE
         showBroadcastControlsAndScheduleHide()
+    }
+
+    private fun minimizeFullscreenBroadcastOverlay() {
+        if (isForceBroadcastMode) return
+        broadcastUiHideJob?.cancel()
+        imgBroadcastScreen.drawable?.let { imgInlineBroadcast.setImageDrawable(it) }
+        broadcastOverlay.visibility = View.GONE
+        if (currentTab != 0) switchTab(0)
     }
 
     private fun toggleBroadcastControlsVisibility() {
@@ -1033,25 +1095,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showBroadcastControlsAndScheduleHide() {
+        broadcastUiHideJob?.cancel()
         floatingBroadcastDock.animate().cancel()
         floatingBroadcastDock.alpha = 1f
         floatingBroadcastDock.visibility = View.VISIBLE
         topBroadcastBadgeBar.alpha = 1f
         topBroadcastBadgeBar.visibility = View.VISIBLE
-        scheduleBroadcastControlsAutoHide()
     }
 
     private fun scheduleBroadcastControlsAutoHide() {
+        // Giữ thanh điều khiển & nút Thu nhỏ hiển thị ổn định trên màn hình cảm ứng (chỉ ẩn/hiện khi người dùng chủ động chạm vào ảnh)
         broadcastUiHideJob?.cancel()
-        broadcastUiHideJob = lifecycleScope.launch {
-            delay(4000)
-            if (broadcastOverlay.visibility == View.VISIBLE && floatingBroadcastDock.visibility == View.VISIBLE) {
-                floatingBroadcastDock.animate().alpha(0f).setDuration(240).withEndAction {
-                    floatingBroadcastDock.visibility = View.GONE
-                    topBroadcastBadgeBar.visibility = View.GONE
-                }.start()
-            }
-        }
     }
 
     /**
@@ -2152,14 +2206,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun isValidStudentCode(raw: String?): Boolean {
         val s = raw?.trim().orEmpty()
-        return s.length in 2..18 &&
+        return s.length in 2..32 &&
             !s.contains("ENC_CMD", ignoreCase = true) &&
-            s.matches(Regex("^[A-Za-z0-9_-]{2,18}$"))
+            s.matches(Regex("^[A-Za-z0-9_-]{2,32}$"))
     }
 
     private fun sanitizeStudentCode(raw: String?): String {
         val s = raw?.trim().orEmpty()
-        return if (isValidStudentCode(s)) s else "10A1-002"
+        return if (isValidStudentCode(s)) s else "AND-${getDeviceShortTag()}"
     }
 
     private fun isValidStudentName(raw: String?): Boolean {
@@ -2589,11 +2643,21 @@ class MainActivity : AppCompatActivity() {
             .apply()
     }
 
+    private fun isAlreadyConnectedOrConnecting(): Boolean {
+        if (isConnectingInProgress) return true
+        val sock = tcpSocket
+        if (sock != null && sock.isConnected && !sock.isClosed) return true
+        if (::connectedPanel.isInitialized && connectedPanel.visibility == View.VISIBLE) return true
+        return false
+    }
+
     private suspend fun measureLanPingMs(host: String, port: Int): Long = withContext(Dispatchers.IO) {
         val t0 = System.nanoTime()
         try {
+            // Đo RTT trên cổng HTTP Bridge (8080) thay vì cổng TCP Control (29877) để không gửi gói rỗng gây cảnh báo Invalid handshake
+            val probePort = if (port == TCP_PORT) currentTeacherWebPort else port
             Socket().use { s ->
-                s.connect(InetSocketAddress(host, port), 1200)
+                s.connect(InetSocketAddress(host, probePort), 1000)
             }
             ((System.nanoTime() - t0) / 1_000_000L).coerceAtLeast(1L)
         } catch (_: Exception) {
@@ -2616,6 +2680,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startAutoDiscovery() {
+        if (isAlreadyConnectedOrConnecting()) return
+
+        discoveryJob?.cancel()
+        discoveryService.stopListening()
+
         syncStudentIdentityCard()
         txtDiscoveryHeader.text = "ĐANG TÌM LỚP HỌC..."
         txtDiscoveryDot.setTextColor(0xFFD97706.toInt())
@@ -2623,31 +2692,40 @@ class MainActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
         btnRefresh.visibility = View.GONE
 
-        lifecycleScope.launch {
+        discoveryJob = lifecycleScope.launch {
             val beacons = discoveryService.discoverMultipleTeachers(windowMs = 2200)
+            if (!isActive || isAlreadyConnectedOrConnecting()) return@launch
+
             val beacon = beacons.firstOrNull() ?: discoveryService.discoverTeacher(timeoutMs = 3800)
+            if (!isActive || isAlreadyConnectedOrConnecting()) return@launch
+
             if (beacon != null) {
                 applyDiscoveredBeacon(beacon)
+                if (!isActive || isAlreadyConnectedOrConnecting()) return@launch
                 progressBar.visibility = View.GONE
                 btnRefresh.visibility = View.VISIBLE
 
                 if (beacons.size >= 2) {
                     // Có từ 2 lớp học trở lên trong cùng mạng LAN -> Hiện hộp thoại chọn đúng phòng học
                     showMultiClassroomPickerDialog(beacons)
-                } else if (!beacon.requirePin && !ignoredTeacherIps.contains(beacon.teacherIp) && !isUserInitiatedDisconnect) {
-                    // Mythware Zero-Auth Auto-Connect: Tự động vào lớp ngay nếu chỉ có 1 lớp, không khóa PIN và chưa bị Kick
+                } else if (!beacon.requirePin && !ignoredTeacherIps.contains(beacon.teacherIp) && !isUserInitiatedDisconnect && !isAlreadyConnectedOrConnecting()) {
+                    // Mythware Zero-Auth Auto-Connect: Tự động vào lớp ngay nếu chỉ có 1 lớp, không khóa PIN và chưa kết nối
                     btnConnect.performClick()
                 }
             } else {
-                // Không nhận được beacon UDP (emulator/NAT/router chặn broadcast) -> dò cổng TCP trực tiếp
+                // Không nhận được beacon UDP (emulator/NAT/router chặn broadcast) -> dò cổng trực tiếp
                 txtStatus.text = "Đang dò máy chủ giáo viên trong mạng nội bộ..."
                 val host = probeTeacherHost()
+                if (!isActive || isAlreadyConnectedOrConnecting()) return@launch
+
                 if (host != null) {
                     discoveredTeacherIp = host
                     discoveredTeacherPort = TCP_PORT
                     val rtt = measureLanPingMs(host, TCP_PORT)
                     updateLanSignalBadge(rtt, true)
                     val info = withContext(Dispatchers.IO) { queryClassInfo(host) }
+                    if (!isActive || isAlreadyConnectedOrConnecting()) return@launch
+
                     txtDiscoveryHeader.text = "LỚP HỌC ĐANG MỞ"
                     txtDiscoveryDot.setTextColor(0xFF16A34A.toInt())
                     if (info != null && info.size >= 3) {
@@ -2673,11 +2751,12 @@ class MainActivity : AppCompatActivity() {
     private suspend fun applyDiscoveredBeacon(beacon: com.qasmartclass.student.services.TeacherBeaconInfo) {
         discoveredTeacherIp = beacon.teacherIp
         discoveredTeacherPort = beacon.tcpPort
+        currentTeacherWebPort = beacon.webPort
         discoveredChannelId = beacon.channelId
         discoveredRequirePin = beacon.requirePin
         currentClassName = "[Kênh ${beacon.channelId}] ${beacon.className}"
         currentTeacherName = beacon.teacherName
-        val rtt = measureLanPingMs(beacon.teacherIp, beacon.tcpPort)
+        val rtt = measureLanPingMs(beacon.teacherIp, beacon.webPort)
         updateLanSignalBadge(rtt, true)
         txtDiscoveryHeader.text = "LỚP HỌC ĐANG MỞ (KÊNH ${beacon.channelId})"
         txtDiscoveryDot.setTextColor(0xFF16A34A.toInt())
@@ -2687,7 +2766,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMultiClassroomPickerDialog(beacons: List<com.qasmartclass.student.services.TeacherBeaconInfo>) {
-        if (isFinishing || isDestroyed) return
+        if (isFinishing || isDestroyed || isAlreadyConnectedOrConnecting()) return
         val items = beacons.map { b ->
             val pinLabel = if (b.requirePin) "🔒 Cần PIN" else "🔓 Vào ngay"
             "[Kênh ${b.channelId}] ${b.className} — GV: ${b.teacherName} (${b.teacherIp}) • $pinLabel"
@@ -2699,9 +2778,9 @@ class MainActivity : AppCompatActivity() {
                 val chosen = beacons.getOrNull(which) ?: return@setItems
                 lifecycleScope.launch {
                     applyDiscoveredBeacon(chosen)
-                    if (!chosen.requirePin) {
+                    if (!chosen.requirePin && !isAlreadyConnectedOrConnecting()) {
                         btnConnect.performClick()
-                    } else {
+                    } else if (chosen.requirePin) {
                         Toast.makeText(this@MainActivity, "Vui lòng nhập Mã lớp / PIN của lớp ${chosen.className} rồi bấm Kết nối", Toast.LENGTH_LONG).show()
                     }
                 }
@@ -2737,14 +2816,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** Dò cổng TCP của giáo viên: IP đã lưu, 10.0.2.2 (emulator), rồi quét toàn subnet /24 của thiết bị. */
+    /** Dò cổng máy chủ giáo viên: ưu tiên cổng HTTP 8080 trước để tránh tạo kết nối TCP rỗng trên cổng 29877. */
     private suspend fun probeTeacherHost(): String? = withContext(Dispatchers.IO) {
         val priority = LinkedHashSet<String>()
         val saved = edtTeacherIp.text.toString().trim().substringBefore(":")
         if (saved.isNotBlank()) priority.add(saved)
         priority.add("10.0.2.2")
         for (h in priority) {
-            if (canConnect(h, TCP_PORT, 700)) return@withContext h
+            if (canConnect(h, currentTeacherWebPort, 600) || canConnect(h, TCP_PORT, 700)) return@withContext h
         }
 
         val prefixes = LinkedHashSet<String>()
@@ -2767,7 +2846,7 @@ class MainActivity : AppCompatActivity() {
             val jobs = (1..254).map { i ->
                 launch {
                     val h = "$prefix.$i"
-                    if (canConnect(h, TCP_PORT, 600)) found.complete(h)
+                    if (canConnect(h, currentTeacherWebPort, 550)) found.complete(h)
                 }
             }
             launch { jobs.forEach { it.join() }; found.complete(null) }
@@ -2786,6 +2865,26 @@ class MainActivity : AppCompatActivity() {
         password: String,
         classCodeInput: String
     ) {
+        if (isConnectingInProgress) return
+
+        // Dừng ngay mọi luồng quét UDP hoặc tự động kết nối lại cũ để không tạo vòng lặp tự đá socket
+        discoveryJob?.cancel()
+        discoveryJob = null
+        discoveryService.stopListening()
+        reconnectJob?.cancel()
+        reconnectJob = null
+        heartbeatJob?.cancel()
+        heartbeatJob = null
+        connectionJob?.cancel()
+
+        val sessionGen = connectionGeneration.incrementAndGet()
+        isConnectingInProgress = true
+
+        val staleSocket = tcpSocket
+        tcpSocket = null
+        tcpOutputStream = null
+        try { staleSocket?.close() } catch (_: Exception) {}
+
         currentTeacherIp = ip
         currentStudentName = studentName
         currentStudentCode = studentCode
@@ -2794,21 +2893,29 @@ class MainActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
         btnConnect.isEnabled = false
         txtError.visibility = View.GONE
+        if (::lanReconnectBanner.isInitialized) lanReconnectBanner.visibility = View.GONE
 
-        lifecycleScope.launch(Dispatchers.IO) {
+        connectionJob = lifecycleScope.launch(Dispatchers.IO) {
+            var openedSocket: Socket? = null
             try {
-                tcpSocket?.close()
                 val socket = Socket()
+                openedSocket = socket
                 socket.connect(InetSocketAddress(ip, port), 5000)
+                if (connectionGeneration.get() != sessionGen) {
+                    try { socket.close() } catch (_: Exception) {}
+                    return@launch
+                }
+
                 tcpSocket = socket
                 val output = socket.getOutputStream()
                 val input = socket.getInputStream()
                 tcpOutputStream = output
 
-                // Send Native JOIN handshake with password, class code, and Mythware Room PIN
+                // Send Native JOIN handshake with unique Android device tag, password, class code, and Mythware Room PIN
                 // Format: JOIN|name|code|pcName|version|pubKeyBase64|macAddress|password|classCode|PIN=xxx
                 val pinSegment = if (classCodeInput.isNotBlank()) "|PIN=$classCodeInput" else ""
-                val joinMsg = "JOIN|$studentName|$studentCode|Android_Tablet|1.0|||$password|$classCodeInput$pinSegment\n"
+                val devicePcName = buildAndroidPcName()
+                val joinMsg = "JOIN|$studentName|$studentCode|$devicePcName|1.0|||$password|$classCodeInput$pinSegment\n"
                 output.write(joinMsg.toByteArray(Charsets.UTF_8))
                 output.flush()
 
@@ -2855,24 +2962,41 @@ class MainActivity : AppCompatActivity() {
                     }
                     currentStudentName = resolvedStudentName
                     currentStudentCode = serverStudentCode
+                    hasPromptedCaptureThisSession = false
+                    isConnectingInProgress = false
                     Log.i(TAG, "Handshake OK - Student: $resolvedStudentName ($serverStudentCode), ClassCode: $currentClassCode")
 
                     withContext(Dispatchers.Main) {
-                        txtError.visibility = View.GONE
-                        edtStudentName.setText(resolvedStudentName)
-                        edtStudentCode.setText(serverStudentCode)
-                        if (chkRemember.isChecked) {
-                            savePreferences(resolvedStudentName, serverStudentCode, password, ip, true)
+                        if (connectionGeneration.get() == sessionGen) {
+                            txtError.visibility = View.GONE
+                            edtStudentName.setText(resolvedStudentName)
+                            edtStudentCode.setText(serverStudentCode)
+                            if (chkRemember.isChecked) {
+                                // Chỉ lưu mã gốc người dùng chọn vào bộ nhớ dài hạn (tránh lưu đè hậu tố tạm nếu trùng máy khác)
+                                val prefCodeToSave = if (serverStudentCode.startsWith("${sanitizeStudentCode(studentCode)}_")) {
+                                    sanitizeStudentCode(studentCode)
+                                } else {
+                                    serverStudentCode
+                                }
+                                val prefNameToSave = if (prefCodeToSave != serverStudentCode && isValidStudentName(studentName)) {
+                                    studentName
+                                } else {
+                                    resolvedStudentName
+                                }
+                                savePreferences(prefNameToSave, prefCodeToSave, password, ip, true)
+                            }
+                            onConnectedSuccess(resolvedStudentName, serverStudentCode, ip, currentClassName, currentTeacherName)
                         }
-                        onConnectedSuccess(resolvedStudentName, serverStudentCode, ip, currentClassName, currentTeacherName)
                     }
+
+                    if (connectionGeneration.get() != sessionGen) return@launch
 
                     // Start Heartbeat & Focus reporter
                     startHeartbeatLoop(serverStudentCode)
                     focusReporter.startReporting()
 
-                    // Start reading commands from Teacher
-                    readTcpStream(input)
+                    // Start reading commands from Teacher bound strictly to this session generation
+                    readTcpStream(input, socket, sessionGen)
                 } else if (ack.startsWith("ERR|")) {
                     val parts = ack.split("|")
                     val errMsg = if (parts.size >= 3) parts[2] else (if (parts.size >= 2) parts[1] else "Đăng nhập không thành công")
@@ -2880,11 +3004,25 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     throw Exception("Không thể xác thực phiên kết nối với máy Giáo viên. Vui lòng thử lại!")
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                if (connectionGeneration.get() == sessionGen) {
+                    isConnectingInProgress = false
+                }
+                try { openedSocket?.close() } catch (_: Exception) {}
+                throw e
             } catch (e: Exception) {
-                Log.e(TAG, "Connection error: ${e.message}")
-                val friendlyMsg = formatFriendlyErrorMessage(e)
-                withContext(Dispatchers.Main) {
-                    showError(friendlyMsg)
+                try { openedSocket?.close() } catch (_: Exception) {}
+                if (connectionGeneration.get() == sessionGen) {
+                    isConnectingInProgress = false
+                    if (tcpSocket === openedSocket) {
+                        tcpSocket = null
+                        tcpOutputStream = null
+                    }
+                    Log.e(TAG, "Connection error: ${e.message}")
+                    val friendlyMsg = formatFriendlyErrorMessage(e)
+                    withContext(Dispatchers.Main) {
+                        showError(friendlyMsg)
+                    }
                 }
             }
         }
@@ -2957,8 +3095,11 @@ class MainActivity : AppCompatActivity() {
                 delay(10000)
                 try {
                     val hb = "HB|$studentCode|ACTIVE\n"
-                    tcpOutputStream?.write(hb.toByteArray(Charsets.UTF_8))
-                    tcpOutputStream?.flush()
+                    val os = tcpOutputStream ?: break
+                    synchronized(os) {
+                        os.write(hb.toByteArray(Charsets.UTF_8))
+                        os.flush()
+                    }
                 } catch (e: Exception) {
                     Log.w(TAG, "Heartbeat write failed: ${e.message}")
                     break
@@ -2967,11 +3108,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun readTcpStream(input: InputStream) = withContext(Dispatchers.IO) {
+    private suspend fun readTcpStream(input: InputStream, ownerSocket: Socket, sessionGen: Long) = withContext(Dispatchers.IO) {
         val buffer = ByteArray(4096)
         val msgBuffer = StringBuilder()
         try {
-            while (tcpSocket?.isConnected == true) {
+            while (connectionGeneration.get() == sessionGen && ownerSocket.isConnected && !ownerSocket.isClosed) {
                 val bytesRead = input.read(buffer)
                 if (bytesRead == -1) break
 
@@ -3015,13 +3156,20 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Stream read ended: ${e.message}")
+            if (connectionGeneration.get() == sessionGen) {
+                Log.w(TAG, "Stream read ended (gen=$sessionGen): ${e.message}")
+            }
         } finally {
-            withContext(Dispatchers.Main) {
-                if (isUserInitiatedDisconnect) {
-                    disconnectFromTeacher("Học sinh chủ động rời lớp")
-                } else {
-                    attemptSilentLanReconnect()
+            // Chốt chặn chống vòng lặp Reconnect giả: nếu phiên này đã bị thay thế bởi phiên mới hoặc đã chủ động ngắt, thoát êm
+            if (connectionGeneration.get() == sessionGen) {
+                withContext(Dispatchers.Main) {
+                    if (connectionGeneration.get() == sessionGen) {
+                        if (isUserInitiatedDisconnect) {
+                            disconnectFromTeacher("Học sinh chủ động rời lớp")
+                        } else {
+                            attemptSilentLanReconnect(sessionGen)
+                        }
+                    }
                 }
             }
         }
@@ -3031,7 +3179,10 @@ class MainActivity : AppCompatActivity() {
      * Micro-interaction: Cảnh báo mất kết nối mạng LAN trên Top Banner và tự động kết nối lại tối đa 5 lần
      * mà không xóa bài nháp hoặc văng học sinh ra màn hình đăng nhập ngay lập tức.
      */
-    private fun attemptSilentLanReconnect() {
+    private fun attemptSilentLanReconnect(triggerGen: Long) {
+        if (connectionGeneration.get() != triggerGen) return
+        if (reconnectJob?.isActive == true) return
+
         val ip = currentTeacherIp ?: discoveredTeacherIp
         if (ip.isNullOrBlank()) {
             disconnectFromTeacher("Mất kết nối tới máy chủ Giáo viên")
@@ -3046,62 +3197,113 @@ class MainActivity : AppCompatActivity() {
         lanReconnectBanner.visibility = View.VISIBLE
         lanReconnectBanner.setBackgroundColor(0xFFEA580C.toInt())
 
-        lifecycleScope.launch(Dispatchers.IO) {
+        reconnectJob = lifecycleScope.launch(Dispatchers.IO) {
             var reconnected = false
             var sessionCodeChanged = false
             for (attempt in 1..5) {
+                if (!isActive || connectionGeneration.get() != triggerGen) return@launch
+
                 withContext(Dispatchers.Main) {
-                    txtLanReconnectStatus.text = "Tín hiệu mạng phòng học đang yếu — Đang tự động kết nối lại (Lần $attempt/5)..."
+                    if (connectionGeneration.get() == triggerGen) {
+                        txtLanReconnectStatus.text = "Tín hiệu mạng phòng học đang yếu — Đang tự động kết nối lại (Lần $attempt/5)..."
+                    }
                 }
                 delay(2500)
+                if (!isActive || connectionGeneration.get() != triggerGen) return@launch
+
+                var candidateSocket: Socket? = null
                 try {
                     val socket = Socket()
+                    candidateSocket = socket
                     socket.connect(InetSocketAddress(ip, port), 3000)
                     val output = socket.getOutputStream()
                     val input = socket.getInputStream()
-                    val joinMsg = "JOIN|$name|$code|Android_Tablet|1.0|||$pwd|$activeClassCode\n"
+                    val pinSegment = if (activeClassCode.isNotBlank()) "|PIN=$activeClassCode" else ""
+                    val devicePcName = buildAndroidPcName()
+                    val joinMsg = "JOIN|$name|$code|$devicePcName|1.0|||$pwd|$activeClassCode$pinSegment\n"
                     output.write(joinMsg.toByteArray(Charsets.UTF_8))
                     output.flush()
 
                     val buffer = ByteArray(2048)
                     val len = input.read(buffer)
                     if (len > 0) {
-                        val ack = String(buffer, 0, len, Charsets.UTF_8).removePrefix("\uFEFF").trim()
-                        if (ack.startsWith("OK")) {
+                        val rawAck = String(buffer, 0, len, Charsets.UTF_8).trim()
+                        val ack = rawAck
+                            .removePrefix("\uFEFF")
+                            .substringBefore("\n")
+                            .substringBefore("ENC_CMD|")
+                            .trim()
+                        if (ack.startsWith("OK|") || ack == "OK") {
+                            if (connectionGeneration.get() != triggerGen) {
+                                try { socket.close() } catch (_: Exception) {}
+                                return@launch
+                            }
+
+                            val ackParts = ack.split("|")
+                            if (ackParts.size >= 4 && ackParts[3].isNotBlank()) {
+                                currentSessionKey = ackParts[3].trim()
+                            }
+                            if (ackParts.size >= 5 && ackParts[4].isNotBlank()) {
+                                currentClassCode = ackParts[4].trim()
+                            }
+                            if (ackParts.size >= 6 && ackParts[5].isNotBlank()) {
+                                currentSessionSalt = ackParts[5].substringBefore("ENC_CMD").trim()
+                            }
+                            if (ackParts.size >= 7 && isValidStudentName(ackParts[6].trim())) {
+                                currentStudentName = ackParts[6].trim()
+                            }
+                            if (ackParts.size >= 8 && isValidStudentCode(ackParts[7])) {
+                                currentStudentCode = ackParts[7].trim()
+                            }
+
+                            val newGen = connectionGeneration.incrementAndGet()
+                            val prevSocket = tcpSocket
                             tcpSocket = socket
                             tcpOutputStream = output
+                            if (prevSocket != null && prevSocket !== socket) {
+                                try { prevSocket.close() } catch (_: Exception) {}
+                            }
                             reconnected = true
+
                             withContext(Dispatchers.Main) {
                                 lanReconnectBanner.setBackgroundColor(0xFF16A34A.toInt())
                                 txtLanReconnectStatus.text = "Đã kết nối lại thành công với máy Giáo viên!"
                                 requestCurrentLessonAndBroadcastStatus()
                             }
-                            delay(1400)
-                            withContext(Dispatchers.Main) {
-                                lanReconnectBanner.visibility = View.GONE
+                            lifecycleScope.launch(Dispatchers.Main) {
+                                delay(1400)
+                                if (tcpSocket === socket && ::lanReconnectBanner.isInitialized) {
+                                    lanReconnectBanner.visibility = View.GONE
+                                }
                             }
-                            startHeartbeatLoop(code)
-                            readTcpStream(input)
+                            startHeartbeatLoop(currentStudentCode.ifBlank { code })
+                            connectionJob = lifecycleScope.launch(Dispatchers.IO) {
+                                readTcpStream(input, socket, newGen)
+                            }
                             break
-                        } else if (ack.contains("INVALID_CLASS_CODE") || ack.contains("CLASS_CODE_REQUIRED")) {
+                        } else if (ack.contains("INVALID_CLASS_CODE") || ack.contains("CLASS_CODE_REQUIRED") || ack.contains("INVALID_PIN")) {
                             sessionCodeChanged = true
                             socket.close()
                             break
                         }
                     }
                     socket.close()
-                } catch (_: Exception) {}
+                } catch (_: Exception) {
+                    try { candidateSocket?.close() } catch (_: Exception) {}
+                }
             }
 
-            if (!reconnected) {
+            if (!reconnected && connectionGeneration.get() == triggerGen) {
                 withContext(Dispatchers.Main) {
-                    lanReconnectBanner.visibility = View.GONE
-                    if (sessionCodeChanged) {
-                        edtJoinClassCode.setText("")
-                        disconnectFromTeacher("Phiên học đã đổi Mã vào lớp mới")
-                        showError("Giáo viên đã tạo Mã vào lớp mới. Em hãy nhìn lên màn hình Giáo viên để nhập mã mới nhé!")
-                    } else {
-                        disconnectFromTeacher("Mất kết nối mạng LAN tới máy Giáo viên")
+                    if (connectionGeneration.get() == triggerGen) {
+                        lanReconnectBanner.visibility = View.GONE
+                        if (sessionCodeChanged) {
+                            edtJoinClassCode.setText("")
+                            disconnectFromTeacher("Phiên học đã đổi Mã vào lớp mới")
+                            showError("Giáo viên đã tạo Mã vào lớp mới. Em hãy nhìn lên màn hình Giáo viên để nhập mã mới nhé!")
+                        } else {
+                            disconnectFromTeacher("Mất kết nối mạng LAN tới máy Giáo viên")
+                        }
                     }
                 }
             }
@@ -3318,6 +3520,7 @@ class MainActivity : AppCompatActivity() {
                     var token = currentBroadcastToken
                     var title = ""
                     var presenterCode = ""
+                    val isForceUpdate = cleanCmd.contains("FORCE_WATCH")
                     for (part in cmdParts) {
                         if (part.contains("=")) {
                             val kv = part.split("=", limit = 2)
@@ -3340,7 +3543,7 @@ class MainActivity : AppCompatActivity() {
                     if (isStudentDemoPresenting || (presenterCode.isNotBlank() && presenterCode.equals(currentStudentCode, ignoreCase = true))) {
                         return@runOnUiThread
                     }
-                    updateScreenBroadcast(token, webPort, title)
+                    updateScreenBroadcast(token, webPort, title, isForceUpdate)
                 }
                 cleanCmd.startsWith("CMD|CLASS_CHAT_MUTE|") || cleanCmd.startsWith("CMD|CLASS_CHAT_MUTE_STUDENT|") -> {
                     // Giáo viên khóa/mở trò chuyện cả lớp (chỉ ảnh hưởng kênh "Nhắn với lớp")
@@ -3758,6 +3961,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startScreenBroadcast(token: String, webPort: Int, isForce: Boolean, title: String) {
+        val alreadyStreamingSameSession =
+            isScreenBroadcastActive &&
+            broadcastPollJob?.isActive == true &&
+            token.isNotEmpty() &&
+            token == currentBroadcastToken &&
+            webPort == currentTeacherWebPort
+
         isScreenBroadcastActive = true
         isForceBroadcastMode = isForce
         runOnUiThread {
@@ -3775,18 +3985,29 @@ class MainActivity : AppCompatActivity() {
 
         layoutNoBroadcast.visibility = View.GONE
         layoutLiveBroadcast.visibility = View.VISIBLE
-        progressBroadcastLoading.visibility = View.VISIBLE
 
+        // Giữ nguyên giao diện inline mặc định trên trang Lớp học như ban đầu (không tự nhảy Fullscreen khi chiếu thường):
+        // - Chỉ tự mở Fullscreen khi Giáo viên tích "Bắt buộc xem (FORCE_WATCH)".
+        // - Khi học sinh bấm "⛶ Toàn màn hình", luôn có nút "↙ Thu nhỏ" rõ ràng ở cả góc trên phải & thanh đáy để thu bé lại ngay 1 chạm.
         if (isForce) {
             broadcastOverlay.visibility = View.VISIBLE
             btnCloseBroadcast.visibility = View.GONE
+            findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.GONE
             showBroadcastControlsAndScheduleHide()
         } else {
             btnCloseBroadcast.visibility = View.VISIBLE
+            findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.VISIBLE
         }
+
+        if (alreadyStreamingSameSession) {
+            return
+        }
+        progressBroadcastLoading.visibility = View.VISIBLE
 
         broadcastPollJob?.cancel()
         val teacherIp = currentTeacherIp ?: "10.0.2.2"
+        syncBroadcastAudioMuteUi()
+        startBroadcastAudioStream(teacherIp, currentTeacherWebPort, currentBroadcastToken)
 
         broadcastPollJob = lifecycleScope.launch(Dispatchers.IO) {
             Log.i(TAG, "Starting smooth & crisp ARGB_8888 broadcast stream from $teacherIp:$currentTeacherWebPort with token: $currentBroadcastToken")
@@ -3887,81 +4108,87 @@ class MainActivity : AppCompatActivity() {
                 inScaled = false
             }
             try {
-                while (isActive && isScreenBroadcastActive && streamFailures < 3) {
-                    var streamConn: HttpURLConnection? = null
-                    try {
-                        val sUrl = URL("http://$teacherIp:$currentTeacherWebPort/api/broadcast_stream?t=${System.currentTimeMillis()}$tokenParamOnce")
-                        streamConn = (sUrl.openConnection() as HttpURLConnection).apply {
-                            connectTimeout = 2500
-                            readTimeout = 15000
-                            requestMethod = "GET"
-                            useCaches = false
-                            setRequestProperty("User-Agent", "QASmartClass-Android/1.0")
-                        }
-                        if (streamConn.responseCode != 200) {
-                            streamFailures++
-                            streamConn.disconnect()
-                            delay(300)
-                            continue
-                        }
-                        val din = java.io.DataInputStream(java.io.BufferedInputStream(streamConn.inputStream, 262144))
-                        var gotFrame = false
-                        while (isActive && isScreenBroadcastActive) {
-                            val len = din.readInt()
-                            if (len <= 0 || len > 20_000_000) throw java.io.IOException("Invalid frame length $len")
-                            val data = ByteArray(len)
-                            din.readFully(data)
-                            // KHÔNG bỏ qua frame trung gian (chỉ xả bớt nếu hàng đợi đã đầy quá 32 frame ~ 1 giây, nhưng luôn giữ frame mới nhất là Keyframe Q=94)
-                            if (playoutQueue.size >= 32 && din.available() >= 4) continue
-                            val bitmap = decodeFrameCrispAndSmooth(data, len)
-                            if (bitmap != null) {
-                                gotFrame = true
-                                streamFailures = 0
-                                enqueueFrameSmooth(bitmap)
-                            }
-                        }
-                        if (!gotFrame) streamFailures++
-                    } catch (e: Exception) {
-                        if (isActive && isScreenBroadcastActive) {
-                            Log.d(TAG, "Frame stream error: ${e.message}")
-                            streamFailures++
-                            delay(200)
-                        }
-                    } finally {
-                        try { streamConn?.disconnect() } catch (_: Exception) {}
-                    }
-                }
-
-                // Dự phòng: polling từng ảnh (tương thích server cũ)
                 while (isActive && isScreenBroadcastActive) {
-                    try {
-                        val tokenParam = if (currentBroadcastToken.isNotEmpty()) "&token=$currentBroadcastToken" else ""
-                        val urlString = "http://$teacherIp:$currentTeacherWebPort/api/broadcast_image?t=${System.currentTimeMillis()}$tokenParam"
-                        val url = URL(urlString)
-                        val conn = (url.openConnection() as HttpURLConnection).apply {
-                            connectTimeout = 2500
-                            readTimeout = 2500
-                            requestMethod = "GET"
-                            useCaches = false
-                            setRequestProperty("User-Agent", "QASmartClass-Android/1.0")
-                        }
-
-                        val code = conn.responseCode
-                        if (code == 200) {
-                            conn.inputStream.use { input ->
-                                val bitmap = BitmapFactory.decodeStream(input, null, fallbackDecodeOpts)
+                    while (isActive && isScreenBroadcastActive && streamFailures < 3) {
+                        var streamConn: HttpURLConnection? = null
+                        try {
+                            val activeTokenParam = if (currentBroadcastToken.isNotEmpty()) "&token=$currentBroadcastToken" else tokenParamOnce
+                            val sUrl = URL("http://$teacherIp:$currentTeacherWebPort/api/broadcast_stream?t=${System.currentTimeMillis()}$activeTokenParam")
+                            streamConn = (sUrl.openConnection() as HttpURLConnection).apply {
+                                connectTimeout = 2500
+                                readTimeout = 15000
+                                requestMethod = "GET"
+                                useCaches = false
+                                setRequestProperty("User-Agent", "QASmartClass-Android/1.0")
+                            }
+                            if (streamConn.responseCode != 200) {
+                                Log.w(TAG, "Broadcast stream HTTP ${streamConn.responseCode} from $teacherIp:$currentTeacherWebPort")
+                                streamFailures++
+                                streamConn.disconnect()
+                                delay(300)
+                                continue
+                            }
+                            val din = java.io.DataInputStream(java.io.BufferedInputStream(streamConn.inputStream, 262144))
+                            var gotFrame = false
+                            while (isActive && isScreenBroadcastActive) {
+                                val len = din.readInt()
+                                if (len <= 0 || len > 20_000_000) throw java.io.IOException("Invalid frame length $len")
+                                val data = ByteArray(len)
+                                din.readFully(data)
+                                if (playoutQueue.size >= 32 && din.available() >= 4) continue
+                                val bitmap = decodeFrameCrispAndSmooth(data, len)
                                 if (bitmap != null) {
+                                    gotFrame = true
+                                    streamFailures = 0
                                     enqueueFrameSmooth(bitmap)
                                 }
                             }
-                        } else {
-                            Log.d(TAG, "Broadcast HTTP response: $code")
+                            if (!gotFrame) streamFailures++
+                        } catch (e: Exception) {
+                            if (isActive && isScreenBroadcastActive) {
+                                Log.w(TAG, "Broadcast stream error ($teacherIp:$currentTeacherWebPort): ${e.message}")
+                                streamFailures++
+                                delay(250)
+                            }
+                        } finally {
+                            try { streamConn?.disconnect() } catch (_: Exception) {}
                         }
-                        conn.disconnect()
-                    } catch (e: Exception) {
-                        Log.d(TAG, "Frame fetch error: ${e.message}")
                     }
-                    delay(40)
+
+                    // Dự phòng ngắn hạn (15 chu kỳ) bằng HTTP Pull đơn ảnh rồi tự động nâng cấp lại lên luồng stream tốc độ cao
+                    var pullCycles = 0
+                    while (isActive && isScreenBroadcastActive && pullCycles < 15) {
+                        pullCycles++
+                        try {
+                            val tokenParam = if (currentBroadcastToken.isNotEmpty()) "&token=$currentBroadcastToken" else ""
+                            val urlString = "http://$teacherIp:$currentTeacherWebPort/api/broadcast_image?t=${System.currentTimeMillis()}$tokenParam"
+                            val url = URL(urlString)
+                            val conn = (url.openConnection() as HttpURLConnection).apply {
+                                connectTimeout = 2500
+                                readTimeout = 2500
+                                requestMethod = "GET"
+                                useCaches = false
+                                setRequestProperty("User-Agent", "QASmartClass-Android/1.0")
+                            }
+
+                            val code = conn.responseCode
+                            if (code == 200) {
+                                conn.inputStream.use { input ->
+                                    val bitmap = BitmapFactory.decodeStream(input, null, fallbackDecodeOpts)
+                                    if (bitmap != null) {
+                                        enqueueFrameSmooth(bitmap)
+                                    }
+                                }
+                            } else {
+                                Log.w(TAG, "Broadcast pull HTTP $code from $teacherIp:$currentTeacherWebPort")
+                            }
+                            conn.disconnect()
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Broadcast pull error ($teacherIp:$currentTeacherWebPort): ${e.message}")
+                        }
+                        delay(60)
+                    }
+                    streamFailures = 0
                 }
             } finally {
                 playoutJob.cancel()
@@ -3970,14 +4197,133 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateScreenBroadcast(token: String, webPort: Int, title: String) {
+    private fun updateScreenBroadcast(token: String, webPort: Int, title: String, isForce: Boolean = false) {
+        if (!isScreenBroadcastActive) {
+            // Tự phục hồi nếu thiết bị Android vào lớp muộn hoặc lỡ gói SCREEN_BROADCAST_START đầu tiên
+            startScreenBroadcast(
+                token.ifBlank { currentBroadcastToken },
+                if (webPort > 0) webPort else currentTeacherWebPort,
+                isForce,
+                title
+            )
+            return
+        }
         if (token.isNotEmpty()) currentBroadcastToken = token
         if (webPort > 0) currentTeacherWebPort = webPort
         if (title.isNotEmpty()) {
-            txtBroadcastStatus.text = title
+            txtBroadcastStatus.text = "● TRỰC TIẾP  •  $title"
             txtInlineBroadcastTitle.text = title
             if (activeLessonTitle.isBlank()) activeLessonTitle = title
             runOnUiThread { refreshHome() }
+        }
+    }
+
+    private fun toggleBroadcastAudioMute() {
+        isBroadcastAudioMuted = !isBroadcastAudioMuted
+        syncBroadcastAudioMuteUi()
+    }
+
+    private fun syncBroadcastAudioMuteUi() {
+        runOnUiThread {
+            if (isBroadcastAudioMuted) {
+                btnInlineBroadcastAudio.text = "🔇 Tắt tiếng"
+                btnInlineBroadcastAudio.setTextColor(android.graphics.Color.parseColor("#DC2626"))
+                btnFullscreenMuteAudio.text = "🔇 Đã tắt loa"
+                btnFullscreenMuteAudio.setTextColor(android.graphics.Color.parseColor("#FCA5A5"))
+            } else {
+                btnInlineBroadcastAudio.text = "🔊 Tiếng"
+                btnInlineBroadcastAudio.setTextColor(android.graphics.Color.parseColor("#1A73E8"))
+                btnFullscreenMuteAudio.text = "🔊 Bật tiếng"
+                btnFullscreenMuteAudio.setTextColor(android.graphics.Color.parseColor("#8AB4F8"))
+            }
+        }
+    }
+
+    private fun startBroadcastAudioStream(teacherIp: String, webPort: Int, token: String) {
+        broadcastAudioJob?.cancel()
+        broadcastAudioJob = lifecycleScope.launch(Dispatchers.IO) {
+            val sampleRate = 24000
+            val minBuf = android.media.AudioTrack.getMinBufferSize(
+                sampleRate,
+                android.media.AudioFormat.CHANNEL_OUT_MONO,
+                android.media.AudioFormat.ENCODING_PCM_16BIT
+            )
+            if (minBuf <= 0) {
+                Log.w(TAG, "AudioTrack invalid minBufferSize=$minBuf")
+                return@launch
+            }
+
+            var audioTrack: android.media.AudioTrack? = null
+            try {
+                audioTrack = android.media.AudioTrack.Builder()
+                    .setAudioAttributes(
+                        android.media.AudioAttributes.Builder()
+                            .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+                            .build()
+                    )
+                    .setAudioFormat(
+                        android.media.AudioFormat.Builder()
+                            .setEncoding(android.media.AudioFormat.ENCODING_PCM_16BIT)
+                            .setSampleRate(sampleRate)
+                            .setChannelMask(android.media.AudioFormat.CHANNEL_OUT_MONO)
+                            .build()
+                    )
+                    .setBufferSizeInBytes((minBuf * 2).coerceAtLeast(9600))
+                    .setTransferMode(android.media.AudioTrack.MODE_STREAM)
+                    .build()
+                audioTrack.play()
+            } catch (e: Exception) {
+                Log.w(TAG, "Cannot initialize AudioTrack for broadcast audio: ${e.message}")
+                return@launch
+            }
+
+            val pcmBuf = ByteArray(8192)
+            val tokenQuery = if (token.isNotEmpty()) "?token=${java.net.URLEncoder.encode(token, "UTF-8")}" else ""
+
+            try {
+                while (isActive && isScreenBroadcastActive) {
+                    var conn: java.net.HttpURLConnection? = null
+                    try {
+                        val url = java.net.URL("http://$teacherIp:$webPort/api/audio_stream$tokenQuery")
+                        conn = (url.openConnection() as java.net.HttpURLConnection).apply {
+                            connectTimeout = 2500
+                            readTimeout = 8000
+                            useCaches = false
+                            setRequestProperty("Connection", "close")
+                        }
+                        if (conn.responseCode == 200) {
+                            val din = java.io.DataInputStream(java.io.BufferedInputStream(conn.inputStream, 8192))
+                            while (isActive && isScreenBroadcastActive) {
+                                val len = din.readUnsignedShort()
+                                if (len <= 0 || len > pcmBuf.size) break
+                                din.readFully(pcmBuf, 0, len)
+                                if (!isBroadcastAudioMuted) {
+                                    audioTrack.write(pcmBuf, 0, len)
+                                }
+                            }
+                        }
+                    } catch (_: java.io.EOFException) {
+                    } catch (e: Exception) {
+                        Log.d(TAG, "Broadcast audio stream reconnect: ${e.message}")
+                    } finally {
+                        try { conn?.disconnect() } catch (_: Exception) {}
+                    }
+
+                    if (isActive && isScreenBroadcastActive) {
+                        delay(500)
+                    }
+                }
+            } finally {
+                try {
+                    audioTrack?.pause()
+                    audioTrack?.flush()
+                    audioTrack?.stop()
+                } catch (_: Exception) {}
+                try {
+                    audioTrack?.release()
+                } catch (_: Exception) {}
+            }
         }
     }
 
@@ -3986,6 +4332,8 @@ class MainActivity : AppCompatActivity() {
         isForceBroadcastMode = false
         broadcastUiHideJob?.cancel()
         broadcastUiHideJob = null
+        broadcastAudioJob?.cancel()
+        broadcastAudioJob = null
         broadcastPollJob?.cancel()
         broadcastPollJob = null
 
@@ -4042,11 +4390,14 @@ class MainActivity : AppCompatActivity() {
             var jpeg = com.qasmartclass.student.services.ScreenCaptureService.captureJpeg()
             if (jpeg == null) {
                 withContext(Dispatchers.Main) {
-                    if (focusReporter.appInForeground && !needCapturePrompt) {
-                        needCapturePrompt = false
-                        requestScreenCapture()
-                    } else {
-                        needCapturePrompt = true
+                    if (!hasPromptedCaptureThisSession) {
+                        if (focusReporter.appInForeground) {
+                            hasPromptedCaptureThisSession = true
+                            needCapturePrompt = false
+                            requestScreenCapture()
+                        } else {
+                            needCapturePrompt = true
+                        }
                     }
                 }
                 jpeg = captureAppWindowFallbackJpeg()
@@ -4069,7 +4420,11 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         focusReporter.appInForeground = true
-        if (needCapturePrompt && tcpOutputStream != null) {
+        if (tcpOutputStream != null) {
+            focusReporter.reportNow()
+        }
+        if (needCapturePrompt && !hasPromptedCaptureThisSession && tcpOutputStream != null) {
+            hasPromptedCaptureThisSession = true
             needCapturePrompt = false
             requestScreenCapture()
         }
@@ -4077,11 +4432,26 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        // Học sinh thoát sang ứng dụng khác / về màn hình chính → báo cho giáo viên
+        // Học sinh thoát sang ứng dụng khác / về màn hình chính → báo ngầm ngay cho giáo viên
         focusReporter.appInForeground = false
+        if (tcpOutputStream != null) {
+            focusReporter.reportNow()
+        }
     }
 
     private fun disconnectFromTeacher(reason: String) {
+        // Vô hiệu hóa thế hệ kết nối hiện tại trước khi đóng socket để readTcpStream không bật lại attemptSilentLanReconnect
+        connectionGeneration.incrementAndGet()
+        isConnectingInProgress = false
+        hasPromptedCaptureThisSession = false
+        discoveryJob?.cancel()
+        discoveryJob = null
+        discoveryService.stopListening()
+        reconnectJob?.cancel()
+        reconnectJob = null
+        connectionJob?.cancel()
+        connectionJob = null
+
         isLessonActive = false
         activeLessonTitle = ""
         activeLessonSubject = ""
@@ -4108,15 +4478,17 @@ class MainActivity : AppCompatActivity() {
         currentSessionSalt = ""
         currentClassCode = ""
 
+        val staleSocket = tcpSocket
+        tcpSocket = null
+        tcpOutputStream = null
         try {
-            tcpSocket?.close()
+            staleSocket?.close()
         } catch (e: Exception) {
             // Ignore
         }
-        tcpSocket = null
-        tcpOutputStream = null
 
         runOnUiThread {
+            if (::lanReconnectBanner.isInitialized) lanReconnectBanner.visibility = View.GONE
             lockOverlay.visibility = View.GONE
             if (::badgeRailChat.isInitialized) badgeRailChat.visibility = View.GONE
             if (::badgeRailWork.isInitialized) badgeRailWork.visibility = View.GONE
@@ -4125,13 +4497,15 @@ class MainActivity : AppCompatActivity() {
             btnConnect.isEnabled = true
             progressBar.visibility = View.GONE
             txtStatus.text = reason
-            Toast.makeText(this, reason, Toast.LENGTH_SHORT).show()
-            // Tự động làm mới thông tin lớp học trên mạng LAN sau khi rời lớp
-            btnRefresh.postDelayed({
-                if (discoveryPanel.visibility == View.VISIBLE && tcpSocket == null) {
-                    startAutoDiscovery()
-                }
-            }, 600)
+            if (!isFinishing && !isDestroyed) {
+                Toast.makeText(this, reason, Toast.LENGTH_SHORT).show()
+                // Tự động làm mới thông tin lớp học trên mạng LAN sau khi rời lớp
+                btnRefresh.postDelayed({
+                    if (!isFinishing && !isDestroyed && discoveryPanel.visibility == View.VISIBLE && !isAlreadyConnectedOrConnecting()) {
+                        startAutoDiscovery()
+                    }
+                }, 600)
+            }
         }
     }
 

@@ -136,6 +136,20 @@ namespace QASmartClass.Classroom.Views
 
         private readonly Dictionary<string, ConnectedStudent> _webCodeMap = new(StringComparer.OrdinalIgnoreCase);
 
+        // Danh sách học sinh đang trực tuyến hiển thị trực tiếp ở cột trái (cập nhật mượt không nháy)
+        private readonly ObservableCollection<ConnectedStudent> _onlineStudentsSidebar = new();
+
+        private static bool IsGenericDeviceName(string? pcName)
+        {
+            if (string.IsNullOrWhiteSpace(pcName)) return true;
+            string p = pcName.Trim();
+            return p.Equals("Android_Tablet", StringComparison.OrdinalIgnoreCase)
+                || p.Equals("Android", StringComparison.OrdinalIgnoreCase)
+                || p.Equals("PC", StringComparison.OrdinalIgnoreCase)
+                || p.Equals("Unknown", StringComparison.OrdinalIgnoreCase)
+                || p.Equals("?", StringComparison.OrdinalIgnoreCase);
+        }
+
 
 
         // Off-task app detection list (case-insensitive matching)
@@ -161,6 +175,10 @@ namespace QASmartClass.Classroom.Views
         {
 
             InitializeComponent();
+            if (lstConnectedStudents != null)
+            {
+                lstConnectedStudents.ItemsSource = _onlineStudentsSidebar;
+            }
 
             Loaded += (_, _) =>
 
@@ -447,190 +465,100 @@ namespace QASmartClass.Classroom.Views
 
                 // 1. Prioritized matching logic:
 
-                // First by StudentCode (if present)
-
+                // First by StudentCode (strict identity per connected device/student)
                 ConnectedStudent? student = null;
-
                 if (!string.IsNullOrEmpty(e.StudentCode))
-
                 {
-
                     student = _allStudents.FirstOrDefault(s =>
-
                         !string.IsNullOrEmpty(s.StudentCode) &&
-
                         s.StudentCode.Equals(e.StudentCode, StringComparison.OrdinalIgnoreCase));
-
                 }
 
-
-
-                // Second by Normalized Name
-
-                if (student == null)
-
+                // Second: only match an OFFLINE roster placeholder (without an active distinct StudentCode) by Name
+                if (student == null && !string.IsNullOrWhiteSpace(e.StudentName))
                 {
-
-                    student = _allStudents.FirstOrDefault(s => IsNameMatch(s.Name, e.StudentName));
-
-                }
-
-
-
-                // Third by PCName (fallback for TCP clients)
-
-                if (student == null && !string.IsNullOrEmpty(e.PCName))
-
-                {
-
                     student = _allStudents.FirstOrDefault(s =>
-
-                        !string.IsNullOrEmpty(s.PCName) &&
-
-                        s.PCName.Equals(e.PCName, StringComparison.OrdinalIgnoreCase));
-
+                        !s.IsOnline &&
+                        (string.IsNullOrEmpty(s.StudentCode) || s.StudentCode.Equals(e.StudentCode, StringComparison.OrdinalIgnoreCase)) &&
+                        IsNameMatch(s.Name, e.StudentName));
                 }
 
-
+                // Third: fallback by non-generic PCName ONLY for offline roster entries
+                if (student == null && !IsGenericDeviceName(e.PCName))
+                {
+                    student = _allStudents.FirstOrDefault(s =>
+                        !s.IsOnline &&
+                        string.IsNullOrEmpty(s.StudentCode) &&
+                        !string.IsNullOrEmpty(s.PCName) &&
+                        s.PCName.Equals(e.PCName, StringComparison.OrdinalIgnoreCase));
+                }
 
                 if (student == null)
-
                 {
-
-                    // Create dynamic entry for web student
-
+                    // Create dynamic entry for connected student/device
                     student = new ConnectedStudent
-
                     {
-
                         Name        = e.StudentName,
-
                         PCName      = string.IsNullOrEmpty(e.PCName) ? $"Web-{e.StudentCode}" : e.PCName,
-
                         IPAddress   = e.IPAddress + (e.PCName?.StartsWith("Web-") == true ? " (Web)" : ""),
-
                         StudentCode = e.StudentCode,
-
                         IsOnline    = true,
-
                         FocusPct    = 85
-
                     };
 
                     _allStudents.Add(student);
-
-                    Log.Information("MonitorPage: dynamic entry added: {Name} ({Code})", e.StudentName, e.StudentCode);
-
+                    Log.Information("MonitorPage: dynamic entry added: {Name} ({Code} / {PC})", e.StudentName, e.StudentCode, student.PCName);
                 }
-
                 else
-
                 {
-
                     // Update connection info
-
                     student.StudentCode = e.StudentCode;
-
                     student.IsOnline    = true;
-
                     student.FocusPct    = 85;
-
                     if (!string.IsNullOrEmpty(e.PCName))
-
                         student.PCName = e.PCName;
-
                     if (!string.IsNullOrEmpty(e.IPAddress))
-
                         student.IPAddress = e.IPAddress;
-
                     Log.Information("MonitorPage: matched student {Name} → {Code} ({PC})", student.Name, student.StudentCode, student.PCName);
-
                 }
 
-
-
-                // 2. Prevent duplicates in UI: Check if there's any OTHER student with the same StudentCode or Name
-
-                if (!string.IsNullOrEmpty(student.StudentCode) || !string.IsNullOrEmpty(student.Name))
-
+                // 2. Prevent duplicates ONLY for identical StudentCode (or an offline unbound roster entry with same Name)
+                if (!string.IsNullOrEmpty(student.StudentCode))
                 {
-
                     var duplicates = _allStudents.Where(s =>
-
                         s != student &&
-
-                        ((!string.IsNullOrEmpty(s.StudentCode) && !string.IsNullOrEmpty(student.StudentCode) && s.StudentCode.Equals(student.StudentCode, StringComparison.OrdinalIgnoreCase)) ||
-
-                         IsNameMatch(s.Name, student.Name)))
-
+                        ((!string.IsNullOrEmpty(s.StudentCode) && s.StudentCode.Equals(student.StudentCode, StringComparison.OrdinalIgnoreCase)) ||
+                         (!s.IsOnline && string.IsNullOrEmpty(s.StudentCode) && IsNameMatch(s.Name, student.Name))))
                         .ToList();
 
-
-
                     foreach (var dup in duplicates)
-
                     {
-
-                        // Merge screenshot / status data
-
                         if (student.ScreenshotSource == null && dup.ScreenshotSource != null)
-
                         {
-
                             student.ScreenshotSource = dup.ScreenshotSource;
-
                         }
-
-
 
                         int studentIdx = _allStudents.IndexOf(student);
-
                         int dupIdx = _allStudents.IndexOf(dup);
 
-
-
                         if (dupIdx >= 0 && studentIdx >= 0 && dupIdx < studentIdx)
-
                         {
-
-                            // dup was added earlier (closer to the roster), so dup is the roster card!
-
-                            // Swap them: update connection details to dup, remove student (dynamic card)
-
                             dup.StudentCode = student.StudentCode;
-
                             dup.PCName = student.PCName;
-
                             dup.IPAddress = student.IPAddress;
-
                             dup.IsOnline = true;
-
                             dup.FocusPct = student.FocusPct;
 
-                            
-
                             _allStudents.Remove(student);
-
                             Log.Information("MonitorPage: Kept roster card {Name} ({PC}) and removed dynamic duplicate.", dup.Name, dup.PCName);
-
                             student = dup;
-
                         }
-
                         else
-
                         {
-
-                            // Otherwise, remove 'dup' (dynamic card)
-
                             _allStudents.Remove(dup);
-
                             Log.Information("MonitorPage: Removed duplicate dynamic card for student {Code} ({Name})", student.StudentCode, dup.Name);
-
                         }
-
                     }
-
                 }
 
 
@@ -793,7 +721,9 @@ namespace QASmartClass.Classroom.Views
                             {
                                 student.FocusAlert = false;
                                 student.FocusAppName = "";
+                                AddLog($"Trở lại lớp: {student.PCName}", $"{student.Name} đã quay lại màn hình lớp học.", "#ECFDF5", "#059669");
                             }
+                            UpdateStats();
                             UpdateFocusStatistics();
                         }
                     });
@@ -844,6 +774,7 @@ namespace QASmartClass.Classroom.Views
                            $"Học sinh {student.Name} bị cảnh báo: {reason} (Bài Quiz ID: {quizId})", 
 
                            "#3D1010", "#FF3B30");
+                    UpdateStats();
 
                 });
 
@@ -884,7 +815,10 @@ namespace QASmartClass.Classroom.Views
                     student.IsOnline = true; // UPGRADE_06: Consolidate status on heartbeat receipt!
 
                     student.CpuUsage = cpu;
-                    if (!string.IsNullOrWhiteSpace(activeApp)) student.CurrentApp = activeApp;
+                    if (!string.IsNullOrWhiteSpace(activeApp) && !activeApp.Equals("online", StringComparison.OrdinalIgnoreCase))
+                    {
+                        student.CurrentApp = activeApp;
+                    }
 
 
 
@@ -915,6 +849,7 @@ namespace QASmartClass.Classroom.Views
                         student.HasAlert = false;
 
                     }
+                    UpdateStats();
 
                 });
 
@@ -1059,7 +994,7 @@ namespace QASmartClass.Classroom.Views
 
 
 
-        // ─── O(1) student lookup: webCodeMap first, then linear scan ───
+        // ─── O(1) student lookup: webCodeMap first, then exact StudentCode/PCName ───
 
         private ConnectedStudent? FindStudentByCode(string code)
 
@@ -1075,15 +1010,13 @@ namespace QASmartClass.Classroom.Views
 
 
 
-            // 2. Slow path: scan by PCName or StudentCode (TCP students)
+            // 2. Exact StudentCode first, then exact non-generic PCName
 
             return _allStudents.FirstOrDefault(s =>
 
-                (s.StudentCode != null && s.StudentCode.Equals(code, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(s.StudentCode) && s.StudentCode.Equals(code, StringComparison.OrdinalIgnoreCase)) ||
 
-                s.PCName.Equals(code, StringComparison.OrdinalIgnoreCase) ||
-
-                s.PCName.Contains(code, StringComparison.OrdinalIgnoreCase));
+                (!IsGenericDeviceName(code) && !string.IsNullOrEmpty(s.PCName) && s.PCName.Equals(code, StringComparison.OrdinalIgnoreCase)));
 
         }
 
@@ -1204,63 +1137,41 @@ namespace QASmartClass.Classroom.Views
 
 
                 foreach (var client in connectedClients)
-
                 {
-
                     matchedCodes.Add(client.Code);
 
                     var existing = _allStudents.FirstOrDefault(s =>
-
-                        (!string.IsNullOrEmpty(s.StudentCode) && s.StudentCode.Equals(client.Code, StringComparison.OrdinalIgnoreCase)) ||
-
-                        IsNameMatch(s.Name, client.Name));
-
-
+                        !string.IsNullOrEmpty(s.StudentCode) &&
+                        s.StudentCode.Equals(client.Code, StringComparison.OrdinalIgnoreCase))
+                        ?? _allStudents.FirstOrDefault(s =>
+                            !s.IsOnline &&
+                            string.IsNullOrEmpty(s.StudentCode) &&
+                            IsNameMatch(s.Name, client.Name));
 
                     if (existing != null)
-
                     {
-
                         existing.IsOnline = true;
-
                         existing.StudentCode = client.Code;
-
                         if (!string.IsNullOrEmpty(client.PCName)) existing.PCName = client.PCName;
-
                         if (!string.IsNullOrEmpty(client.IPAddress)) existing.IPAddress = client.IPAddress;
-
+                        SyncClientFocusStateToStudent(client, existing);
                         _webCodeMap[client.Code] = existing;
-
                     }
-
                     else
-
                     {
-
                         var dynamicStudent = new ConnectedStudent
-
                         {
-
                             Name = client.Name,
-
                             StudentCode = client.Code,
-
                             PCName = string.IsNullOrEmpty(client.PCName) ? $"PC-{client.Code}" : client.PCName,
-
                             IPAddress = client.IPAddress,
-
                             IsOnline = true,
-
                             FocusPct = 85
-
                         };
-
-                        _allStudents.Insert(0, dynamicStudent);
-
+                        SyncClientFocusStateToStudent(client, dynamicStudent);
+                        _allStudents.Add(dynamicStudent);
                         _webCodeMap[client.Code] = dynamicStudent;
-
                     }
-
                 }
 
 
@@ -1608,22 +1519,159 @@ namespace QASmartClass.Classroom.Views
             }
             var list = src.ToList();
 
-            var rows = new List<StudentRow>();
-
-            for (int i = 0; i < list.Count; i += _gridColumns)
-
+            string sig = $"{_gridColumns}|{_currentFilter}|{_displayMode}|{_searchText}|{string.Join(",", list.Select(s => $"{s.StudentCode}:{s.Name}:{s.IsOnline}"))}";
+            if (monitorGrid.ItemsSource == null || sig != _lastFilterSignature)
             {
-
-                var row = new StudentRow { ColumnsCount = _gridColumns };
-
-                row.Students.AddRange(list.Skip(i).Take(_gridColumns));
-
-                rows.Add(row);
-
+                _lastFilterSignature = sig;
+                var rows = new List<StudentRow>();
+                for (int i = 0; i < list.Count; i += _gridColumns)
+                {
+                    var row = new StudentRow { ColumnsCount = _gridColumns };
+                    row.Students.AddRange(list.Skip(i).Take(_gridColumns));
+                    rows.Add(row);
+                }
+                monitorGrid.ItemsSource = rows;
+                if (studentGrid != null)
+                {
+                    studentGrid.ItemsSource = list;
+                }
             }
 
-            monitorGrid.ItemsSource = rows;
+            RefreshLeftStudentRosterList();
 
+        }
+
+        private void RefreshLeftStudentRosterList()
+        {
+            if (lstConnectedStudents == null) return;
+            if (lstConnectedStudents.ItemsSource == null)
+            {
+                lstConnectedStudents.ItemsSource = _onlineStudentsSidebar;
+            }
+
+            var onlineNow = _allStudents.Where(s => s.IsOnline).ToList();
+
+            for (int i = _onlineStudentsSidebar.Count - 1; i >= 0; i--)
+            {
+                if (!onlineNow.Contains(_onlineStudentsSidebar[i]))
+                {
+                    _onlineStudentsSidebar.RemoveAt(i);
+                }
+            }
+
+            foreach (var st in onlineNow)
+            {
+                if (!_onlineStudentsSidebar.Contains(st))
+                {
+                    _onlineStudentsSidebar.Add(st);
+                }
+            }
+
+            if (txtLeftStudentListHeader != null)
+            {
+                txtLeftStudentListHeader.Text = $"👥 DANH SÁCH HỌC SINH ({onlineNow.Count})";
+            }
+            if (txtEmptyStudentListHint != null)
+            {
+                txtEmptyStudentListHint.Visibility = onlineNow.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        private void UpdatePersistentOffTaskBanner()
+        {
+            if (offTaskBanner == null || txtOffTaskBannerTitle == null || txtOffTaskBannerDetail == null)
+                return;
+
+            var offTaskStudents = _allStudents
+                .Where(s => s.IsOnline && s.HasAlert)
+                .ToList();
+
+            if (offTaskStudents.Count == 0)
+            {
+                if (offTaskBanner.Visibility != Visibility.Collapsed)
+                {
+                    offTaskBanner.Visibility = Visibility.Collapsed;
+                }
+                return;
+            }
+
+            string title = offTaskStudents.Count == 1
+                ? "⚠️ 1 học sinh đang ở ứng dụng/màn hình khác"
+                : $"⚠️ {offTaskStudents.Count} học sinh đang ở ứng dụng/màn hình khác";
+
+            var lines = offTaskStudents
+                .Take(4)
+                .Select(s =>
+                {
+                    string appName = string.IsNullOrWhiteSpace(s.OffTaskApp) ? "Ứng dụng khác" : s.OffTaskApp;
+                    return $"• {s.Name} ({s.PCName}): {appName}";
+                })
+                .ToList();
+
+            if (offTaskStudents.Count > 4)
+            {
+                lines.Add($"... và {offTaskStudents.Count - 4} học sinh khác");
+            }
+
+            string detail = string.Join("\n", lines);
+
+            if (txtOffTaskBannerTitle.Text != title)
+                txtOffTaskBannerTitle.Text = title;
+            if (txtOffTaskBannerDetail.Text != detail)
+                txtOffTaskBannerDetail.Text = detail;
+            if (offTaskBanner.Visibility != Visibility.Visible)
+                offTaskBanner.Visibility = Visibility.Visible;
+        }
+
+        public void OpenStudentActionByCode(string studentCode)
+        {
+            if (string.IsNullOrWhiteSpace(studentCode)) return;
+            SyncFromNetworkService();
+            ApplyFilter();
+            UpdateStats();
+            var targetStudent = FindStudentByCode(studentCode);
+            if (targetStudent != null)
+            {
+                ShowStudentActionDialog(targetStudent);
+            }
+        }
+
+        private void FilterOffTaskBanner_Click(object sender, RoutedEventArgs e)
+        {
+            _currentFilter = _currentFilter == "alert" ? "all" : "alert";
+            UpdateFilterChips();
+            ApplyFilter();
+        }
+
+        private static void SyncClientFocusStateToStudent(Classroom.Services.ClientInfo client, ConnectedStudent st)
+        {
+            st.IsWatchingBroadcast = client.IsFocusedInClass;
+            if (!string.IsNullOrWhiteSpace(client.ForegroundApp))
+            {
+                st.ForegroundApp = client.ForegroundApp;
+            }
+
+            if (!client.IsFocusedInClass)
+            {
+                string friendlyApp = ConnectedStudent.FriendlyAppName(
+                    string.IsNullOrWhiteSpace(client.ForegroundApp) ? "unknown" : client.ForegroundApp);
+                st.FocusAppName = friendlyApp;
+                st.FocusAlert = true;
+                st.CurrentApp = friendlyApp;
+            }
+            else
+            {
+                st.FocusAlert = false;
+                st.FocusAppName = "";
+                if (!string.IsNullOrWhiteSpace(client.CurrentTabPage))
+                {
+                    st.CurrentApp = $"Trong lớp • {client.CurrentTabPage}";
+                }
+                else if (string.IsNullOrWhiteSpace(st.CurrentApp) || !st.HasAlert)
+                {
+                    st.CurrentApp = "Trong phòng học";
+                }
+            }
         }
 
 
@@ -1646,6 +1694,7 @@ namespace QASmartClass.Classroom.Views
 
             int alerts  = _allStudents.Count(s => s.HasAlert);
             SyncHandRaiseAndChips();
+            RefreshLeftStudentRosterList();
 
             double cpuAvg = online > 0 ? _allStudents.Where(s => s.IsOnline).Average(s => s.CpuUsage) : 0;
 
@@ -1668,33 +1717,23 @@ namespace QASmartClass.Classroom.Views
 
             txtRefreshStatus.Text = _autoRefresh ? $"Tự động: {_refreshSeconds}s" : "Tạm dừng";
 
+            // Cập nhật ngầm trạng thái học sinh rời app/màn hình khác: còn thì giữ cố định không nháy, quay về lớp thì ẩn ngay
+            UpdatePersistentOffTaskBanner();
 
-
-            // Show toast for off-task students (throttle: max once per 8s)
-
+            /* // [MYTHWARE_LITE] Tắt cơ chế bật/tắt ShowToast 6s-8s làm nhấp nháy thông báo học sinh đang ở ứng dụng khác
             if ((DateTime.Now - _lastToastTime).TotalSeconds >= 8)
-
             {
-
                 var offTaskStudents = _allStudents.Where(s => s.HasAlert && !string.IsNullOrEmpty(s.OffTaskApp)).ToList();
-
                 if (offTaskStudents.Any())
-
                 {
-
                     var first = offTaskStudents.First();
-
                     ShowToast(
-
                         $"Cảnh báo: {first.PCName} ({first.Name.Split(' ').Last()})",
-
                         $"Đang mở ứng dụng làm việc riêng ({first.OffTaskApp}) - Yêu cầu tập trung!");
-
                     _lastToastTime = DateTime.Now;
-
                 }
-
             }
+            */
 
         }
 
@@ -1755,8 +1794,7 @@ namespace QASmartClass.Classroom.Views
                 {
                     bool exists = _allStudents.Any(st =>
                         (!string.IsNullOrEmpty(st.StudentCode) && client.Code.Equals(st.StudentCode, StringComparison.OrdinalIgnoreCase)) ||
-                        (!string.IsNullOrEmpty(st.PCName) && client.PCName.Equals(st.PCName, StringComparison.OrdinalIgnoreCase)) ||
-                        IsNameMatch(client.Name, st.Name));
+                        (!st.IsOnline && string.IsNullOrEmpty(st.StudentCode) && IsNameMatch(client.Name, st.Name)));
 
                     if (!exists)
                     {
@@ -1770,77 +1808,68 @@ namespace QASmartClass.Classroom.Views
                             CpuUsage    = client.CpuUsage,
                             FocusPct    = 85
                         };
+                        SyncClientFocusStateToStudent(client, dyn);
                         _allStudents.Add(dyn);
                         _webCodeMap[client.Code] = dyn;
                     }
                 }
 
+                // Lập tập hợp các mã đang trực tuyến để tránh gộp 2 thiết bị có mã khác nhau
+                var matchedOnlineClients = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
                 foreach (var st in _allStudents)
-
                 {
-
-                    // Match TCP students
-
+                    // Match TCP students: ưu tiên tuyệt đối theo StudentCode để không gộp nhầm nhiều thiết bị Android/PC
                     var client = connectedClients.FirstOrDefault(c =>
+                        !string.IsNullOrEmpty(st.StudentCode) &&
+                        c.Code.Equals(st.StudentCode, StringComparison.OrdinalIgnoreCase));
 
-                        (!string.IsNullOrEmpty(st.StudentCode) && c.Code.Equals(st.StudentCode, StringComparison.OrdinalIgnoreCase)) ||
-
-                        c.PCName.Equals(st.PCName, StringComparison.OrdinalIgnoreCase) ||
-
-                        c.Code.Equals(st.PCName, StringComparison.OrdinalIgnoreCase) ||
-
-                        IsNameMatch(c.Name, st.Name));
-
-
+                    if (client == null && string.IsNullOrEmpty(st.StudentCode))
+                    {
+                        client = connectedClients.FirstOrDefault(c =>
+                            !matchedOnlineClients.Contains(c.Code) &&
+                            ((!IsGenericDeviceName(st.PCName) && c.PCName.Equals(st.PCName, StringComparison.OrdinalIgnoreCase)) ||
+                             IsNameMatch(c.Name, st.Name)));
+                    }
 
                     if (client != null)
-
                     {
+                        matchedOnlineClients.Add(client.Code);
 
                         // ═══ REAL connected student (TCP) ═══
-
                         st.IsOnline = true;
-
                         st.IPAddress = client.IPAddress;
-
                         st.CpuUsage = client.CpuUsage;
 
-
-
-                        // Đảm bảo đồng bộ PCName mới nhất (LOI_VID_32)
-
                         if (!string.IsNullOrEmpty(client.PCName))
-
                         {
-
                             st.PCName = client.PCName;
-
                         }
-
-
-
-                        bool isBanned = !string.IsNullOrEmpty(client.ActiveApp) &&
-
-                            BannedApps.Any(banned =>
-
-                                client.ActiveApp.IndexOf(banned, StringComparison.OrdinalIgnoreCase) >= 0);
-
-
-
-                        if (isBanned) { st.OffTaskApp = client.ActiveApp; st.HasAlert = true; }
-
-                        else { st.OffTaskApp = ""; st.HasAlert = false; }
-
-
 
                         if (string.IsNullOrEmpty(st.StudentCode))
-
                         {
-
                             st.StudentCode = client.Code;
-
                         }
+                        _webCodeMap[client.Code] = st;
 
+                        // Đồng bộ ngầm trạng thái Focus (còn ở ứng dụng khác thì giữ nguyên cảnh báo, không bị reset sau 5s)
+                        SyncClientFocusStateToStudent(client, st);
+                        st.IsHandRaised = client.IsHandRaised;
+
+                        bool isBanned = !string.IsNullOrEmpty(client.ActiveApp) &&
+                            BannedApps.Any(banned =>
+                                client.ActiveApp.IndexOf(banned, StringComparison.OrdinalIgnoreCase) >= 0);
+
+                        if (isBanned)
+                        {
+                            st.OffTaskApp = client.ActiveApp;
+                            st.HasAlert = true;
+                        }
+                        else
+                        {
+                            st.OffTaskApp = "";
+                            st.HasAlert = false; // Lưu ý: HasAlert getter vẫn giữ true nếu FocusAlert == true!
+                        }
                     }
 
                     else
@@ -1853,7 +1882,7 @@ namespace QASmartClass.Classroom.Views
 
                             w.Code.Equals(st.StudentCode ?? "", StringComparison.OrdinalIgnoreCase) ||
 
-                            IsNameMatch(w.Name, st.Name));
+                            (string.IsNullOrEmpty(st.StudentCode) && IsNameMatch(w.Name, st.Name)));
 
 
 
@@ -1890,6 +1919,10 @@ namespace QASmartClass.Classroom.Views
                             st.IsOnline = false;
 
                             st.FocusPct = 0;
+
+                            st.FocusAlert = false;
+
+                            st.FocusAppName = "";
 
                             st.OffTaskApp = "";
 
@@ -4261,7 +4294,9 @@ namespace QASmartClass.Classroom.Views
             if ((DateTime.Now - _lastFocusWarningTime).TotalSeconds < 30) return;
             _lastFocusWarningTime = DateTime.Now;
 
-            ShowToast("Cảnh báo tập trung", $"Chỉ có {watching}/{total} học sinh đang theo dõi trình chiếu màn hình!");
+            // [MYTHWARE_LITE] Dùng offTaskBanner tĩnh thay vì bật tắt ShowToast định kỳ gây nhấp nháy
+            UpdatePersistentOffTaskBanner();
+            // ShowToast("Cảnh báo tập trung", $"Chỉ có {watching}/{total} học sinh đang theo dõi trình chiếu màn hình!");
         }
 
         #region Session Integration & View Switcher (Gộp F4 Phiên dạy)
@@ -4619,7 +4654,7 @@ namespace QASmartClass.Classroom.Views
         public string DisplayPCName => $"{DeviceIcon} {(MonitorPage.IsPrivacyModeActive ? MonitorPage.ObfuscatePCName(PCName) : PCName)}";
         public string DisplayIP     => MonitorPage.IsPrivacyModeActive ? "***.***.***.***" : IPAddress;
         public string FocusLabel     => IsOnline ? $"{FocusPct}%" : "Ngoại tuyến";
-        public string StatusDotColor => IsOnline ? "#10B981" : "#94A3B8";
+        public string StatusDotColor => !IsOnline ? "#94A3B8" : (HasAlert ? "#EF4444" : "#10B981");
         public string StatusPillBackground => IsOnline ? "#ECFDF5" : "#F1F5F9";
         public string StatusTextColor => IsOnline ? "#059669" : "#64748B";
         public string StatusText => IsOnline ? "Trực tuyến" : "Ngoại tuyến";
@@ -4767,6 +4802,7 @@ namespace QASmartClass.Classroom.Views
         public void NotifyAlertChanged()
         {
             OnPropertyChanged(nameof(HasAlert));
+            OnPropertyChanged(nameof(StatusDotColor));
             OnPropertyChanged(nameof(OffTaskVisibility));
             OnPropertyChanged(nameof(OffTaskLabel));
             OnPropertyChanged(nameof(OffTaskApp));
