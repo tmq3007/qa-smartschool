@@ -67,6 +67,7 @@ namespace QASmartClass.Classroom.Services
         [DllImport("user32.dll")] private static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr clip, EnumMonitorProc proc, IntPtr data);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern bool GetMonitorInfo(IntPtr hMon, ref MONITORINFOEX mi);
         [DllImport("user32.dll")] private static extern bool EnumWindows(EnumWindowsProc proc, IntPtr lParam);
+        [DllImport("user32.dll")] private static extern bool IsWindow(IntPtr hWnd);
         [DllImport("user32.dll")] private static extern bool IsWindowVisible(IntPtr hWnd);
         [DllImport("user32.dll")] private static extern bool IsIconic(IntPtr hWnd);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetWindowText(IntPtr hWnd, StringBuilder sb, int max);
@@ -98,7 +99,34 @@ namespace QASmartClass.Classroom.Services
         /// <summary>Kiểm tra cửa sổ có còn tồn tại và hiển thị được không.</summary>
         public static bool IsWindowAlive(IntPtr hWnd) => hWnd != IntPtr.Zero && IsWindowVisible(hWnd);
 
+        /// <summary>Kiểm tra handle cửa sổ có còn tồn tại trong hệ điều hành không (kể cả khi đang ẩn bằng Window.Hide hoặc thu nhỏ Minimize).</summary>
+        public static bool IsWindowHandleValid(IntPtr hWnd) => hWnd != IntPtr.Zero && IsWindow(hWnd);
+
         public static bool IsMinimized(IntPtr hWnd) => hWnd != IntPtr.Zero && IsIconic(hWnd);
+
+        public static uint GetWindowProcessId(IntPtr hWnd)
+        {
+            if (hWnd == IntPtr.Zero) return 0;
+            GetWindowThreadProcessId(hWnd, out uint pid);
+            return pid;
+        }
+
+        public static string GetWindowTitle(IntPtr hWnd)
+        {
+            if (hWnd == IntPtr.Zero || !IsWindow(hWnd)) return string.Empty;
+            try
+            {
+                int len = GetWindowTextLength(hWnd);
+                if (len <= 0) return string.Empty;
+                var sb = new StringBuilder(len + 1);
+                GetWindowText(hWnd, sb, sb.Capacity);
+                return sb.ToString().Trim();
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
 
         /// <summary>Danh sách màn hình, màn hình chính đứng đầu.</summary>
         public static List<ScreenSourceInfo> GetScreens()
@@ -177,9 +205,9 @@ namespace QASmartClass.Classroom.Services
                 {
                     Kind = ScreenSourceKind.QaClassPage,
                     PageFormId = "CURRENT",
-                    IconGlyph = "✨",
-                    Title = "Trang đang mở trên SMART CLASS (Tự động)",
-                    Subtitle = "Tự động chiếu trang bài học bạn mở (ẩn thanh menu trái & thanh công cụ của GV)"
+                    IconGlyph = "📌",
+                    Title = "Trang đang mở trên SMART CLASS (Giữ cố định)",
+                    Subtitle = "Khóa cố định trang hiện tại (chuyển sang tab Giám sát/Chat/màn khác Học sinh vẫn chỉ thấy trang này)"
                 },
                 new ScreenSourceInfo
                 {
@@ -187,7 +215,7 @@ namespace QASmartClass.Classroom.Services
                     PageFormId = "SMART_TOUCH",
                     IconGlyph = "🎨",
                     Title = "Bảng trắng tương tác SMART TOUCH",
-                    Subtitle = "Chiếu trực tiếp bảng viết phấn / bút cảm ứng SMART TOUCH"
+                    Subtitle = "Khóa cố định bảng viết SMART TOUCH (chuyển sang DESKTOP / SMART CLASS Học sinh vẫn chỉ thấy bảng viết)"
                 },
                 new ScreenSourceInfo
                 {
@@ -622,7 +650,9 @@ namespace QASmartClass.Classroom.Services
                     usedPrintWindow = PrintWindow(src.Hwnd, hdcFull, PW_RENDERFULLCONTENT);
                     if (!usedPrintWindow)
                     {
-                        BitBlt(hdcFull, 0, 0, w, h, hdcScreen, src.X, src.Y, SRCCOPY);
+                        // [MYTHWARE_LITE] Chuẩn Google Meet: KHÔNG fallback sang chụp màn hình nền (hdcScreen) để tránh rò rỉ cửa sổ đè phía trên
+                        // BitBlt(hdcFull, 0, 0, w, h, hdcScreen, src.X, src.Y, SRCCOPY);
+                        return null;
                     }
                 }
 
@@ -639,6 +669,8 @@ namespace QASmartClass.Classroom.Services
 
                 if (usedPrintWindow && IsMostlyBlackBitmap(opaqueBmp))
                 {
+                    // [MYTHWARE_LITE] Chuẩn Google Meet: Nếu cửa sổ đang bị che hoặc chưa vẽ nội dung, giữ badge biểu tượng thay vì chụp đè màn hình hiện tại
+                    /*
                     BitBlt(hdcFull, 0, 0, w, h, hdcScreen, src.X, src.Y, SRCCOPY);
                     var fallbackRaw = Imaging.CreateBitmapSourceFromHBitmap(
                         hbmFull,
@@ -646,6 +678,8 @@ namespace QASmartClass.Classroom.Services
                         Int32Rect.Empty,
                         BitmapSizeOptions.FromWidthAndHeight(tw, th));
                     opaqueBmp = new FormatConvertedBitmap(fallbackRaw, PixelFormats.Bgr32, null, 0);
+                    */
+                    return null;
                 }
 
                 opaqueBmp.Freeze();

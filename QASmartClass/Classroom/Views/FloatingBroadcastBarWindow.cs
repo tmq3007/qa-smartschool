@@ -67,6 +67,7 @@ namespace QASmartClass.Classroom.Views
         private readonly Button _btnCamMenu;
 
         // Action Pills
+        private readonly Button _btnShareActiveInstead;
         private readonly Button _btnPauseResume;
         private readonly ToggleButton _btnTogglePiP;
 
@@ -98,11 +99,13 @@ namespace QASmartClass.Classroom.Views
         private readonly DispatcherTimer _meterTimer;
         private string _openPopoverMode = ""; // "", "AUDIO", "CAMERA"
         private bool _isPaused;
+        private bool _isLockedSource;
         private bool _suppressCheckboxEvent;
         private bool _suppressDeviceSelectionEvent;
         private Point _touchDragStartScreen;
         private bool _isTouchDragging;
 
+        public event EventHandler? ShareCurrentInsteadRequested;
         public event EventHandler? ChangeSourceRequested;
         public event EventHandler? SelectRegionRequested;
         public event EventHandler? TogglePauseRequested;
@@ -334,7 +337,13 @@ namespace QASmartClass.Classroom.Views
                 VerticalAlignment = VerticalAlignment.Center
             });
 
-            // ─── Cụm nút điều khiển trình bày (Đổi nguồn, Vùng chọn, Đóng băng, Xem thử, Lớp học) ───
+            // ─── Cụm nút điều khiển trình bày (Chiếu màn này thay thế [Google Meet], Đổi nguồn, Vùng chọn, Đóng băng, Xem thử, Lớp học) ───
+            _btnShareActiveInstead = CreateMeetActionPill("🔄 Chiếu màn này thay thế", MeetActiveBlueColor, Colors.White,
+                "Học sinh vẫn đang xem cố định màn hình cũ. Bấm nút này nếu muốn chuyển sang chiếu màn hình hiện tại (Chuẩn Google Meet)");
+            _btnShareActiveInstead.Visibility = Visibility.Collapsed;
+            _btnShareActiveInstead.Click += (_, _) => ShareCurrentInsteadRequested?.Invoke(this, EventArgs.Empty);
+            barPanel.Children.Add(_btnShareActiveInstead);
+
             var btnChangeSource = CreateMeetActionPill("🖥️ Nguồn chiếu", MeetPillDarkColor, Colors.White,
                 "Chọn lại màn hình, cửa sổ ứng dụng, vùng chọn hoặc trang bài giảng");
             btnChangeSource.Click += (_, _) => ChangeSourceRequested?.Invoke(this, EventArgs.Empty);
@@ -1223,12 +1232,36 @@ namespace QASmartClass.Classroom.Views
             {
                 _mainBarBorder.BorderBrush = new SolidColorBrush(MeetBorderColor);
                 _statusDot.Fill = new SolidColorBrush(MeetLiveGreenColor);
-                _txtStatusBadge.Text = "ĐANG TRÌNH BÀY";
+                _txtStatusBadge.Text = _isLockedSource ? "📌 GIỮ CỐ ĐỊNH" : "ĐANG TRÌNH BÀY";
                 _txtStatusBadge.Foreground = new SolidColorBrush(MeetLightBlueColor);
                 _btnPauseResume.Content = "⏸️ Đóng băng";
                 _btnPauseResume.Background = new SolidColorBrush(MeetPillDarkColor);
-                _txtPipOverlayBadge.Text = "🟢 TRỰC TIẾP TRÊN MÁY HS";
+                _txtPipOverlayBadge.Text = _isLockedSource ? "📌 CỐ ĐỊNH TRÊN MÁY HS" : "🟢 TRỰC TIẾP TRÊN MÁY HS";
                 _txtPipOverlayBadge.Foreground = new SolidColorBrush(Color.FromRgb(0x81, 0xC9, 0x95));
+            }
+        }
+
+        public void UpdateSourceLockIndicator(bool isLockedSource, bool canSwitchToCurrentScreen, string switchTargetLabel)
+        {
+            _isLockedSource = isLockedSource;
+            if (!_isPaused)
+            {
+                _txtStatusBadge.Text = _isLockedSource ? "📌 GIỮ CỐ ĐỊNH" : "ĐANG TRÌNH BÀY";
+                _txtPipOverlayBadge.Text = _isLockedSource ? "📌 CỐ ĐỊNH TRÊN MÁY HS" : "🟢 TRỰC TIẾP TRÊN MÁY HS";
+            }
+
+            if (isLockedSource && canSwitchToCurrentScreen && !string.IsNullOrWhiteSpace(switchTargetLabel))
+            {
+                string shortLabel = switchTargetLabel.Length > 20
+                    ? switchTargetLabel.Substring(0, 20) + "…"
+                    : switchTargetLabel;
+                _btnShareActiveInstead.Content = $"🔄 Chiếu '{shortLabel}' thay thế";
+                _btnShareActiveInstead.ToolTip = $"Đang giữ cố định nguồn cũ cho Học sinh. Bấm để chuyển sang chiếu: {switchTargetLabel} (Chuẩn Google Meet)";
+                _btnShareActiveInstead.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                _btnShareActiveInstead.Visibility = Visibility.Collapsed;
             }
         }
     }

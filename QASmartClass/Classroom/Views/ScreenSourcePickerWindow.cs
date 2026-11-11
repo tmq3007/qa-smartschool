@@ -61,10 +61,10 @@ namespace QASmartClass.Classroom.Views
         };
         private readonly TextBlock _empty = new() { Foreground = Brushes.Gray, FontSize = 14, Margin = new Thickness(12), Visibility = Visibility.Collapsed };
 
-        private readonly ToggleButton_ _tabAll = new("🌟 Tất cả (Màn hình & Cửa sổ)");
+        private readonly ToggleButton_ _tabAll = new("🌟 Tất cả");
+        private readonly ToggleButton_ _tabQaPage = new("📑 Trang / Bảng viết (Giữ cố định)");
+        private readonly ToggleButton_ _tabWindow = new("🪟 Cửa sổ ứng dụng (Giữ cố định)");
         private readonly ToggleButton_ _tabScreen = new("🖥️ Toàn màn hình");
-        private readonly ToggleButton_ _tabWindow = new("🪟 Cửa sổ ứng dụng");
-        private readonly ToggleButton_ _tabQaPage = new("📑 Trang trong QA SmartClass");
         private readonly ToggleButton_ _tabRegion = new("✂️ Chọn vùng màn hình");
 
         private ScreenSourceKind _tab = ScreenSourceKind.Screen;
@@ -124,24 +124,25 @@ namespace QASmartClass.Classroom.Views
             });
             headerStack.Children.Add(new TextBlock
             {
-                Text = "Bạn có thể chiếu toàn màn hình, kéo chọn một vùng bất kỳ, hoặc chiếu riêng một trang trong QA SmartClass.",
+                Text = "Chuẩn Google Meet: Chọn 'Trang / Bảng viết' hoặc 'Cửa sổ ứng dụng' để giữ cố định màn đó (chuyển sang màn khác Học sinh vẫn chỉ thấy màn đã chọn). Chọn 'Toàn màn hình' khi muốn chiếu mọi thao tác.",
                 FontSize = 13,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B)),
-                Margin = new Thickness(0, 2, 0, 0)
+                Foreground = new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69)),
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 3, 0, 0)
             });
             Grid.SetRow(headerStack, 0);
             root.Children.Add(headerStack);
 
             var tabs = new WrapPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 10) };
             _tabAll.Click += (_, _) => { _isAllTab = true; SwitchTab(ScreenSourceKind.Screen); };
-            _tabScreen.Click += (_, _) => { _isAllTab = false; SwitchTab(ScreenSourceKind.Screen); };
-            _tabWindow.Click += (_, _) => { _isAllTab = false; SwitchTab(ScreenSourceKind.Window); };
             _tabQaPage.Click += (_, _) => { _isAllTab = false; SwitchTab(ScreenSourceKind.QaClassPage); };
+            _tabWindow.Click += (_, _) => { _isAllTab = false; SwitchTab(ScreenSourceKind.Window); };
+            _tabScreen.Click += (_, _) => { _isAllTab = false; SwitchTab(ScreenSourceKind.Screen); };
             _tabRegion.Click += (_, _) => { _isAllTab = false; SwitchTab(ScreenSourceKind.Region); };
             tabs.Children.Add(_tabAll);
-            tabs.Children.Add(_tabScreen);
-            tabs.Children.Add(_tabWindow);
             tabs.Children.Add(_tabQaPage);
+            tabs.Children.Add(_tabWindow);
+            tabs.Children.Add(_tabScreen);
             tabs.Children.Add(_tabRegion);
             Grid.SetRow(tabs, 1);
             root.Children.Add(tabs);
@@ -466,7 +467,49 @@ namespace QASmartClass.Classroom.Views
             int version = ++_loadVersion;
             var dpi = VisualTreeHelper.GetDpi(this);
 
-            if (kind == ScreenSourceKind.Region)
+            if (!_isAllTab && (kind == ScreenSourceKind.Window || kind == ScreenSourceKind.QaClassPage))
+            {
+                var lockBanner = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(0xEC, 0xFD, 0xF5)),
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(0x6E, 0xE7, 0xB7)),
+                    BorderThickness = new Thickness(1.5),
+                    CornerRadius = new CornerRadius(10),
+                    Padding = new Thickness(14, 10, 14, 10)
+                };
+                lockBanner.Child = new TextBlock
+                {
+                    Text = "📌 Cơ chế Giữ cố định chuẩn Google Meet: Học sinh CHỈ nhìn thấy đúng Cửa sổ hoặc Trang bạn chọn dưới đây. Dù bạn Alt+Tab sang ứng dụng khác, thu nhỏ cửa sổ, hay chuyển chế độ làm việc, màn hình Học sinh vẫn giữ cố định nguồn này.",
+                    FontSize = 12.5,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x06, 0x5F, 0x46)),
+                    TextWrapping = TextWrapping.Wrap
+                };
+                _topExtraPanel.Children.Add(lockBanner);
+                _topExtraPanel.Visibility = Visibility.Visible;
+            }
+            else if (!_isAllTab && kind == ScreenSourceKind.Screen)
+            {
+                var screenBanner = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(0xFF, 0xFB, 0xEB)),
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(0xFC, 0xD3, 0x4D)),
+                    BorderThickness = new Thickness(1.5),
+                    CornerRadius = new CornerRadius(10),
+                    Padding = new Thickness(14, 10, 14, 10)
+                };
+                screenBanner.Child = new TextBlock
+                {
+                    Text = "🖥️ Chế độ Toàn màn hình: Học sinh sẽ nhìn thấy mọi cửa sổ mở trên màn hình này. Nếu bạn chỉ muốn chiếu cố định 1 ứng dụng hoặc 1 bảng viết (chuyển màn khác không bị đổi theo), hãy chọn tab '📑 Trang / Bảng viết (Giữ cố định)' hoặc '🪟 Cửa sổ ứng dụng (Giữ cố định)'.",
+                    FontSize = 12.5,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(0x92, 0x40, 0x0E)),
+                    TextWrapping = TextWrapping.Wrap
+                };
+                _topExtraPanel.Children.Add(screenBanner);
+                _topExtraPanel.Visibility = Visibility.Visible;
+            }
+            else if (kind == ScreenSourceKind.Region)
             {
                 // Banner nút to để kéo vẽ vùng chọn trực tiếp trên màn hình
                 var drawBanner = new Border
@@ -565,9 +608,9 @@ namespace QASmartClass.Classroom.Views
                     Text = it.Kind switch
                     {
                         ScreenSourceKind.Screen => "TOÀN MÀN HÌNH",
-                        ScreenSourceKind.Window => "CỬA SỔ ỨNG DỤNG",
+                        ScreenSourceKind.Window => "📌 CỬA SỔ CỐ ĐỊNH",
                         ScreenSourceKind.Region => "VÙNG MÀN HÌNH",
-                        _ => it.PageFormId == "CURRENT" ? "TỰ ĐỘNG THEO TAB" : "TRANG QA SMARTCLASS"
+                        _ => "📌 TRANG / BẢNG CỐ ĐỊNH"
                     },
                     FontSize = 10,
                     FontWeight = FontWeights.Bold,

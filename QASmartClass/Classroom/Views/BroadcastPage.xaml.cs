@@ -311,6 +311,10 @@ namespace QASmartClass.Classroom.Views
                 if (_floatingBroadcastBar == null || !_floatingBroadcastBar.IsLoaded)
                 {
                     _floatingBroadcastBar = new FloatingBroadcastBarWindow(_hideClassroomShellFromStudents);
+                    _floatingBroadcastBar.ShareCurrentInsteadRequested += (_, _) =>
+                    {
+                        Dispatcher.Invoke(SwitchBroadcastToActiveScreenInstead);
+                    };
                     _floatingBroadcastBar.ChangeSourceRequested += (_, _) =>
                     {
                         Dispatcher.Invoke(() => OpenSourcePicker(ScreenSourceKind.Screen, out _));
@@ -363,6 +367,7 @@ namespace QASmartClass.Classroom.Views
 
                 int recipientCount = ClassroomAppContext.Network?.ConnectedCount ?? 0;
                 _floatingBroadcastBar.UpdateStatus(_isPaused || _isBroadcastPausedDueToPrivacy, "00:00", recipientCount, sourceDescription);
+                UpdateGoogleMeetSourceLockState();
             }
             catch (Exception ex)
             {
@@ -691,6 +696,12 @@ namespace QASmartClass.Classroom.Views
                 _isPaused = false;
                 _seconds = 0;
                 _lastCompositedCamSeq = -1;
+                _lastIsolatedSourceBitmap = null;
+                _pendingSwitchCandidate = null;
+                _pendingSwitchLabel = "";
+                _sharedWindowClosedStopTriggered = false;
+                var stopShell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                stopShell?.ClearPinnedBroadcastPage();
                 _ = LiveBroadcastMediaService.Instance.StopSessionAsync();
                 
                 // Dừng bộ giám sát tài nguyên (V2.2.4)
@@ -957,8 +968,18 @@ namespace QASmartClass.Classroom.Views
             _isFirstCapture = true;
             _lastFrameSampleHash = 0;
             _lastCompositedCamSeq = -1;
+            _lastIsolatedSourceBitmap = null;
+            _pendingSwitchCandidate = null;
+            _pendingSwitchLabel = "";
+            _sharedWindowClosedStopTriggered = false;
             _settlementKeyframeSent = false;
             _lastMotionDetectedUtc = DateTime.UtcNow;
+
+            if (curPicked != null && curPicked.Kind == ScreenSourceKind.QaClassPage && string.Equals(curPicked.PageFormId, "CURRENT", StringComparison.OrdinalIgnoreCase))
+            {
+                var pinShell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                pinShell?.PinCurrentPageForBroadcast();
+            }
 
             // Khởi động luồng Âm thanh (Hệ thống + Micro) & Camera PiP chuẩn Google Meet
             _ = LiveBroadcastMediaService.Instance.StartSessionAsync();
@@ -1046,6 +1067,7 @@ namespace QASmartClass.Classroom.Views
                 txtBroadcastInfo.Text = $"{resolution} | {fps} | {txtRecipientCount.Text.Replace("→ ", "")}{otpInfo}";
                 int recipientCnt = ClassroomAppContext.Network?.ConnectedCount ?? 0;
                 _floatingBroadcastBar?.UpdateStatus(_isPaused || _isBroadcastPausedDueToPrivacy, timerStr, recipientCnt, latestSource);
+                UpdateGoogleMeetSourceLockState();
                 RefreshCachedBroadcastParams();
             };
             _timer.Start();
@@ -1329,6 +1351,11 @@ namespace QASmartClass.Classroom.Views
         private volatile bool _cachedIsWindowSource = false;
         private IntPtr _cachedWindowHwnd = IntPtr.Zero;
         private IntPtr _cachedSmartTouchHwnd = IntPtr.Zero;
+        private volatile bool _cachedSmartTouchReadyForPrint = false;
+        private volatile BitmapSource? _lastIsolatedSourceBitmap = null;
+        private volatile bool _sharedWindowClosedStopTriggered = false;
+        private ScreenSourceInfo? _pendingSwitchCandidate = null;
+        private string _pendingSwitchLabel = "";
         private volatile int _cachedTargetWidth = 1280;
         private volatile int _cachedQualityLevel = 70;
         private volatile bool _cachedIsForceWatch = false;
@@ -1405,6 +1432,13 @@ namespace QASmartClass.Classroom.Views
                 _cachedSmartTouchHwnd = stWin != null
                     ? new System.Windows.Interop.WindowInteropHelper(stWin).Handle
                     : IntPtr.Zero;
+                var appInstance = Application.Current as QASmartTouch.App;
+                var modeSvc = appInstance?.ModeService;
+                _cachedSmartTouchReadyForPrint = stWin != null
+                    && stWin.IsVisible
+                    && stWin.WindowState != WindowState.Minimized
+                    && stWin.Opacity >= 0.99
+                    && (modeSvc == null || (!modeSvc.IsTransitioning && modeSvc.CurrentMode == QASmartClass.Shared.AppMode.SmartScreen));
             }
             catch (Exception ex)
             {
@@ -1473,16 +1507,22 @@ namespace QASmartClass.Classroom.Views
                 string lessonTitle = _cachedLessonTitle;
                 var targetCodes = _cachedTargetCodes;
 
-                // Nếu nguồn chiếu là Trang bên trong QA SmartClass:
-                // - Nếu là SMART_TOUCH và cửa sổ bảng viết đang hiển thị trên màn hình: chụp trực tiếp bằng GDI trên luồng ngầm (0ms khóa UI, lấy trọn vẹn cả nét bút Wet-Ink DynamicRenderer đang kéo dở ở 60Hz).
-                // - Nếu cửa sổ đang ẩn/offscreen hoặc là trang nội bộ khác: kết xuất ở DispatcherPriority.Render để đồng bộ với nhịp vẽ khung hình (không dùng Background vì Background bị chặn khi đang kéo chuột/bút).
-                bool captureSmartTouchViaGdi = false;
+                // ═══ CƠ CHẾ KHÓA CỐ ĐỊNH NGUỒN CHIẾU CHUẨN GOOGLE MEET (ISOLATED WINDOW / TAB / BOARD LOCK) ═══
+                // - Khi Giáo viên chọn Trang QA SmartClass / Bảng SMART TOUCH hoặc Cửa sổ ứng dụng:
+                //   tuyệt đối KHÔNG dùng BitBlt/StretchBlt từ màn hình nền (GetDC(0)) để tránh rò rỉ cửa sổ đè lên hoặc màn hình mới khi chuyển tab/mode.
+                // - Khi nguồn cố định bị ẩn (Window.Hide khi chuyển mode) hoặc thu nhỏ (Minimize), giữ nguyên khung hình hợp lệ cuối cùng (_lastIsolatedSourceBitmap).
+                bool captureSmartTouchIsolated = false;
                 IntPtr smartTouchHwnd = _cachedSmartTouchHwnd;
+                var appRef = Application.Current as QASmartTouch.App;
+                var modeService = appRef?.ModeService;
+
                 if (pickedSrc != null && pickedSrc.Kind == ScreenSourceKind.QaClassPage)
                 {
                     if (string.Equals(pickedSrc.PageFormId, "SMART_TOUCH", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (smartTouchHwnd == IntPtr.Zero || !NativeMethods.IsWindowVisible(smartTouchHwnd))
+                        if (string.IsNullOrEmpty(lessonTitle)) lessonTitle = "Bảng trắng tương tác SMART TOUCH";
+
+                        if (smartTouchHwnd == IntPtr.Zero)
                         {
                             Dispatcher.Invoke(() =>
                             {
@@ -1495,25 +1535,74 @@ namespace QASmartClass.Classroom.Views
                             }, DispatcherPriority.Render);
                         }
 
-                        if (smartTouchHwnd != IntPtr.Zero
+                        bool isSmartTouchActiveMode = modeService == null
+                            || (!modeService.IsTransitioning && modeService.CurrentMode == QASmartClass.Shared.AppMode.SmartScreen);
+
+                        if (isSmartTouchActiveMode
+                            && smartTouchHwnd != IntPtr.Zero
+                            && NativeMethods.IsWindow(smartTouchHwnd)
                             && NativeMethods.IsWindowVisible(smartTouchHwnd)
                             && !NativeMethods.IsIconic(smartTouchHwnd))
                         {
-                            captureSmartTouchViaGdi = true;
-                            if (string.IsNullOrEmpty(lessonTitle)) lessonTitle = "Bảng trắng tương tác SMART TOUCH";
+                            // Chụp độc lập cửa sổ SMART TOUCH bằng PrintWindow(PW_RENDERFULLCONTENT) trên thread pool (không dính cửa sổ đè phía trên)
+                            captureSmartTouchIsolated = true;
+                        }
+                        else if (_lastIsolatedSourceBitmap != null)
+                        {
+                            // Giáo viên đã chuyển sang SMART CLASS hoặc DESKTOP -> giữ cố định 100% bảng SMART TOUCH trên máy Học sinh!
+                            qaPageBitmap = _lastIsolatedSourceBitmap;
+                        }
+                        else
+                        {
+                            // Khung hình đầu tiên khi Giáo viên bấm phát SMART TOUCH từ bên trong SMART CLASS
+                            Dispatcher.Invoke(() =>
+                            {
+                                var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                                if (shell != null)
+                                {
+                                    qaPageBitmap = shell.CaptureQaClassPageBitmap("SMART_TOUCH", targetWidth, out resolvedQaPageTitle);
+                                    if (qaPageBitmap != null) _lastIsolatedSourceBitmap = qaPageBitmap;
+                                }
+                            }, DispatcherPriority.Render);
                         }
                     }
-
-                    if (!captureSmartTouchViaGdi)
+                    else
                     {
-                        Dispatcher.Invoke(() =>
+                        bool isModeTransitioning = modeService != null && modeService.IsTransitioning;
+                        if (isModeTransitioning && _lastIsolatedSourceBitmap != null)
                         {
-                            var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
-                            if (shell != null)
+                            qaPageBitmap = _lastIsolatedSourceBitmap;
+                        }
+                        else
+                        {
+                            Dispatcher.Invoke(() =>
                             {
-                                qaPageBitmap = shell.CaptureQaClassPageBitmap(pickedSrc.PageFormId, targetWidth, out resolvedQaPageTitle);
-                            }
-                        }, DispatcherPriority.Render);
+                                var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                                if (shell != null)
+                                {
+                                    // Nếu cửa sổ ClassroomShell đang ẩn (GV chuyển sang DESKTOP / SMART TOUCH) và đã có ảnh trang khóa cố định,
+                                    // giữ nguyên khung hình của trang đó để tránh WPF trả về khung trắng khi cửa sổ bị Hide().
+                                    if ((!shell.IsVisible || shell.WindowState == WindowState.Minimized || shell.Opacity < 0.99)
+                                        && _lastIsolatedSourceBitmap != null)
+                                    {
+                                        qaPageBitmap = _lastIsolatedSourceBitmap;
+                                    }
+                                    else
+                                    {
+                                        var rendered = shell.CaptureQaClassPageBitmap(pickedSrc.PageFormId, targetWidth, out resolvedQaPageTitle);
+                                        if (rendered != null && !IsMostlyBlack(rendered))
+                                        {
+                                            qaPageBitmap = rendered;
+                                            _lastIsolatedSourceBitmap = rendered;
+                                        }
+                                        else
+                                        {
+                                            qaPageBitmap = _lastIsolatedSourceBitmap ?? rendered;
+                                        }
+                                    }
+                                }
+                            }, DispatcherPriority.Render);
+                        }
 
                         if (string.IsNullOrEmpty(lessonTitle) && !string.IsNullOrEmpty(resolvedQaPageTitle))
                         {
@@ -1530,9 +1619,9 @@ namespace QASmartClass.Classroom.Views
                         int x = 0, y = 0;
                         int pixelW = (int)(screenW * scaleX);
                         int pixelH = (int)(screenH * scaleY);
+                        bool captureDesktopRegion = false;
+                        IntPtr isolatedHwnd = IntPtr.Zero;
 
-                        // Nguồn do GV chọn trong hộp "Chọn màn hình / vùng / trang QA SmartClass / cửa sổ" (đọc lại mỗi khung hình → đổi nguồn ngay khi đang chiếu)
-                        bool usePrintWindow = false;
                         if (pickedSrc != null)
                         {
                             if (pickedSrc.Kind == ScreenSourceKind.Screen)
@@ -1540,6 +1629,7 @@ namespace QASmartClass.Classroom.Views
                                 var scr = ScreenSourceEnumerator.FindScreen(pickedSrc.X, pickedSrc.Y, pickedSrc.Width, pickedSrc.Height);
                                 if (scr != null) { x = scr.X; y = scr.Y; pixelW = scr.Width; pixelH = scr.Height; }
                                 isWindowSource = false;
+                                captureDesktopRegion = true;
                             }
                             else if (pickedSrc.Kind == ScreenSourceKind.Region)
                             {
@@ -1548,72 +1638,98 @@ namespace QASmartClass.Classroom.Views
                                 pixelW = Math.Max(64, pickedSrc.Width);
                                 pixelH = Math.Max(64, pickedSrc.Height);
                                 isWindowSource = false;
+                                captureDesktopRegion = true;
                             }
                             else if (pickedSrc.Kind == ScreenSourceKind.QaClassPage)
                             {
-                                if (captureSmartTouchViaGdi && NativeMethods.GetWindowRect(smartTouchHwnd, out var stRect))
-                                {
-                                    int stW = stRect.Right - stRect.Left;
-                                    int stH = stRect.Bottom - stRect.Top;
-                                    if (stW > 64 && stH > 64)
-                                    {
-                                        x = stRect.Left;
-                                        y = stRect.Top;
-                                        pixelW = stW;
-                                        pixelH = stH;
-                                    }
-                                }
                                 isWindowSource = false;
+                                if (captureSmartTouchIsolated && smartTouchHwnd != IntPtr.Zero)
+                                {
+                                    isolatedHwnd = smartTouchHwnd;
+                                }
                             }
-                            else if (ScreenSourceEnumerator.IsWindowAlive(pickedSrc.Hwnd) || ScreenSourceEnumerator.IsMinimized(pickedSrc.Hwnd))
+                            else if (pickedSrc.Kind == ScreenSourceKind.Window)
                             {
+                                if (!ScreenSourceEnumerator.IsWindowHandleValid(pickedSrc.Hwnd))
+                                {
+                                    // [MYTHWARE_LITE] Chuẩn Google Meet: Khi cửa sổ đang chiếu bị đóng hẳn (!IsWindow),
+                                    // tự động dừng chia sẻ an toàn thay vì lặng lẽ chuyển về Toàn màn hình làm lộ màn hình riêng của Giáo viên!
+                                    // Dispatcher.BeginInvoke(new Action(ResetPickedToPrimary));
+                                    if (!_sharedWindowClosedStopTriggered)
+                                    {
+                                        _sharedWindowClosedStopTriggered = true;
+                                        Dispatcher.BeginInvoke(new Action(OnSharedWindowClosedStopBroadcast));
+                                    }
+                                    return;
+                                }
+
                                 isWindowSource = true;
                                 targetHWnd = pickedSrc.Hwnd;
-                                usePrintWindow = true;
+                                isolatedHwnd = pickedSrc.Hwnd;
+                            }
+                        }
+                        else if (isWindowSource)
+                        {
+                            if (targetHWnd == IntPtr.Zero || !ScreenSourceEnumerator.IsWindowHandleValid(targetHWnd))
+                            {
+                                if (!_sharedWindowClosedStopTriggered)
+                                {
+                                    _sharedWindowClosedStopTriggered = true;
+                                    Dispatcher.BeginInvoke(new Action(OnSharedWindowClosedStopBroadcast));
+                                }
+                                return;
+                            }
+                            isolatedHwnd = targetHWnd;
+                        }
+                        else
+                        {
+                            captureDesktopRegion = true;
+                        }
+
+                        BitmapSource? bmpSource = qaPageBitmap;
+
+                        // Nhánh 1: Chụp Cửa sổ độc lập / Bảng SMART TOUCH độc lập chuẩn Google Meet (PrintWindow + HALFTONE, tuyệt đối không lấy GetDC(0))
+                        if (bmpSource == null && isolatedHwnd != IntPtr.Zero)
+                        {
+                            var winBmp = TryCaptureIsolatedWindowBitmap(isolatedHwnd, targetWidth, _cachedShowTeacherCursor);
+                            if (winBmp != null)
+                            {
+                                _lastIsolatedSourceBitmap = winBmp;
+                                bmpSource = winBmp;
                             }
                             else
                             {
-                                // Cửa sổ đã đóng → tự quay về màn hình chính
-                                isWindowSource = false;
-                                Dispatcher.BeginInvoke(new Action(ResetPickedToPrimary));
+                                // Cửa sổ đang thu nhỏ (Minimize), tạm ẩn (Window.Hide khi đổi mode) hoặc đang chuyển tiếp:
+                                // giữ nguyên khung hình cuối cùng của đúng cửa sổ đó!
+                                bmpSource = _lastIsolatedSourceBitmap;
+                                if (bmpSource == null && ScreenSourceEnumerator.GetWindowProcessId(isolatedHwnd) == (uint)Environment.ProcessId)
+                                {
+                                    Dispatcher.Invoke(() =>
+                                    {
+                                        foreach (Window w in Application.Current.Windows)
+                                        {
+                                            if (new System.Windows.Interop.WindowInteropHelper(w).Handle == isolatedHwnd)
+                                            {
+                                                bmpSource = ScreenSourceEnumerator.RenderElementToBitmap(w.Content as FrameworkElement ?? w, targetWidth);
+                                                if (bmpSource != null) _lastIsolatedSourceBitmap = bmpSource;
+                                                break;
+                                            }
+                                        }
+                                    }, DispatcherPriority.Render);
+                                }
+                                if (bmpSource == null) return;
                             }
                         }
 
-                        if (isWindowSource && targetHWnd != IntPtr.Zero)
+                        // Nhánh 2: Chỉ chụp điểm ảnh màn hình vật lý khi Giáo viên chủ động chọn "Toàn màn hình" hoặc "Chọn vùng"
+                        if (bmpSource == null && captureDesktopRegion)
                         {
-                            NativeMethods.RECT rect;
-                            if (NativeMethods.GetWindowRect(targetHWnd, out rect))
-                            {
-                                if (NativeMethods.IsIconic(targetHWnd))
-                                {
-                                    NativeMethods.ShowWindow(targetHWnd, 9); // SW_RESTORE = 9
-                                    System.Threading.Thread.Sleep(120);
-                                    NativeMethods.GetWindowRect(targetHWnd, out rect);
-                                }
+                            if (pixelW <= 0 || pixelH <= 0) return;
 
-                                x = rect.Left;
-                                y = rect.Top;
-                                pixelW = rect.Right - rect.Left;
-                                pixelH = rect.Bottom - rect.Top;
-
-                                if (pixelW <= 0 || pixelH <= 0)
-                                {
-                                    x = 0; y = 0;
-                                    pixelW = (int)(screenW * scaleX);
-                                    pixelH = (int)(screenH * scaleY);
-                                }
-                            }
-                        }
-
-                        if (pixelW <= 0 || pixelH <= 0) return;
-
-                        IntPtr hdcSrc = IntPtr.Zero;
-                        IntPtr hdcDest = IntPtr.Zero;
-                        IntPtr hBitmap = IntPtr.Zero;
-                        IntPtr hOld = IntPtr.Zero;
-                        BitmapSource? bmpSource = qaPageBitmap;
-                        if (bmpSource == null)
-                        {
+                            IntPtr hdcSrc = IntPtr.Zero;
+                            IntPtr hdcDest = IntPtr.Zero;
+                            IntPtr hBitmap = IntPtr.Zero;
+                            IntPtr hOld = IntPtr.Zero;
                             try
                             {
                                 double scaleRatio = pixelW > targetWidth ? (double)targetWidth / pixelW : 1.0;
@@ -1628,18 +1744,10 @@ namespace QASmartClass.Classroom.Views
                                 NativeMethods.SetStretchBltMode(hdcDest, 4); // HALFTONE = 4
                                 NativeMethods.SetBrushOrgEx(hdcDest, 0, 0, IntPtr.Zero);
 
-                                bool printed = false;
-                                if (usePrintWindow && outW == pixelW && outH == pixelH)
-                                {
-                                    printed = NativeMethods.PrintWindow(targetHWnd, hdcDest, 2); // PW_RENDERFULLCONTENT
-                                }
-                                if (!printed)
-                                {
-                                    if (outW == pixelW && outH == pixelH)
-                                        NativeMethods.BitBlt(hdcDest, 0, 0, outW, outH, hdcSrc, x, y, 0x00CC0020); // SRCCOPY
-                                    else
-                                        NativeMethods.StretchBlt(hdcDest, 0, 0, outW, outH, hdcSrc, x, y, pixelW, pixelH, 0x00CC0020);
-                                }
+                                if (outW == pixelW && outH == pixelH)
+                                    NativeMethods.BitBlt(hdcDest, 0, 0, outW, outH, hdcSrc, x, y, 0x00CC0020); // SRCCOPY
+                                else
+                                    NativeMethods.StretchBlt(hdcDest, 0, 0, outW, outH, hdcSrc, x, y, pixelW, pixelH, 0x00CC0020);
 
                                 if (_cachedShowTeacherCursor)
                                 {
@@ -1650,19 +1758,6 @@ namespace QASmartClass.Classroom.Views
                                     hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
                                 bmpSource = new FormatConvertedBitmap(rawBmp, PixelFormats.Bgr32, null, 0);
                                 bmpSource.Freeze();
-
-                                if (printed && IsMostlyBlack(bmpSource))
-                                {
-                                    NativeMethods.StretchBlt(hdcDest, 0, 0, outW, outH, hdcSrc, x, y, pixelW, pixelH, 0x00CC0020);
-                                    if (_cachedShowTeacherCursor)
-                                    {
-                                        DrawCursorOverlayOnHdc(hdcDest, x, y, pixelW, pixelH, outW, outH);
-                                    }
-                                    var fallbackRaw = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                                        hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                                    bmpSource = new FormatConvertedBitmap(fallbackRaw, PixelFormats.Bgr32, null, 0);
-                                    bmpSource.Freeze();
-                                }
                             }
                             finally
                             {
@@ -1672,6 +1767,8 @@ namespace QASmartClass.Classroom.Views
                                 if (hdcSrc != IntPtr.Zero) NativeMethods.ReleaseDC(IntPtr.Zero, hdcSrc);
                             }
                         }
+
+                        if (bmpSource == null) return;
 
                         // Ghép ô Camera Giáo viên (Google Meet 16:9 / SmartTouch Circle) lên luồng hình ảnh phát sóng nếu Camera đang bật
                         bool camActive = LiveBroadcastMediaService.Instance.IsCameraEnabled;
@@ -2080,7 +2177,13 @@ namespace QASmartClass.Classroom.Views
             [System.Runtime.InteropServices.DllImport("user32.dll")]
             public static extern bool IsIconic(IntPtr hWnd);
             [System.Runtime.InteropServices.DllImport("user32.dll")]
+            public static extern bool IsWindow(IntPtr hWnd);
+            [System.Runtime.InteropServices.DllImport("user32.dll")]
             public static extern bool IsWindowVisible(IntPtr hWnd);
+            [System.Runtime.InteropServices.DllImport("user32.dll")]
+            public static extern IntPtr GetForegroundWindow();
+            [System.Runtime.InteropServices.DllImport("user32.dll")]
+            public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
             [System.Runtime.InteropServices.DllImport("user32.dll")]
             public static extern bool PrintWindow(IntPtr hWnd, IntPtr hdcBlt, uint nFlags);
             
@@ -2367,6 +2470,16 @@ namespace QASmartClass.Classroom.Views
         private void ApplyPickedSource(ScreenSourceInfo src)
         {
             lock (_srcLock) _picked = src;
+            _lastIsolatedSourceBitmap = null;
+            _sharedWindowClosedStopTriggered = false;
+            _pendingSwitchCandidate = null;
+            _pendingSwitchLabel = "";
+
+            if (src.Kind == ScreenSourceKind.QaClassPage && string.Equals(src.PageFormId, "CURRENT", StringComparison.OrdinalIgnoreCase))
+            {
+                var pinShell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                pinShell?.PinCurrentPageForBroadcast();
+            }
 
             _suppressSourceReset = true;
             try
@@ -2437,6 +2550,7 @@ namespace QASmartClass.Classroom.Views
             UpdateSelectedSourcePreviewThumb();
             HighlightSelectedInlineCard();
             RefreshCachedBroadcastParams();
+            UpdateGoogleMeetSourceLockState();
             _lastFrameSampleHash = 0;
             _settlementKeyframeSent = false;
             Log.Information("[BroadcastPage] Source picked: {Kind} {Title} ({W}x{H}) live={Live}", src.Kind, src.Title, src.Width, src.Height, _isBroadcasting);
@@ -2696,8 +2810,12 @@ namespace QASmartClass.Classroom.Views
         private void ClearPickedSource()
         {
             lock (_srcLock) _picked = null;
+            _lastIsolatedSourceBitmap = null;
+            _pendingSwitchCandidate = null;
+            _pendingSwitchLabel = "";
             if (btnOpenSharedQaPage != null) btnOpenSharedQaPage.Visibility = Visibility.Collapsed;
             if (txtPickedSource != null) txtPickedSource.Text = DefaultSourceText;
+            UpdateGoogleMeetSourceLockState();
         }
 
         private DateTime _lastLivePreview = DateTime.MinValue;
@@ -2710,11 +2828,303 @@ namespace QASmartClass.Classroom.Views
         {
             return src.Kind switch
             {
-                ScreenSourceKind.Window => $"Cửa sổ — {src.Title}",
-                ScreenSourceKind.Region => $"Vùng màn hình — {src.Title}",
-                ScreenSourceKind.QaClassPage => $"QA SmartClass — {src.Title}",
-                _ => $"Màn hình {Math.Max(ScreenSourceEnumerator.GetScreens().FindIndex(s => s.X == src.X && s.Y == src.Y) + 1, 1)}{(src.IsPrimary ? " (chính)" : "")}"
+                ScreenSourceKind.Window => $"📌 Cửa sổ — {src.Title}",
+                ScreenSourceKind.Region => $"✂️ Vùng — {src.Title}",
+                ScreenSourceKind.QaClassPage => $"📌 {src.Title}",
+                _ => $"🖥️ Màn hình {Math.Max(ScreenSourceEnumerator.GetScreens().FindIndex(s => s.X == src.X && s.Y == src.Y) + 1, 1)}{(src.IsPrimary ? " (chính)" : "")}"
             };
+        }
+
+        /// <summary>
+        /// Chụp độc lập 100% bề mặt của một cửa sổ (hWnd) bằng PrintWindow(PW_RENDERFULLCONTENT = 2) ở kích thước gốc rồi thu phóng HALFTONE.
+        /// Tuyệt đối KHÔNG đọc điểm ảnh màn hình nền (GetDC(0)) và KHÔNG tự khôi phục cửa sổ đang thu nhỏ (SW_RESTORE),
+        /// đảm bảo chuẩn Google Meet: mở cửa sổ khác đè lên hoặc chuyển màn hình khác thì Học sinh vẫn CHỈ thấy đúng cửa sổ đã chọn!
+        /// </summary>
+        private static BitmapSource? TryCaptureIsolatedWindowBitmap(IntPtr targetHWnd, int targetWidth, bool drawCursor)
+        {
+            if (targetHWnd == IntPtr.Zero
+                || !NativeMethods.IsWindow(targetHWnd)
+                || !NativeMethods.IsWindowVisible(targetHWnd)
+                || NativeMethods.IsIconic(targetHWnd))
+            {
+                return null;
+            }
+
+            if (!NativeMethods.GetWindowRect(targetHWnd, out var rect))
+            {
+                return null;
+            }
+
+            int winW = rect.Right - rect.Left;
+            int winH = rect.Bottom - rect.Top;
+            if (winW < 64 || winH < 64)
+            {
+                return null;
+            }
+
+            double scaleRatio = winW > targetWidth ? (double)targetWidth / winW : 1.0;
+            int outW = Math.Max(64, (int)Math.Round(winW * scaleRatio));
+            int outH = Math.Max(64, (int)Math.Round(winH * scaleRatio));
+
+            IntPtr hdcRef = IntPtr.Zero;
+            IntPtr hdcWinFull = IntPtr.Zero;
+            IntPtr hbmWinFull = IntPtr.Zero;
+            IntPtr hOldWinFull = IntPtr.Zero;
+            IntPtr hdcScaled = IntPtr.Zero;
+            IntPtr hbmScaled = IntPtr.Zero;
+            IntPtr hOldScaled = IntPtr.Zero;
+
+            try
+            {
+                hdcRef = NativeMethods.GetDC(IntPtr.Zero);
+                hdcWinFull = NativeMethods.CreateCompatibleDC(hdcRef);
+                hbmWinFull = NativeMethods.CreateCompatibleBitmap(hdcRef, winW, winH);
+                hOldWinFull = NativeMethods.SelectObject(hdcWinFull, hbmWinFull);
+
+                bool printed = NativeMethods.PrintWindow(targetHWnd, hdcWinFull, 2); // PW_RENDERFULLCONTENT = 2
+                if (!printed)
+                {
+                    printed = NativeMethods.PrintWindow(targetHWnd, hdcWinFull, 0);
+                }
+                if (!printed)
+                {
+                    return null;
+                }
+
+                // Chỉ vẽ con trỏ chuột khi cửa sổ đang được chiếu thực sự là cửa sổ tiền cảnh (Foreground)
+                bool isForegroundSharedWindow = drawCursor && NativeMethods.GetForegroundWindow() == targetHWnd;
+
+                IntPtr finalHBitmap;
+                if (outW == winW && outH == winH)
+                {
+                    if (isForegroundSharedWindow)
+                    {
+                        DrawCursorOverlayOnHdc(hdcWinFull, rect.Left, rect.Top, winW, winH, winW, winH);
+                    }
+                    finalHBitmap = hbmWinFull;
+                }
+                else
+                {
+                    hdcScaled = NativeMethods.CreateCompatibleDC(hdcRef);
+                    hbmScaled = NativeMethods.CreateCompatibleBitmap(hdcRef, outW, outH);
+                    hOldScaled = NativeMethods.SelectObject(hdcScaled, hbmScaled);
+                    NativeMethods.SetStretchBltMode(hdcScaled, 4); // HALFTONE = 4
+                    NativeMethods.SetBrushOrgEx(hdcScaled, 0, 0, IntPtr.Zero);
+                    NativeMethods.StretchBlt(hdcScaled, 0, 0, outW, outH, hdcWinFull, 0, 0, winW, winH, 0x00CC0020); // SRCCOPY từ hdcWinFull (KHÔNG lấy từ màn hình nền!)
+
+                    if (isForegroundSharedWindow)
+                    {
+                        DrawCursorOverlayOnHdc(hdcScaled, rect.Left, rect.Top, winW, winH, outW, outH);
+                    }
+                    finalHBitmap = hbmScaled;
+                }
+
+                var rawBmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                    finalHBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                var opaqueBmp = new FormatConvertedBitmap(rawBmp, PixelFormats.Bgr32, null, 0);
+                opaqueBmp.Freeze();
+
+                if (IsMostlyBlack(opaqueBmp))
+                {
+                    return null;
+                }
+
+                return opaqueBmp;
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (hOldScaled != IntPtr.Zero) NativeMethods.SelectObject(hdcScaled, hOldScaled);
+                if (hbmScaled != IntPtr.Zero) NativeMethods.DeleteObject(hbmScaled);
+                if (hdcScaled != IntPtr.Zero) NativeMethods.DeleteDC(hdcScaled);
+                if (hOldWinFull != IntPtr.Zero) NativeMethods.SelectObject(hdcWinFull, hOldWinFull);
+                if (hbmWinFull != IntPtr.Zero) NativeMethods.DeleteObject(hbmWinFull);
+                if (hdcWinFull != IntPtr.Zero) NativeMethods.DeleteDC(hdcWinFull);
+                if (hdcRef != IntPtr.Zero) NativeMethods.ReleaseDC(IntPtr.Zero, hdcRef);
+            }
+        }
+
+        private void OnSharedWindowClosedStopBroadcast()
+        {
+            if (!_isBroadcasting) return;
+            StopAllBroadcasting();
+            if (txtPickedSource != null)
+            {
+                txtPickedSource.Text = "⏹️ Đã tự động dừng chia sẻ vì cửa sổ trình chiếu đã đóng (Chuẩn Google Meet).";
+            }
+            ShowToast("⏹️ Đã dừng chia sẻ do cửa sổ trình chiếu đã đóng.", "#1976D2");
+        }
+
+        /// <summary>
+        /// Kiểm tra trạng thái khóa cố định nguồn chiếu chuẩn Google Meet:
+        /// - Khi đang chiếu Cửa sổ hoặc Trang / Bảng SMART TOUCH: giữ cố định 100% nguồn đó.
+        /// - Nếu Giáo viên đang thao tác trên một cửa sổ / trang bài giảng khác, hiển thị nút "🔄 Chiếu '...' thay thế" trên thanh nổi (nhưng KHÔNG tự ý đổi luồng chiếu cho tới khi Giáo viên bấm!).
+        /// </summary>
+        private void UpdateGoogleMeetSourceLockState()
+        {
+            if (_floatingBroadcastBar == null || !_isBroadcasting) return;
+
+            ScreenSourceInfo? curPicked;
+            lock (_srcLock) curPicked = _picked;
+
+            bool isLocked = (curPicked != null && (curPicked.Kind == ScreenSourceKind.Window || curPicked.Kind == ScreenSourceKind.QaClassPage))
+                         || (curPicked == null && rbWindow?.IsChecked == true);
+
+            if (!isLocked)
+            {
+                _pendingSwitchCandidate = null;
+                _pendingSwitchLabel = "";
+                _floatingBroadcastBar.UpdateSourceLockIndicator(false, false, "");
+                return;
+            }
+
+            try
+            {
+                IntPtr fgHwnd = NativeMethods.GetForegroundWindow();
+                if (fgHwnd == IntPtr.Zero)
+                {
+                    _floatingBroadcastBar.UpdateSourceLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
+                    return;
+                }
+
+                // Nếu Giáo viên vừa chạm vào chính Thanh điều khiển nổi hoặc Thanh chuyển chế độ, giữ nguyên gợi ý trước đó để nút không bị biến mất dưới ngón tay/chuột!
+                if (Application.Current != null)
+                {
+                    foreach (Window w in Application.Current.Windows)
+                    {
+                        var wh = new System.Windows.Interop.WindowInteropHelper(w).Handle;
+                        if (wh != IntPtr.Zero && wh == fgHwnd)
+                        {
+                            if (w is FloatingBroadcastBarWindow
+                                || w is QASmartClass.Shared.FloatingModeBar
+                                || w is BroadcastPrivacyBorder
+                                || w is ScreenSourcePickerWindow)
+                            {
+                                _floatingBroadcastBar.UpdateSourceLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
+                                return;
+                            }
+
+                            // Đang mở bảng SMART TOUCH
+                            if (w is QASmartTouch.Forms.Form2_MainDashboard)
+                            {
+                                bool alreadySharingSmartTouch =
+                                    (curPicked?.Kind == ScreenSourceKind.QaClassPage && string.Equals(curPicked.PageFormId, "SMART_TOUCH", StringComparison.OrdinalIgnoreCase))
+                                    || (curPicked?.Kind == ScreenSourceKind.Window && curPicked.Hwnd == fgHwnd);
+
+                                if (alreadySharingSmartTouch)
+                                {
+                                    _pendingSwitchCandidate = null;
+                                    _pendingSwitchLabel = "";
+                                }
+                                else
+                                {
+                                    _pendingSwitchCandidate = new ScreenSourceInfo
+                                    {
+                                        Kind = ScreenSourceKind.QaClassPage,
+                                        PageFormId = "SMART_TOUCH",
+                                        IconGlyph = "🎨",
+                                        Title = "Bảng trắng tương tác SMART TOUCH",
+                                        Width = (int)SystemParameters.PrimaryScreenWidth,
+                                        Height = (int)SystemParameters.PrimaryScreenHeight,
+                                        AutoNavigateToPage = false
+                                    };
+                                    _pendingSwitchLabel = "Bảng SMART TOUCH";
+                                }
+                                _floatingBroadcastBar.UpdateSourceLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
+                                return;
+                            }
+
+                            // Đang mở cửa sổ Quản lý lớp SMART CLASS
+                            if (w is ClassroomShell shell)
+                            {
+                                string? lockedPageId = curPicked?.Kind == ScreenSourceKind.QaClassPage ? curPicked.PageFormId : null;
+                                var (_, activeTitle, canSwitch) = shell.GetActiveQaPageSwitchCandidate(lockedPageId);
+                                if (canSwitch && !string.IsNullOrWhiteSpace(activeTitle))
+                                {
+                                    _pendingSwitchCandidate = new ScreenSourceInfo
+                                    {
+                                        Kind = ScreenSourceKind.QaClassPage,
+                                        PageFormId = "CURRENT",
+                                        IconGlyph = "📌",
+                                        Title = activeTitle,
+                                        AutoNavigateToPage = false
+                                    };
+                                    _pendingSwitchLabel = activeTitle;
+                                }
+                                else
+                                {
+                                    _pendingSwitchCandidate = null;
+                                    _pendingSwitchLabel = "";
+                                }
+                                _floatingBroadcastBar.UpdateSourceLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                // Đang mở một cửa sổ ứng dụng ngoài Desktop (PowerPoint, Chrome, Word, PDF...)
+                if (NativeMethods.IsWindowVisible(fgHwnd) && !NativeMethods.IsIconic(fgHwnd))
+                {
+                    bool alreadySharingThisWindow =
+                        (curPicked?.Kind == ScreenSourceKind.Window && curPicked.Hwnd == fgHwnd)
+                        || (curPicked == null && rbWindow?.IsChecked == true && _cachedWindowHwnd == fgHwnd);
+
+                    if (alreadySharingThisWindow)
+                    {
+                        _pendingSwitchCandidate = null;
+                        _pendingSwitchLabel = "";
+                    }
+                    else if ((NativeMethods.GetWindowLong(fgHwnd, -20) & 0x80) == 0) // Bỏ qua WS_EX_TOOLWINDOW
+                    {
+                        string fgTitle = ScreenSourceEnumerator.GetWindowTitle(fgHwnd);
+                        if (!string.IsNullOrWhiteSpace(fgTitle)
+                            && fgTitle != "Program Manager"
+                            && NativeMethods.GetWindowRect(fgHwnd, out var fgRc))
+                        {
+                            int fw = fgRc.Right - fgRc.Left;
+                            int fh = fgRc.Bottom - fgRc.Top;
+                            if (fw >= 160 && fh >= 120)
+                            {
+                                _pendingSwitchCandidate = new ScreenSourceInfo
+                                {
+                                    Kind = ScreenSourceKind.Window,
+                                    IconGlyph = "🪟",
+                                    Title = fgTitle,
+                                    Hwnd = fgHwnd,
+                                    X = fgRc.Left,
+                                    Y = fgRc.Top,
+                                    Width = fw,
+                                    Height = fh
+                                };
+                                _pendingSwitchLabel = fgTitle;
+                            }
+                        }
+                    }
+                }
+
+                _floatingBroadcastBar.UpdateSourceLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
+            }
+            catch
+            {
+                // An toàn luồng UI
+            }
+        }
+
+        private void SwitchBroadcastToActiveScreenInstead()
+        {
+            if (!_isBroadcasting || _pendingSwitchCandidate == null) return;
+            var nextSource = _pendingSwitchCandidate;
+            if (nextSource.Kind == ScreenSourceKind.QaClassPage && string.Equals(nextSource.PageFormId, "CURRENT", StringComparison.OrdinalIgnoreCase))
+            {
+                var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                shell?.PinCurrentPageForBroadcast(forceActiveFrameContent: true);
+            }
+            ApplyPickedSource(nextSource);
+            ShowToast($"📌 Đã chuyển sang giữ cố định: {nextSource.Title}", "#1976D2");
         }
 
         /// <summary>true nếu ảnh gần như đen toàn bộ (mẫu 16×9 điểm).</summary>
