@@ -17,7 +17,9 @@ namespace QASmartClass.Classroom.Views
     /// </summary>
     public partial class ClassControlHub : Page
     {
+        private static ClassControlHub? _activeHub;
         private readonly ClassroomSessionService _sessionService;
+        private BroadcastPage? _broadcastPage;
         private string _currentTab = "Monitor";
         private bool _isInitialized = false;
 
@@ -26,6 +28,35 @@ namespace QASmartClass.Classroom.Views
             InitializeComponent();
             _sessionService = ClassroomAppContext.Session;
             _currentTab = initialTab;
+
+            if (_activeHub != null && !ReferenceEquals(_activeHub, this))
+            {
+                ScreenShareController.Instance.ActionRequested -= _activeHub.OnQuickBroadcastActionRequested;
+            }
+            _activeHub = this;
+            ScreenShareController.Instance.ActionRequested -= OnQuickBroadcastActionRequested;
+            ScreenShareController.Instance.ActionRequested += OnQuickBroadcastActionRequested;
+        }
+
+        public BroadcastPage EnsureBroadcastPageLoaded()
+        {
+            if (frameBroadcast.Content is BroadcastPage loadedBp)
+            {
+                _broadcastPage = loadedBp;
+                return loadedBp;
+            }
+
+            if (_broadcastPage == null)
+            {
+                _broadcastPage = new BroadcastPage();
+                frameBroadcast.Navigate(_broadcastPage);
+            }
+            else if (frameBroadcast.Content == null)
+            {
+                frameBroadcast.Navigate(_broadcastPage);
+            }
+
+            return _broadcastPage;
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -39,6 +70,9 @@ namespace QASmartClass.Classroom.Views
                 {
                     frameMessaging.Navigate(new MessagingPage());
                 }
+
+                // Khởi tạo sẵn BroadcastPage để nút Quảng bá / Share màn hình trên FloatingModeBar phản hồi tức thì ở mọi chế độ
+                EnsureBroadcastPageLoaded();
 
                 SelectTab(_currentTab);
 
@@ -204,8 +238,7 @@ namespace QASmartClass.Classroom.Views
                     break;
 
                 case "Broadcast":
-                    if (frameBroadcast.Content == null)
-                        frameBroadcast.Navigate(new BroadcastPage());
+                    EnsureBroadcastPageLoaded();
                     frameBroadcast.Visibility = Visibility.Visible;
                     break;
 
@@ -243,25 +276,120 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
-                if (frameBroadcast.Content == null)
-                {
-                    frameBroadcast.Navigate(new BroadcastPage());
-                }
-
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    if (frameBroadcast.Content is BroadcastPage bp)
-                    {
-                        bp.ToggleMythwareQuickBroadcast();
-                        UpdateLiveBroadcastUI();
-                    }
-                }), System.Windows.Threading.DispatcherPriority.Loaded);
+                var bp = EnsureBroadcastPageLoaded();
+                bp.ToggleMythwareQuickBroadcast();
+                UpdateLiveBroadcastUI();
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Lỗi khi bật/tắt trình chiếu màn hình nhanh");
                 ClassroomDialog.Error($"Không thể phát màn hình: {ex.Message}", "Lỗi");
             }
+        }
+
+        private void BringClassroomHubToFront()
+        {
+            try
+            {
+                var app = Application.Current as QASmartTouch.App;
+                if (app != null && app.ModeService.CurrentMode != QASmartClass.Shared.AppMode.SmartClass)
+                {
+                    app.ModeService.GoToClass();
+                }
+
+                var shell = (Window.GetWindow(this) as ClassroomShell)
+                    ?? Application.Current?.Windows.OfType<ClassroomShell>().FirstOrDefault();
+                if (shell != null)
+                {
+                    if (shell.WindowState == WindowState.Minimized)
+                        shell.WindowState = WindowState.Maximized;
+                    if (!shell.IsVisible)
+                        shell.Show();
+                    shell.Activate();
+                    shell.NavigateTo("FHUB");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[ClassControlHub] BringClassroomHubToFront error: {Err}", ex.Message);
+            }
+        }
+
+        private void OnQuickBroadcastActionRequested(object? sender, QuickBroadcastAction action)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    switch (action)
+                    {
+                        case QuickBroadcastAction.ToggleQuickShare:
+                            EnsureBroadcastPageLoaded().ToggleMythwareQuickBroadcast();
+                            UpdateLiveBroadcastUI();
+                            break;
+
+                        case QuickBroadcastAction.PickScreenOrWindow:
+                            EnsureBroadcastPageLoaded().StartOrSwitchSourceFromFloatingBar();
+                            UpdateLiveBroadcastUI();
+                            break;
+
+                        case QuickBroadcastAction.PickRegion:
+                            EnsureBroadcastPageLoaded().StartOrSwitchRegionFromFloatingBar();
+                            UpdateLiveBroadcastUI();
+                            break;
+
+                        case QuickBroadcastAction.PickQaPage:
+                            EnsureBroadcastPageLoaded().StartOrSwitchQaPageFromFloatingBar();
+                            UpdateLiveBroadcastUI();
+                            break;
+
+                        case QuickBroadcastAction.ShareSmartTouchNow:
+                            EnsureBroadcastPageLoaded().ShareSmartTouchBoardImmediately();
+                            UpdateLiveBroadcastUI();
+                            break;
+
+                        case QuickBroadcastAction.TogglePause:
+                            EnsureBroadcastPageLoaded().TogglePauseFromFloatingBar();
+                            UpdateLiveBroadcastUI();
+                            break;
+
+                        case QuickBroadcastAction.ShowFloatingPip:
+                            EnsureBroadcastPageLoaded().ShowFloatingPipFromFloatingBar();
+                            break;
+
+                        case QuickBroadcastAction.OpenBroadcastHub:
+                            BringClassroomHubToFront();
+                            SelectTab("Broadcast");
+                            EnsureBroadcastPageLoaded().SelectBroadcastSubTab("screen");
+                            break;
+
+                        case QuickBroadcastAction.OpenNoticeTab:
+                            BringClassroomHubToFront();
+                            SelectTab("Broadcast");
+                            EnsureBroadcastPageLoaded().SelectBroadcastSubTab("notice");
+                            break;
+
+                        case QuickBroadcastAction.OpenWebsiteTab:
+                            BringClassroomHubToFront();
+                            SelectTab("Web");
+                            break;
+
+                        case QuickBroadcastAction.OpenStudentDemo:
+                            BringClassroomHubToFront();
+                            SelectTab("Monitor");
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                EnsureMonitorPageLoaded()?.TriggerVeyonStudentDemo();
+                            }), System.Windows.Threading.DispatcherPriority.Loaded);
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "[ClassControlHub] Lỗi xử lý QuickBroadcastAction={Action}", action);
+                    ClassroomDialog.Error($"Không thể thực hiện tác vụ quảng bá: {ex.Message}", "Lỗi Quảng bá");
+                }
+            });
         }
 
         private async void QuickLock_Click(object sender, RoutedEventArgs e)

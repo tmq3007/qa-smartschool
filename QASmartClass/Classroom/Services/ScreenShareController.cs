@@ -23,6 +23,22 @@ namespace QASmartClass.Classroom.Services
     /// Lưu ý: <see cref="LiveChanged"/> có thể phát từ luồng nền — nơi nhận phải tự Dispatcher.Invoke.
     /// Chỉ truy cập <see cref="Instance"/> lần đầu từ luồng UI (VncBroadcastService dùng DispatcherTimer).
     /// </summary>
+    /// <summary>Các tác vụ Quảng bá / Chia sẻ màn hình nhanh có thể kích hoạt xuyên suốt từ FloatingModeBar ở mọi chế độ.</summary>
+    public enum QuickBroadcastAction
+    {
+        ToggleQuickShare,
+        PickScreenOrWindow,
+        PickRegion,
+        PickQaPage,
+        ShareSmartTouchNow,
+        TogglePause,
+        ShowFloatingPip,
+        OpenBroadcastHub,
+        OpenStudentDemo,
+        OpenNoticeTab,
+        OpenWebsiteTab
+    }
+
     public sealed class ScreenShareController
     {
         public static ScreenShareController Instance { get; } = new();
@@ -34,7 +50,12 @@ namespace QASmartClass.Classroom.Services
         /// <summary>Yêu cầu dừng mọi hoạt động chiếu màn hình (vd: khi kết thúc lớp). BroadcastPage lắng nghe và dừng đúng quy trình.</summary>
         public event EventHandler? StopRequested;
 
+        /// <summary>Yêu cầu thực thi tác vụ Quảng bá / Chia sẻ màn hình từ thanh nổi FloatingModeBar.</summary>
+        public event EventHandler<QuickBroadcastAction>? ActionRequested;
+
         public void RequestStop() => StopRequested?.Invoke(this, EventArgs.Empty);
+
+        public void RequestAction(QuickBroadcastAction action) => ActionRequested?.Invoke(this, action);
 
         private ScreenShareController()
         {

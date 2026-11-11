@@ -13,7 +13,7 @@
         <!-- ═══════════════════════════════════════════════════════════ -->
         <Border x:Name="pnlExpanded" CornerRadius="12"
                 Background="#E8EAF6" BorderBrush="#5C6BC0" BorderThickness="1.5"
-                Width="660" Height="50"
+                Width="716" Height="50"
                 Visibility="Visible">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="14" ShadowDepth="3" Opacity="0.3" Color="#263238"/>
@@ -44,32 +44,59 @@
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="2,0">
                     <!-- Show/Hide main window -->
                     <Border x:Name="btnShowHide" Width="34" Height="34" CornerRadius="8" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonDown="OnShowHideClick" ToolTip="Hiển thị / Ẩn cửa sổ chính">
+                            MouseLeftButtonDown="OnShowHideClick"
+                            PreviewTouchDown="OnShowHideTouchDown"
+                            ToolTip="Hiển thị / Ẩn cửa sổ chính">
                         <TextBlock x:Name="txtShowHide" Text="🔲" FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Border>
 
                     <!-- Voice broadcast -->
                     <Border x:Name="btnVoice" Width="34" Height="34" CornerRadius="8" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonDown="OnVoiceClick" ToolTip="Bắt đầu / Ngừng phát giọng nói">
+                            MouseLeftButtonDown="OnVoiceClick"
+                            PreviewTouchDown="OnVoiceTouchDown"
+                            ToolTip="Bắt đầu / Ngừng phát giọng nói tới cả lớp">
                         <TextBlock x:Name="txtVoice" Text="🎤" FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Border>
 
                     <!-- Pen annotation -->
                     <Border x:Name="btnPen" Width="34" Height="34" CornerRadius="8" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonDown="OnPenClick" ToolTip="Mở bút chú thích trên màn hình">
+                            MouseLeftButtonDown="OnPenClick"
+                            PreviewTouchDown="OnPenTouchDown"
+                            ToolTip="Mở bảng viết chú thích SMART TOUCH">
                         <TextBlock Text="✏️" FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Border>
 
                     <!-- Screen recording -->
                     <Border x:Name="btnRecord" Width="34" Height="34" CornerRadius="8" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonDown="OnRecordClick" ToolTip="Ghi lại hoạt động trình chiếu">
+                            MouseLeftButtonDown="OnRecordClick"
+                            PreviewTouchDown="OnRecordTouchDown"
+                            ToolTip="Ghi hình bài giảng &amp; hoạt động trình chiếu">
                         <TextBlock x:Name="txtRecord" Text="⏺️" FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Border>
 
-                    <!-- Screen broadcast -->
-                    <Border x:Name="btnBroadcast" Width="34" Height="34" CornerRadius="8" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonDown="OnBroadcastClick" ToolTip="Quảng bá màn hình GV cho HS">
-                        <TextBlock x:Name="txtBroadcast" Text="📺" FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <!-- Screen broadcast + Quick Broadcast Menu (Split Pill) -->
+                    <Border x:Name="bdrBroadcastGroup" Height="34" CornerRadius="8" Background="#DCE3F9"
+                            BorderBrush="#9FA8DA" BorderThickness="1" Margin="2,0,3,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border x:Name="btnBroadcast" MinWidth="36" Height="32" CornerRadius="7,0,0,7"
+                                    Padding="7,0,5,0" Background="Transparent" Cursor="Hand"
+                                    MouseLeftButtonDown="OnBroadcastClick"
+                                    MouseRightButtonUp="OnBroadcastRightClick"
+                                    PreviewTouchDown="OnBroadcastTouchDown"
+                                    ToolTip="Chia sẻ màn hình &amp; Quảng bá bài giảng cho Học sinh (Chuột phải hoặc bấm ▾ để chọn chế độ)">
+                                <TextBlock x:Name="txtBroadcast" Text="📺" FontSize="14" FontWeight="Bold"
+                                           Foreground="#1E293B" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Border>
+                            <Border x:Name="sepBroadcastSplit" Width="1" Margin="0,6" Background="#9FA8DA"/>
+                            <Border x:Name="btnBroadcastMenu" Width="22" Height="32" CornerRadius="0,7,7,0"
+                                    Background="Transparent" Cursor="Hand"
+                                    MouseLeftButtonDown="OnBroadcastMenuClick"
+                                    PreviewTouchDown="OnBroadcastMenuTouchDown"
+                                    ToolTip="Menu Quảng bá: Chọn màn hình/cửa sổ, Kéo vùng, Chiếu Bảng trắng, Mẫu HS, Thông báo, Mở Web">
+                                <TextBlock x:Name="txtBroadcastCaret" Text="▾" FontSize="11" FontWeight="Bold"
+                                           Foreground="#334155" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
                     </Border>
 
                     <!-- Collapse Button -->
@@ -83,7 +110,9 @@
 
                     <!-- Close/disconnect -->
                     <Border Width="34" Height="34" CornerRadius="8" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonDown="OnCloseClick" ToolTip="Thoát thanh công cụ">
+                            MouseLeftButtonDown="OnCloseClick"
+                            PreviewTouchDown="OnCloseTouchDown"
+                            ToolTip="Thoát thanh công cụ">
                         <Viewbox Width="15" Height="15" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Canvas Width="24" Height="24">
                                 <Path Fill="#D32F2F" Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
@@ -159,6 +188,20 @@
                         PreviewMouseLeftButtonDown="DragHandle_PreviewMouseDown">
                     <TextBlock Text="⠿" FontSize="18" Foreground="#5C6BC0" 
                                VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Nút điều khiển nhanh Đang chiếu ngay khi thu gọn (Mini Live Pill) -->
+                <Border x:Name="bdrMiniLiveBadge"
+                        Visibility="Collapsed"
+                        CornerRadius="10"
+                        Background="#DC2626"
+                        Padding="8,5"
+                        Margin="0,0,4,0"
+                        Cursor="Hand"
+                        MouseLeftButtonDown="OnMiniLiveBadgeClick"
+                        PreviewTouchDown="OnMiniLiveBadgeTouchDown"
+                        ToolTip="Đang chia sẻ màn hình — Nhấn để đổi nguồn / tạm dừng / dừng chiếu">
+                    <TextBlock Text="🔴 LIVE" FontSize="10.5" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                 </Border>
 
                 <!-- Vùng Nút bấm Mở rộng (Expand Button) - Diện tích to, chạm là mở ngay lập tức -->

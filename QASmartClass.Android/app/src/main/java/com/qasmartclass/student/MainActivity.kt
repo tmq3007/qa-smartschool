@@ -40,8 +40,9 @@ import com.qasmartclass.student.crypto.CryptoHelper
 
 class MainActivity : AppCompatActivity() {
 
-    // Discovery UI
-    private lateinit var discoveryPanel: LinearLayout
+    // Discovery UI (Screen 1 — Single-Viewport Join Card)
+    private lateinit var discoveryPanel: View
+    private lateinit var discoveryInnerRoot: LinearLayout
     private lateinit var txtStatus: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var btnRefresh: Button
@@ -57,61 +58,54 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnConnect: Button
     private lateinit var txtDiscoveryDot: TextView
     private lateinit var txtDiscoveryHeader: TextView
+    private lateinit var txtJoinAvatarInitials: TextView
 
-    // Connected Header & Profile Bar
+    // Connected Shell (Screen 2 — M3 Adaptive NavigationRail + Top App Bar)
     private lateinit var connectedPanel: LinearLayout
+    private lateinit var txtPageTitle: TextView
     private lateinit var txtHeaderLiveBadge: TextView
     private lateinit var txtConnectedClassInfo: TextView
     private lateinit var txtTeacherDetail: TextView
     private lateinit var txtStudentDetail: TextView
     private lateinit var txtServerIpDetail: TextView
     private lateinit var btnDisconnect: Button
+    private lateinit var btnRaiseHand: Button
+    private lateinit var btnTopHandReason: Button
 
-    // Tab Bar Navigation
-    private lateinit var btnTabLecture: TextView
-    private lateinit var btnTabChat: TextView
-    private lateinit var btnTabHandRaise: TextView
+    // M3 Navigation Rail (Tablet >= 600dp)
+    private lateinit var navRailBar: LinearLayout
+    private lateinit var navRailDivider: View
+    private lateinit var railItemClass: LinearLayout
+    private lateinit var railItemWork: LinearLayout
+    private lateinit var railItemChat: LinearLayout
+    private lateinit var railItemFiles: LinearLayout
+    private lateinit var pillRailClass: FrameLayout
+    private lateinit var pillRailWork: FrameLayout
+    private lateinit var pillRailChat: FrameLayout
+    private lateinit var pillRailFiles: FrameLayout
+    private lateinit var iconRailClass: ImageView
+    private lateinit var iconRailWork: ImageView
+    private lateinit var iconRailChat: ImageView
+    private lateinit var iconRailFiles: ImageView
+    private lateinit var labelRailClass: TextView
+    private lateinit var labelRailWork: TextView
+    private lateinit var labelRailChat: TextView
+    private lateinit var labelRailFiles: TextView
+    private lateinit var badgeRailWork: TextView
+    private lateinit var badgeRailChat: TextView
 
-    // Sidebar (drawer) & Home dashboard (giao diện giống StudentShell WPF)
-    private lateinit var navDrawerOverlay: FrameLayout
-    private lateinit var btnHeaderBack: ImageButton
-    private lateinit var btnSoonBack: Button
-    private lateinit var btnMenu: ImageButton
-    private lateinit var txtPageTitle: TextView
-    private lateinit var btnNavHome: TextView
-    private lateinit var panelHome: LinearLayout
+    // Tab 0 (Lớp học) & Lesson State
     private lateinit var panelSoon: LinearLayout
     private lateinit var txtSoonTitle: TextView
     private lateinit var txtHomeGreeting: TextView
     private lateinit var txtHomeSub: TextView
-    private lateinit var txtStatClass: TextView
-    private lateinit var txtStatBroadcast: TextView
-    private lateinit var txtStatHand: TextView
-    private lateinit var txtStatTeacher: TextView
     private lateinit var txtHomeLessonTitle: TextView
-    private lateinit var txtHomeLessonSub: TextView
-    private lateinit var txtHomeTeacherChip: TextView
-    private lateinit var txtHomeNotice: TextView
     private lateinit var layoutHomeLessonWaiting: LinearLayout
     private lateinit var layoutHomeLessonActive: LinearLayout
-    private lateinit var txtHomeLiveBadge: TextView
     private lateinit var txtHomeSubjectBadge: TextView
     private lateinit var txtHomeStageBadge: TextView
-    private lateinit var imgHomeBroadcastPreview: ImageView
-    private lateinit var layoutWhiteboardStitchPreview: LinearLayout
     private lateinit var txtHomeBoardHeader: TextView
     private lateinit var txtHomeBoardContent: TextView
-    private lateinit var txtHomeBoardNote1: TextView
-    private lateinit var txtHomeBoardNote2: TextView
-    private lateinit var txtHomeBoardPointer: TextView
-    private lateinit var txtHomeTeacherAvatar: TextView
-    private lateinit var txtHomeNoticeHeader: TextView
-    private lateinit var txtHomeNoticeTime: TextView
-    private lateinit var layoutNoticeFeedback: LinearLayout
-    private lateinit var txtHomeChatBadge: TextView
-    private lateinit var txtHomeQuizTitle: TextView
-    private lateinit var txtHomeQuizSub: TextView
-    private lateinit var txtHomeQuizBadge: TextView
     private var homeStudentName = ""
     private var homeClassName = ""
     private var homeTeacherName = ""
@@ -122,12 +116,33 @@ class MainActivity : AppCompatActivity() {
     private var activeLessonStage = 0
     private var hasTeacherNotice = false
     private var unreadTeacherChatCount = 0
-    private val soonNavButtons = mutableListOf<Pair<TextView, String>>()
 
-    // Interactive Feature Panel & State (Quiz / Survey / Homework / Results / Guide)
+    // Tab 1 (Bài tập & Kiểm tra — Classwork Hub)
+    private lateinit var chipWorkQuiz: Button
+    private lateinit var chipWorkHomework: Button
+    private lateinit var chipWorkSurvey: Button
+    private lateinit var chipWorkResults: Button
+    private var currentWorkSubTab = "QUIZ" // "QUIZ" | "HOMEWORK" | "SURVEY" | "RESULTS"
     private lateinit var iconSoonWrapper: View
     private lateinit var txtSoonSubtitle: TextView
     private lateinit var layoutInteractiveFeature: LinearLayout
+
+    // Tab 3 (Tài liệu & Phiên học)
+    private lateinit var panelFilesProfile: ScrollView
+    private lateinit var filesGridContainer: LinearLayout
+    private lateinit var colReceivedFiles: LinearLayout
+    private lateinit var colSessionProfile: LinearLayout
+    private lateinit var btnRefreshFiles: Button
+    private lateinit var layoutReceivedFiles: LinearLayout
+    private lateinit var btnProfileSwitchStudent: Button
+
+    private data class ReceivedFileItem(
+        val fileName: String,
+        val urlOrPath: String,
+        val timeText: String,
+        val isLocalSnapshot: Boolean = false
+    )
+    private val receivedTeacherFiles = mutableListOf<ReceivedFileItem>()
 
     private data class QuizQuestionItem(
         val id: Int,
@@ -160,7 +175,7 @@ class MainActivity : AppCompatActivity() {
     private var hwSubmitted = false
     private var lastHwAckMessage = ""
 
-    // Responsive 4-Screen EdTech UI Views & Micro-interaction State
+    // Discovery & Reconnect Views
     private lateinit var lanReconnectBanner: LinearLayout
     private lateinit var txtLanReconnectStatus: TextView
     private lateinit var discoveryGridContainer: LinearLayout
@@ -174,20 +189,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtLanPingBadge: TextView
     private lateinit var cardDiscoveredClass: LinearLayout
 
-    // Screen 2: Floating Mini Toolbar
+    // Screen 3: Google Meet Fullscreen Broadcast Controls
+    private lateinit var topBroadcastBadgeBar: LinearLayout
     private lateinit var floatingBroadcastDock: LinearLayout
-    private lateinit var btnExpandBroadcastDock: Button
-    private lateinit var btnCollapseBroadcastDock: Button
     private lateinit var btnBroadcastVolume: Button
+    private lateinit var btnFullscreenSnapshot: Button
+    private var broadcastUiHideJob: Job? = null
+    private var isForceBroadcastMode = false
 
-    // Screen 3: Split-Screen Document + Quick Note Sidebar
+    // Split-Screen Document + Quick Note Sidebar
     private lateinit var lectureSplitContainer: LinearLayout
     private lateinit var colLectureDocument: LinearLayout
     private lateinit var colLectureSidebar: LinearLayout
     private lateinit var btnToggleLessonSidebar: Button
-    private lateinit var txtSlidePageIndicator: TextView
-    private lateinit var btnSlidePrev: ImageButton
-    private lateinit var btnSlideNext: ImageButton
     private lateinit var btnZoomOut: Button
     private lateinit var btnZoomIn: Button
     private lateinit var txtZoomLevel: TextView
@@ -209,16 +223,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtLockLessonName: TextView
     private lateinit var txtLockTimer: TextView
 
-    private var currentSlideIndex = 1
-    private var totalSlideCount = 6
     private var currentZoomPercent = 100
     private var isLessonSidebarVisible = true
     private var isHandAcceptedByTeacher = false
     private var lockTimerJob: Job? = null
     private var isUserInitiatedDisconnect = false
-    private var lastMeasuredPingMs: Long = 4L
+    private var lastMeasuredPingMs: Long = 0L
 
-    // Bottom Navigation Bar
+    // Adaptive Bottom Navigation Bar (Compact < 600dp)
+    private lateinit var bottomNavBar: LinearLayout
     private lateinit var btnBottomHome: View
     private lateinit var btnBottomLecture: View
     private lateinit var btnBottomChat: View
@@ -236,18 +249,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var iconBottomRaise: ImageView
     private lateinit var labelBottomRaise: TextView
 
-    // Tab 1: Lecture & Broadcast
+    // Tab 0: Lecture & Broadcast Stage
     private lateinit var panelLecture: LinearLayout
     private lateinit var layoutNoBroadcast: LinearLayout
     private lateinit var layoutLiveBroadcast: LinearLayout
     private lateinit var txtInlineBroadcastTitle: TextView
     private lateinit var imgInlineBroadcast: ImageView
-    private lateinit var btnFullscreenBroadcast: View
-    private lateinit var btnRaiseHand: View
+    private lateinit var btnFullscreenBroadcast: Button
     private lateinit var messageCard: LinearLayout
     private lateinit var txtTeacherMessage: TextView
 
-    // Tab 2: Chat
+    // Tab 2: Full-Height Google Chat Stream
     private lateinit var panelChat: LinearLayout
     private lateinit var txtChatChannelBadge: TextView
     private lateinit var scrollChat: ScrollView
@@ -272,15 +284,6 @@ class MainActivity : AppCompatActivity() {
     // Nhóm chat do giáo viên tạo (đồng bộ qua CMD|CHAT_GROUPS): code = "GROUP_xxx"
     private data class ChatGroupChannel(val code: String, val name: String, val emoji: String)
     private val chatGroups = mutableListOf<ChatGroupChannel>()
-
-    // Tab 3: Hand Raise
-    private lateinit var panelHandRaise: LinearLayout
-    private lateinit var btnMainRaiseHand: LinearLayout
-    private lateinit var txtHandRaiseIcon: TextView
-    private lateinit var txtHandRaiseStatus: TextView
-    private lateinit var btnReasonSpeaking: Button
-    private lateinit var btnReasonQuestion: Button
-    private lateinit var btnReasonHelp: Button
 
     // Screen Broadcast Fullscreen Overlay
     private lateinit var broadcastOverlay: FrameLayout
@@ -413,10 +416,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Hệ thống Responsive Đa Tầng cho từng màn hình (Per-Screen Responsive Engine):
-     * - Compact (< 600dp): Điện thoại hoặc màn hình nhỏ xoay dọc (1 cột dọc, Floating Dock neo đáy).
-     * - Medium (600dp - 899dp): Tablet 8 inch hoặc Tablet 10 inch xoay dọc (2 cột tỉ lệ thu gọn).
-     * - Expanded (>= 900dp): Tablet 10-11 inch màn hình ngang chuẩn phòng học (2 cột chuẩn 4:8 & 8:4).
+     * Hệ thống Adaptive Layout chuẩn Material Design 3 (Google Classroom / Google Meet):
+     * - Compact (< 600dp): Hiện Bottom Navigation Bar, ẩn Navigation Rail trái, xếp chồng 1 cột.
+     * - Medium / Expanded (>= 600dp Tablet): Hiện Navigation Rail trái 84dp, ẩn Bottom Bar, chia cột cân đối.
      */
     private fun applyResponsiveLayout() {
         val dm = resources.displayMetrics
@@ -428,33 +430,36 @@ class MainActivity : AppCompatActivity() {
         val isMedium = screenWidthDp in 600f..899.9f
         val isExpanded = screenWidthDp >= 900f
 
-        // 1. Màn hình 1 (Connection / Landing Screen): 2 Cột trên Tablet, 1 Cột trên Compact
+        // 1. Adaptive Navigation: NavigationRail trên Tablet (>=600dp), BottomNavBar trên màn hình nhỏ (<600dp)
+        if (::navRailBar.isInitialized && ::bottomNavBar.isInitialized) {
+            navRailBar.visibility = if (isCompact) View.GONE else View.VISIBLE
+            navRailDivider.visibility = if (isCompact) View.GONE else View.VISIBLE
+            bottomNavBar.visibility = if (isCompact) View.VISIBLE else View.GONE
+        }
+
+        // 2. Màn hình 1 (Join Class): 2 Cột trên Tablet, 1 Cột trên Compact
         if (::discoveryGridContainer.isInitialized) {
             val outerPad = when {
                 isExpanded -> dp(24)
                 isMedium -> dp(18)
                 else -> dp(14)
             }
-            discoveryPanel.setPadding(outerPad, dp(14), outerPad, dp(20))
+            discoveryInnerRoot.setPadding(outerPad, dp(14), outerPad, dp(18))
 
             if (isCompact) {
                 discoveryGridContainer.orientation = LinearLayout.VERTICAL
-                colStudentIdentity.setPadding(dp(16), dp(16), dp(16), dp(16))
-                cardDiscoveredClass.setPadding(dp(16), dp(16), dp(16), dp(16))
                 colStudentIdentity.layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply { bottomMargin = dp(14) }
+                ).apply { bottomMargin = dp(12) }
                 colLanRooms.layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 )
             } else {
                 discoveryGridContainer.orientation = LinearLayout.HORIZONTAL
-                colStudentIdentity.setPadding(dp(20), dp(20), dp(20), dp(20))
-                cardDiscoveredClass.setPadding(dp(22), dp(22), dp(22), dp(22))
-                val leftWeight = if (isExpanded) 4.0f else 4.6f
-                val rightWeight = if (isExpanded) 8.0f else 7.4f
+                val leftWeight = if (isExpanded) 4.0f else 4.5f
+                val rightWeight = if (isExpanded) 8.0f else 7.5f
                 colStudentIdentity.layoutParams = LinearLayout.LayoutParams(
                     0,
                     ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -468,122 +473,94 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 2. Màn hình 2 (Broadcast Screen Mode): Floating Mini Toolbar Neo Cạnh Phải (Tablet) hoặc Neo Đáy (Compact)
-        if (::floatingBroadcastDock.isInitialized) {
-            val dockLp = floatingBroadcastDock.layoutParams as? FrameLayout.LayoutParams
-            if (dockLp != null) {
-                if (isCompact) {
-                    floatingBroadcastDock.orientation = LinearLayout.HORIZONTAL
-                    dockLp.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-                    dockLp.setMargins(dp(12), dp(12), dp(12), dp(16))
-                } else {
-                    floatingBroadcastDock.orientation = LinearLayout.VERTICAL
-                    dockLp.gravity = Gravity.END or Gravity.CENTER_VERTICAL
-                    dockLp.setMargins(dp(16), dp(16), dp(16), dp(16))
-                }
-                floatingBroadcastDock.layoutParams = dockLp
-            }
-            txtBroadcastStatus.textSize = if (isCompact) 12f else 14f
-        }
-
-        // 3. Màn hình 3 (Interactive Lesson Viewer): Split-Screen 8:4 (Expanded), 6.5:3.5 (Medium), hoặc Xếp chồng (Compact)
+        // 3. Tab 0 (Lớp học Split-View): 70:30 full-height trên Tablet, xếp dọc trên Compact
         if (::lectureSplitContainer.isInitialized) {
-            val docViewportHeight = when {
-                isExpanded -> dp(380)
-                isMedium -> dp(310)
-                else -> dp(230)
-            }
-            layoutNoBroadcast.layoutParams = layoutNoBroadcast.layoutParams.apply { height = docViewportHeight }
-            imgInlineBroadcast.layoutParams = imgInlineBroadcast.layoutParams.apply { height = docViewportHeight }
-
             if (isCompact) {
                 lectureSplitContainer.orientation = LinearLayout.VERTICAL
                 colLectureDocument.layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply { bottomMargin = if (isLessonSidebarVisible) dp(14) else 0 }
+                    0,
+                    if (isLessonSidebarVisible) 6.0f else 10.0f
+                ).apply { bottomMargin = if (isLessonSidebarVisible) dp(10) else 0 }
                 colLectureSidebar.layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    0,
+                    4.0f
                 )
             } else {
                 lectureSplitContainer.orientation = LinearLayout.HORIZONTAL
                 if (isLessonSidebarVisible) {
-                    val docWeight = if (isExpanded) 8.0f else 7.0f
-                    val sideWeight = if (isExpanded) 4.0f else 5.0f
+                    val docWeight = if (isExpanded) 7.4f else 6.6f
+                    val sideWeight = if (isExpanded) 3.6f else 4.4f
                     colLectureDocument.layoutParams = LinearLayout.LayoutParams(
                         0,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
                         docWeight
-                    ).apply { marginEnd = dp(16) }
+                    ).apply { marginEnd = dp(12) }
                     colLectureSidebar.layoutParams = LinearLayout.LayoutParams(
                         0,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
                         sideWeight
                     )
                 } else {
                     colLectureDocument.layoutParams = LinearLayout.LayoutParams(
                         0,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        12.0f
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        11.0f
                     )
                 }
             }
             colLectureSidebar.visibility = if (isLessonSidebarVisible) View.VISIBLE else View.GONE
         }
 
-        // 4. Màn hình 4 (Lock Screen / Focus Mode): Co giãn khung nội dung trung tâm, hình minh họa và đồng hồ
+        // 4. Tab 3 (Tài liệu & Phiên học): 2 cột trên Tablet, 1 cột trên Compact
+        if (::filesGridContainer.isInitialized) {
+            if (isCompact) {
+                filesGridContainer.orientation = LinearLayout.VERTICAL
+                colReceivedFiles.layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = dp(12) }
+                colSessionProfile.layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            } else {
+                filesGridContainer.orientation = LinearLayout.HORIZONTAL
+                colReceivedFiles.layoutParams = LinearLayout.LayoutParams(
+                    0,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    6.5f
+                ).apply { marginEnd = dp(14) }
+                colSessionProfile.layoutParams = LinearLayout.LayoutParams(
+                    0,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    5.5f
+                )
+            }
+        }
+
+        // 5. Màn hình 4 (Lock Screen / Focus Mode)
         if (::lockContentCard.isInitialized) {
             val lockLp = lockContentCard.layoutParams as? FrameLayout.LayoutParams
             if (lockLp != null) {
                 lockLp.width = when {
-                    isExpanded -> dp(700)
-                    isMedium -> dp(540)
+                    isExpanded -> dp(600)
+                    isMedium -> dp(500)
                     else -> ViewGroup.LayoutParams.MATCH_PARENT
                 }
                 lockLp.gravity = Gravity.CENTER
                 lockContentCard.layoutParams = lockLp
             }
-            val illusSize = when {
-                isExpanded -> dp(136)
-                isMedium -> dp(112)
-                else -> dp(88)
-            }
-            imgLockIllustration.layoutParams = imgLockIllustration.layoutParams.apply {
-                width = illusSize
-                height = illusSize
-            }
-            txtLockTitle.textSize = when {
-                isExpanded -> 24f
-                isMedium -> 21f
-                else -> 18f
-            }
-            txtLockTimer.textSize = when {
-                isExpanded -> 28f
-                isMedium -> 25f
-                else -> 22f
-            }
         }
 
-        // 5. Các trang nội dung khác (Home, Soon/Interactive, Chat, HandRaise): Mở rộng tối đa 1240dp trên Tablet ngang
-        fun capWorkspacePanel(view: View, maxDp: Float) {
-            val lp = view.layoutParams as? LinearLayout.LayoutParams ?: return
-            val targetPx = if (screenWidthDp > maxDp) (maxDp * density).toInt()
-                           else ViewGroup.LayoutParams.MATCH_PARENT
-            if (lp.width != targetPx || lp.gravity != Gravity.CENTER_HORIZONTAL) {
-                lp.width = targetPx
-                lp.gravity = Gravity.CENTER_HORIZONTAL
-                view.layoutParams = lp
-            }
-        }
-        listOf(panelHome, panelSoon, panelLecture, panelChat, panelHandRaise)
-            .forEach { capWorkspacePanel(it, 1240f) }
         syncStudentIdentityCard()
     }
 
     private fun initViews() {
-        // Discovery UI
+        // Screen 1: Join Class UI
         discoveryPanel = findViewById(R.id.discoveryPanel)
+        discoveryInnerRoot = findViewById(R.id.discoveryInnerRoot)
         txtStatus = findViewById(R.id.txtStatus)
         progressBar = findViewById(R.id.progressBar)
         btnRefresh = findViewById(R.id.btnRefresh)
@@ -598,141 +575,8 @@ class MainActivity : AppCompatActivity() {
         btnConnect = findViewById(R.id.btnConnect)
         txtDiscoveryDot = findViewById(R.id.txtDiscoveryDot)
         txtDiscoveryHeader = findViewById(R.id.txtDiscoveryHeader)
+        txtJoinAvatarInitials = findViewById(R.id.txtJoinAvatarInitials)
 
-        // Connected Top Header & Profile Bar
-        connectedPanel = findViewById(R.id.connectedPanel)
-        txtHeaderLiveBadge = findViewById(R.id.txtHeaderLiveBadge)
-        txtConnectedClassInfo = findViewById(R.id.txtConnectedClassInfo)
-        txtTeacherDetail = findViewById(R.id.txtTeacherDetail)
-        txtStudentDetail = findViewById(R.id.txtStudentDetail)
-        txtServerIpDetail = findViewById(R.id.txtServerIpDetail)
-        btnDisconnect = findViewById(R.id.btnDisconnect)
-
-        // Tab Bar Navigation
-        btnTabLecture = findViewById(R.id.btnTabLecture)
-        btnTabChat = findViewById(R.id.btnTabChat)
-        btnTabHandRaise = findViewById(R.id.btnTabHandRaise)
-
-        // Sidebar & Home dashboard
-        navDrawerOverlay = findViewById(R.id.navDrawerOverlay)
-        btnHeaderBack = findViewById(R.id.btnHeaderBack)
-        btnSoonBack = findViewById(R.id.btnSoonBack)
-        btnMenu = findViewById(R.id.btnMenu)
-        txtPageTitle = findViewById(R.id.txtPageTitle)
-        btnNavHome = findViewById(R.id.btnNavHome)
-        panelHome = findViewById(R.id.panelHome)
-        panelSoon = findViewById(R.id.panelSoon)
-        txtSoonTitle = findViewById(R.id.txtSoonTitle)
-        iconSoonWrapper = findViewById(R.id.iconSoonWrapper)
-        txtSoonSubtitle = findViewById(R.id.txtSoonSubtitle)
-        layoutInteractiveFeature = findViewById(R.id.layoutInteractiveFeature)
-        txtHomeGreeting = findViewById(R.id.txtHomeGreeting)
-        txtHomeSub = findViewById(R.id.txtHomeSub)
-        txtStatClass = findViewById(R.id.txtStatClass)
-        txtStatBroadcast = findViewById(R.id.txtStatBroadcast)
-        txtStatHand = findViewById(R.id.txtStatHand)
-        txtStatTeacher = findViewById(R.id.txtStatTeacher)
-        txtHomeLessonTitle = findViewById(R.id.txtHomeLessonTitle)
-        txtHomeLessonSub = findViewById(R.id.txtHomeLessonSub)
-        txtHomeTeacherChip = findViewById(R.id.txtHomeTeacherChip)
-        txtHomeNotice = findViewById(R.id.txtHomeNotice)
-        layoutHomeLessonWaiting = findViewById(R.id.layoutHomeLessonWaiting)
-        layoutHomeLessonActive = findViewById(R.id.layoutHomeLessonActive)
-        txtHomeLiveBadge = findViewById(R.id.txtHomeLiveBadge)
-        txtHomeSubjectBadge = findViewById(R.id.txtHomeSubjectBadge)
-        txtHomeStageBadge = findViewById(R.id.txtHomeStageBadge)
-        imgHomeBroadcastPreview = findViewById(R.id.imgHomeBroadcastPreview)
-        layoutWhiteboardStitchPreview = findViewById(R.id.layoutWhiteboardStitchPreview)
-        txtHomeBoardHeader = findViewById(R.id.txtHomeBoardHeader)
-        txtHomeBoardContent = findViewById(R.id.txtHomeBoardContent)
-        txtHomeBoardNote1 = findViewById(R.id.txtHomeBoardNote1)
-        txtHomeBoardNote2 = findViewById(R.id.txtHomeBoardNote2)
-        txtHomeBoardPointer = findViewById(R.id.txtHomeBoardPointer)
-        txtHomeTeacherAvatar = findViewById(R.id.txtHomeTeacherAvatar)
-        txtHomeNoticeHeader = findViewById(R.id.txtHomeNoticeHeader)
-        txtHomeNoticeTime = findViewById(R.id.txtHomeNoticeTime)
-        layoutNoticeFeedback = findViewById(R.id.layoutNoticeFeedback)
-        txtHomeChatBadge = findViewById(R.id.txtHomeChatBadge)
-        txtHomeQuizTitle = findViewById(R.id.txtHomeQuizTitle)
-        txtHomeQuizSub = findViewById(R.id.txtHomeQuizSub)
-        txtHomeQuizBadge = findViewById(R.id.txtHomeQuizBadge)
-        soonNavButtons.clear()
-        soonNavButtons += findViewById<TextView>(R.id.btnNavWhiteboard) to "Bảng trắng SMART TOUCH"
-        soonNavButtons += findViewById<TextView>(R.id.btnNavQuiz) to "Bài kiểm tra"
-        soonNavButtons += findViewById<TextView>(R.id.btnNavAssignment) to "Bài tập học tập"
-        soonNavButtons += findViewById<TextView>(R.id.btnNavSurvey) to "Khảo sát"
-        soonNavButtons += findViewById<TextView>(R.id.btnNavResults) to "Kết quả học tập"
-        soonNavButtons += findViewById<TextView>(R.id.btnNavProgress) to "Tiến trình học tập"
-        soonNavButtons += findViewById<TextView>(R.id.btnNavSettings) to "Cài đặt"
-        soonNavButtons += findViewById<TextView>(R.id.btnNavGuide) to "Hướng dẫn sử dụng"
-
-        // Bottom Navigation Bar
-        btnBottomHome = findViewById(R.id.btnBottomHome)
-        btnBottomLecture = findViewById(R.id.btnBottomLecture)
-        btnBottomChat = findViewById(R.id.btnBottomChat)
-        btnBottomRaise = findViewById(R.id.btnBottomRaise)
-
-        capsuleBottomHome = findViewById(R.id.capsuleBottomHome)
-        capsuleBottomLecture = findViewById(R.id.capsuleBottomLecture)
-        capsuleBottomChat = findViewById(R.id.capsuleBottomChat)
-        capsuleBottomRaise = findViewById(R.id.capsuleBottomRaise)
-
-        iconBottomHome = findViewById(R.id.iconBottomHome)
-        labelBottomHome = findViewById(R.id.labelBottomHome)
-        iconBottomLecture = findViewById(R.id.iconBottomLecture)
-        labelBottomLecture = findViewById(R.id.labelBottomLecture)
-        iconBottomChat = findViewById(R.id.iconBottomChat)
-        labelBottomChat = findViewById(R.id.labelBottomChat)
-        iconBottomRaise = findViewById(R.id.iconBottomRaise)
-        labelBottomRaise = findViewById(R.id.labelBottomRaise)
-
-        // Tab 1: Lecture & Broadcast
-        panelLecture = findViewById(R.id.panelLecture)
-        layoutNoBroadcast = findViewById(R.id.layoutNoBroadcast)
-        layoutLiveBroadcast = findViewById(R.id.layoutLiveBroadcast)
-        txtInlineBroadcastTitle = findViewById(R.id.txtInlineBroadcastTitle)
-        imgInlineBroadcast = findViewById(R.id.imgInlineBroadcast)
-        btnFullscreenBroadcast = findViewById(R.id.btnFullscreenBroadcast)
-        btnRaiseHand = findViewById(R.id.btnRaiseHand)
-        messageCard = findViewById(R.id.messageCard)
-        txtTeacherMessage = findViewById(R.id.txtTeacherMessage)
-
-        // Tab 2: Chat
-        panelChat = findViewById(R.id.panelChat)
-        txtChatChannelBadge = findViewById(R.id.txtChatChannelBadge)
-        scrollChat = findViewById(R.id.scrollChat)
-        chatContainer = findViewById(R.id.chatContainer)
-        edtChatMessage = findViewById(R.id.edtChatMessage)
-        btnSendChat = findViewById(R.id.btnSendChat)
-        chatTabBar = findViewById(R.id.chatTabBar)
-
-        // Tab 3: Hand Raise
-        panelHandRaise = findViewById(R.id.panelHandRaise)
-        btnMainRaiseHand = findViewById(R.id.btnMainRaiseHand)
-        txtHandRaiseIcon = findViewById(R.id.txtHandRaiseIcon)
-        txtHandRaiseStatus = findViewById(R.id.txtHandRaiseStatus)
-        btnReasonSpeaking = findViewById(R.id.btnReasonSpeaking)
-        btnReasonQuestion = findViewById(R.id.btnReasonQuestion)
-        btnReasonHelp = findViewById(R.id.btnReasonHelp)
-
-        // Screen Broadcast Overlay
-        broadcastOverlay = findViewById(R.id.broadcastOverlay)
-        imgBroadcastScreen = findViewById(R.id.imgBroadcastScreen)
-        progressBroadcastLoading = findViewById(R.id.progressBroadcastLoading)
-        txtBroadcastStatus = findViewById(R.id.txtBroadcastStatus)
-        btnFullscreenRaiseHand = findViewById(R.id.btnFullscreenRaiseHand)
-        btnCloseBroadcast = findViewById(R.id.btnCloseBroadcast)
-
-        // Lock Screen Overlay
-        lockOverlay = findViewById(R.id.lockOverlay)
-        txtLockTitle = findViewById(R.id.txtLockTitle)
-        txtLockMessage = findViewById(R.id.txtLockMessage)
-        lockContentCard = findViewById(R.id.lockContentCard)
-        imgLockIllustration = findViewById(R.id.imgLockIllustration)
-        txtLockLessonName = findViewById(R.id.txtLockLessonName)
-        txtLockTimer = findViewById(R.id.txtLockTimer)
-
-        // Responsive 4-Screen Views
         lanReconnectBanner = findViewById(R.id.lanReconnectBanner)
         txtLanReconnectStatus = findViewById(R.id.txtLanReconnectStatus)
         discoveryGridContainer = findViewById(R.id.discoveryGridContainer)
@@ -746,18 +590,82 @@ class MainActivity : AppCompatActivity() {
         txtLanPingBadge = findViewById(R.id.txtLanPingBadge)
         cardDiscoveredClass = findViewById(R.id.cardDiscoveredClass)
 
-        floatingBroadcastDock = findViewById(R.id.floatingBroadcastDock)
-        btnExpandBroadcastDock = findViewById(R.id.btnExpandBroadcastDock)
-        btnCollapseBroadcastDock = findViewById(R.id.btnCollapseBroadcastDock)
-        btnBroadcastVolume = findViewById(R.id.btnBroadcastVolume)
+        // Screen 2: Connected Top Bar & Navigation Rail
+        connectedPanel = findViewById(R.id.connectedPanel)
+        txtPageTitle = findViewById(R.id.txtPageTitle)
+        txtHeaderLiveBadge = findViewById(R.id.txtHeaderLiveBadge)
+        txtConnectedClassInfo = findViewById(R.id.txtConnectedClassInfo)
+        txtTeacherDetail = findViewById(R.id.txtTeacherDetail)
+        txtStudentDetail = findViewById(R.id.txtStudentDetail)
+        txtServerIpDetail = findViewById(R.id.txtServerIpDetail)
+        btnDisconnect = findViewById(R.id.btnDisconnect)
+        btnRaiseHand = findViewById(R.id.btnRaiseHand)
+        btnTopHandReason = findViewById(R.id.btnTopHandReason)
+
+        navRailBar = findViewById(R.id.navRailBar)
+        navRailDivider = findViewById(R.id.navRailDivider)
+        railItemClass = findViewById(R.id.railItemClass)
+        railItemWork = findViewById(R.id.railItemWork)
+        railItemChat = findViewById(R.id.railItemChat)
+        railItemFiles = findViewById(R.id.railItemFiles)
+        pillRailClass = findViewById(R.id.pillRailClass)
+        pillRailWork = findViewById(R.id.pillRailWork)
+        pillRailChat = findViewById(R.id.pillRailChat)
+        pillRailFiles = findViewById(R.id.pillRailFiles)
+        iconRailClass = findViewById(R.id.iconRailClass)
+        iconRailWork = findViewById(R.id.iconRailWork)
+        iconRailChat = findViewById(R.id.iconRailChat)
+        iconRailFiles = findViewById(R.id.iconRailFiles)
+        labelRailClass = findViewById(R.id.labelRailClass)
+        labelRailWork = findViewById(R.id.labelRailWork)
+        labelRailChat = findViewById(R.id.labelRailChat)
+        labelRailFiles = findViewById(R.id.labelRailFiles)
+        badgeRailWork = findViewById(R.id.badgeRailWork)
+        badgeRailChat = findViewById(R.id.badgeRailChat)
+
+        // Adaptive Bottom Nav Bar (< 600dp)
+        bottomNavBar = findViewById(R.id.bottomNavBar)
+        btnBottomHome = findViewById(R.id.btnBottomHome)
+        btnBottomLecture = findViewById(R.id.btnBottomLecture)
+        btnBottomChat = findViewById(R.id.btnBottomChat)
+        btnBottomRaise = findViewById(R.id.btnBottomRaise)
+        capsuleBottomHome = findViewById(R.id.capsuleBottomHome)
+        capsuleBottomLecture = findViewById(R.id.capsuleBottomLecture)
+        capsuleBottomChat = findViewById(R.id.capsuleBottomChat)
+        capsuleBottomRaise = findViewById(R.id.capsuleBottomRaise)
+        iconBottomHome = findViewById(R.id.iconBottomHome)
+        labelBottomHome = findViewById(R.id.labelBottomHome)
+        iconBottomLecture = findViewById(R.id.iconBottomLecture)
+        labelBottomLecture = findViewById(R.id.labelBottomLecture)
+        iconBottomChat = findViewById(R.id.iconBottomChat)
+        labelBottomChat = findViewById(R.id.labelBottomChat)
+        iconBottomRaise = findViewById(R.id.iconBottomRaise)
+        labelBottomRaise = findViewById(R.id.labelBottomRaise)
+
+        // Tab 0: Lớp học (Live Stream + Lesson Stage + Quick Note)
+        panelLecture = findViewById(R.id.panelLecture)
+        layoutNoBroadcast = findViewById(R.id.layoutNoBroadcast)
+        layoutLiveBroadcast = findViewById(R.id.layoutLiveBroadcast)
+        txtInlineBroadcastTitle = findViewById(R.id.txtInlineBroadcastTitle)
+        imgInlineBroadcast = findViewById(R.id.imgInlineBroadcast)
+        btnFullscreenBroadcast = findViewById(R.id.btnFullscreenBroadcast)
+        messageCard = findViewById(R.id.messageCard)
+        txtTeacherMessage = findViewById(R.id.txtTeacherMessage)
+
+        txtHomeGreeting = findViewById(R.id.txtHomeGreeting)
+        txtHomeSub = findViewById(R.id.txtHomeSub)
+        txtHomeLessonTitle = findViewById(R.id.txtHomeLessonTitle)
+        layoutHomeLessonWaiting = findViewById(R.id.layoutHomeLessonWaiting)
+        layoutHomeLessonActive = findViewById(R.id.layoutHomeLessonActive)
+        txtHomeSubjectBadge = findViewById(R.id.txtHomeSubjectBadge)
+        txtHomeStageBadge = findViewById(R.id.txtHomeStageBadge)
+        txtHomeBoardHeader = findViewById(R.id.txtHomeBoardHeader)
+        txtHomeBoardContent = findViewById(R.id.txtHomeBoardContent)
 
         lectureSplitContainer = findViewById(R.id.lectureSplitContainer)
         colLectureDocument = findViewById(R.id.colLectureDocument)
         colLectureSidebar = findViewById(R.id.colLectureSidebar)
         btnToggleLessonSidebar = findViewById(R.id.btnToggleLessonSidebar)
-        txtSlidePageIndicator = findViewById(R.id.txtSlidePageIndicator)
-        btnSlidePrev = findViewById(R.id.btnSlidePrev)
-        btnSlideNext = findViewById(R.id.btnSlideNext)
         btnZoomOut = findViewById(R.id.btnZoomOut)
         btnZoomIn = findViewById(R.id.btnZoomIn)
         txtZoomLevel = findViewById(R.id.txtZoomLevel)
@@ -772,6 +680,56 @@ class MainActivity : AppCompatActivity() {
         txtUploadPercent = findViewById(R.id.txtUploadPercent)
         txtUploadStatusLabel = findViewById(R.id.txtUploadStatusLabel)
         btnQuickSubmitWork = findViewById(R.id.btnQuickSubmitWork)
+
+        // Tab 1: Bài tập & Kiểm tra (Classwork Hub)
+        panelSoon = findViewById(R.id.panelSoon)
+        chipWorkQuiz = findViewById(R.id.chipWorkQuiz)
+        chipWorkHomework = findViewById(R.id.chipWorkHomework)
+        chipWorkSurvey = findViewById(R.id.chipWorkSurvey)
+        chipWorkResults = findViewById(R.id.chipWorkResults)
+        txtSoonTitle = findViewById(R.id.txtSoonTitle)
+        iconSoonWrapper = findViewById(R.id.iconSoonWrapper)
+        txtSoonSubtitle = findViewById(R.id.txtSoonSubtitle)
+        layoutInteractiveFeature = findViewById(R.id.layoutInteractiveFeature)
+
+        // Tab 2: Thảo luận (Full-Height Google Chat)
+        panelChat = findViewById(R.id.panelChat)
+        txtChatChannelBadge = findViewById(R.id.txtChatChannelBadge)
+        scrollChat = findViewById(R.id.scrollChat)
+        chatContainer = findViewById(R.id.chatContainer)
+        edtChatMessage = findViewById(R.id.edtChatMessage)
+        btnSendChat = findViewById(R.id.btnSendChat)
+        chatTabBar = findViewById(R.id.chatTabBar)
+
+        // Tab 3: Tài liệu & Phiên học
+        panelFilesProfile = findViewById(R.id.panelFilesProfile)
+        filesGridContainer = findViewById(R.id.filesGridContainer)
+        colReceivedFiles = findViewById(R.id.colReceivedFiles)
+        colSessionProfile = findViewById(R.id.colSessionProfile)
+        btnRefreshFiles = findViewById(R.id.btnRefreshFiles)
+        layoutReceivedFiles = findViewById(R.id.layoutReceivedFiles)
+        btnProfileSwitchStudent = findViewById(R.id.btnProfileSwitchStudent)
+
+        // Screen 3: Google Meet Fullscreen Broadcast Overlay
+        broadcastOverlay = findViewById(R.id.broadcastOverlay)
+        imgBroadcastScreen = findViewById(R.id.imgBroadcastScreen)
+        progressBroadcastLoading = findViewById(R.id.progressBroadcastLoading)
+        topBroadcastBadgeBar = findViewById(R.id.topBroadcastBadgeBar)
+        txtBroadcastStatus = findViewById(R.id.txtBroadcastStatus)
+        floatingBroadcastDock = findViewById(R.id.floatingBroadcastDock)
+        btnFullscreenRaiseHand = findViewById(R.id.btnFullscreenRaiseHand)
+        btnFullscreenSnapshot = findViewById(R.id.btnFullscreenSnapshot)
+        btnBroadcastVolume = findViewById(R.id.btnBroadcastVolume)
+        btnCloseBroadcast = findViewById(R.id.btnCloseBroadcast)
+
+        // Screen 4: Focus Lock Overlay
+        lockOverlay = findViewById(R.id.lockOverlay)
+        txtLockTitle = findViewById(R.id.txtLockTitle)
+        txtLockMessage = findViewById(R.id.txtLockMessage)
+        lockContentCard = findViewById(R.id.lockContentCard)
+        imgLockIllustration = findViewById(R.id.imgLockIllustration)
+        txtLockLessonName = findViewById(R.id.txtLockLessonName)
+        txtLockTimer = findViewById(R.id.txtLockTimer)
 
         // Load saved preferences
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -795,6 +753,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         syncStudentIdentityCard()
+        refreshReceivedFilesPanel()
     }
 
     private fun setupListeners() {
@@ -815,14 +774,17 @@ class MainActivity : AppCompatActivity() {
             startAutoDiscovery()
         }
 
-        edtJoinClassCode.imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE or
+        edtJoinClassCode.imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO or
             android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI
 
         edtJoinClassCode.setOnEditorActionListener { _, _, _ ->
             hideSoftKeyboard()
-            if (edtJoinClassCode.text.toString().trim().isNotEmpty() || !currentTeacherIp.isNullOrBlank()) {
-                btnConnect.performClick()
-            }
+            btnConnect.performClick()
+            true
+        }
+
+        edtChatMessage.setOnEditorActionListener { _, _, _ ->
+            sendChatMessage()
             true
         }
 
@@ -835,25 +797,9 @@ class MainActivity : AppCompatActivity() {
             var studentName = edtStudentName.text.toString().trim()
             var ip = edtTeacherIp.text.toString().trim()
 
-            /* // [MYTHWARE_LITE] Bỏ bắt buộc nhập mật khẩu và mã lớp trừ khi Giáo viên bật khóa PIN phòng học
-            if (studentCode.isBlank()) {
-                showError("Vui lòng nhập Mã học sinh / Tài khoản!")
-                edtStudentCode.requestFocus()
-                return@setOnClickListener
-            }
-            if (password.isBlank()) {
-                showError("Vui lòng nhập Mật khẩu!")
-                edtPassword.requestFocus()
-                return@setOnClickListener
-            }
-            if (classCodeInput.isBlank()) {
-                showError("Vui lòng nhập Mã vào lớp do Giáo viên cung cấp trên bảng!")
-                edtJoinClassCode.requestFocus()
-                return@setOnClickListener
-            }
-            */
+            /* // [MYTHWARE_LITE] Bỏ bắt buộc nhập mật khẩu và mã lớp trừ khi Giáo viên bật khóa PIN phòng học */
             if (discoveredRequirePin && classCodeInput.isBlank()) {
-                showError("🔒 Lớp học này đang bật khóa PIN. Vui lòng nhập Mã PIN phòng học do Giáo viên cung cấp!")
+                showError("🔒 Lớp học này đang bật khóa PIN. Vui lòng nhập Mã PIN trên bảng Giáo viên!")
                 edtJoinClassCode.requestFocus()
                 return@setOnClickListener
             }
@@ -884,56 +830,48 @@ class MainActivity : AppCompatActivity() {
             connectToTeacher(ip, tcpPort, studentName, studentCode, password, classCodeInput)
         }
 
-        btnConnect.setOnLongClickListener {
-            val studentCode = edtStudentCode.text.toString().trim().ifBlank { "10A1-002" }
-            val studentName = edtStudentName.text.toString().trim().ifBlank { "Nguyễn Văn Nam" }
-            onConnectedSuccess(studentName, studentCode, "10.0.2.2", "Lớp 10A1", "Thầy Nguyễn Văn An")
-            true
-        }
-
         btnDisconnect.setOnClickListener {
             isUserInitiatedDisconnect = true
-            disconnectFromTeacher("Học sinh chủ động rời lớp")
+            disconnectFromTeacher("Đã rời phòng học")
         }
 
-        // Screen 1: Cột trái (Hồ sơ bàn học) & Cột phải (1 chạm vào lớp + Cấu hình IP ẩn)
+        // Hộp thoại Modal Cấu hình IP Máy chủ Giáo viên (Không xổ dài làm vỡ trang chính)
         btnAdvancedConfig.setOnClickListener {
-            val form = findViewById<View>(R.id.formContainer)
-            val willShow = form.visibility != View.VISIBLE
-            form.visibility = if (willShow) View.VISIBLE else View.GONE
-            if (willShow) edtTeacherIp.requestFocus() else hideSoftKeyboard()
+            hideSoftKeyboard()
+            showServerIpConfigDialog()
         }
 
         btnEditStudentIdentity.setOnClickListener {
+            hideSoftKeyboard()
             showSwitchAccountDialog(autoReconnectIfConnected = false)
         }
 
-        findViewById<View?>(R.id.btnSwitchAccountDrawer)?.setOnClickListener {
-            navDrawerOverlay.visibility = View.GONE
+        btnProfileSwitchStudent.setOnClickListener {
             showSwitchAccountDialog(autoReconnectIfConnected = true)
         }
 
         txtStudentDetail.setOnClickListener {
-            navDrawerOverlay.visibility = View.GONE
             showSwitchAccountDialog(autoReconnectIfConnected = true)
         }
 
-        cardDiscoveredClass.setOnClickListener {
-            btnConnect.performClick()
+        findViewById<View?>(R.id.boxDiscoveredRoomInfo)?.setOnClickListener {
+            if (!discoveredTeacherIp.isNullOrBlank()) {
+                btnConnect.performClick()
+            } else {
+                startAutoDiscovery()
+            }
         }
 
-        // Screen 2: Floating Mini Toolbar Controls
-        btnCollapseBroadcastDock.setOnClickListener {
-            floatingBroadcastDock.visibility = View.GONE
-            btnExpandBroadcastDock.visibility = View.VISIBLE
+        // Google Meet Fullscreen Broadcast Controls (Chạm màn hình để hiện/ẩn thanh điều khiển đáy)
+        imgBroadcastScreen.setOnClickListener {
+            toggleBroadcastControlsVisibility()
         }
-
-        btnExpandBroadcastDock.setOnClickListener {
-            floatingBroadcastDock.visibility = View.VISIBLE
-            btnExpandBroadcastDock.visibility = View.GONE
+        broadcastOverlay.setOnClickListener {
+            toggleBroadcastControlsVisibility()
         }
 
         btnBroadcastVolume.setOnClickListener {
+            scheduleBroadcastControlsAutoHide()
             val audioMgr = getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager
             audioMgr?.adjustSuggestedStreamVolume(
                 android.media.AudioManager.ADJUST_SAME,
@@ -942,25 +880,16 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        // Screen 3: Split-Screen Interactive Lesson Viewer Controls
+        btnFullscreenSnapshot.setOnClickListener {
+            scheduleBroadcastControlsAutoHide()
+            saveLectureSnapshotToStorage()
+        }
+
+        // Split-Screen Lesson Viewer Controls
         btnToggleLessonSidebar.setOnClickListener {
             isLessonSidebarVisible = !isLessonSidebarVisible
             btnToggleLessonSidebar.text = if (isLessonSidebarVisible) "Ẩn nháp" else "Mở nháp"
             applyResponsiveLayout()
-        }
-
-        btnSlidePrev.setOnClickListener {
-            if (currentSlideIndex > 1) {
-                currentSlideIndex--
-                updateSlideViewerState()
-            }
-        }
-
-        btnSlideNext.setOnClickListener {
-            if (currentSlideIndex < totalSlideCount) {
-                currentSlideIndex++
-                updateSlideViewerState()
-            }
         }
 
         btnZoomOut.setOnClickListener {
@@ -973,11 +902,15 @@ class MainActivity : AppCompatActivity() {
             applyDocumentZoom()
         }
 
-        // Screen 3 Sidebar: Quick Note Canvas Tools
+        imgInlineBroadcast.setOnClickListener {
+            openFullscreenBroadcastOverlay()
+        }
+
+        // Quick Note Canvas Tools
         fun styleNoteToolButtons(activeBtn: Button) {
             listOf(btnNotePen, btnNoteHighlight, btnNoteEraser).forEach { b ->
                 val isSel = b === activeBtn
-                b.backgroundTintList = ColorStateList.valueOf(if (isSel) 0xFF2563EB.toInt() else 0xFFF1F5F9.toInt())
+                b.backgroundTintList = ColorStateList.valueOf(if (isSel) 0xFF1A73E8.toInt() else 0xFFF1F5F9.toInt())
                 b.setTextColor(if (isSel) 0xFFFFFFFF.toInt() else 0xFF334155.toInt())
             }
         }
@@ -986,106 +919,92 @@ class MainActivity : AppCompatActivity() {
             quickNoteCanvas.setToolMode(com.qasmartclass.student.views.QuickNoteCanvasView.ToolMode.PEN)
             styleNoteToolButtons(btnNotePen)
         }
-
         btnNoteHighlight.setOnClickListener {
             quickNoteCanvas.setToolMode(com.qasmartclass.student.views.QuickNoteCanvasView.ToolMode.HIGHLIGHTER)
             styleNoteToolButtons(btnNoteHighlight)
         }
-
         btnNoteEraser.setOnClickListener {
             quickNoteCanvas.setToolMode(com.qasmartclass.student.views.QuickNoteCanvasView.ToolMode.ERASER)
             styleNoteToolButtons(btnNoteEraser)
         }
-
         btnNoteClear.setOnClickListener {
             quickNoteCanvas.clearCanvas()
             Toast.makeText(this, "Đã xóa trang nháp", Toast.LENGTH_SHORT).show()
         }
-
         btnQuickSubmitWork.setOnClickListener {
             performQuickNoteOrHomeworkUpload()
         }
 
-        // Tab Navigation Listeners
-        btnTabLecture.setOnClickListener { switchTab(0) }
-        btnTabChat.setOnClickListener { switchTab(1) }
-        btnTabHandRaise.setOnClickListener { switchTab(2) }
-        btnNavHome.setOnClickListener { switchTab(3) }
-        btnMenu.setOnClickListener { navDrawerOverlay.visibility = View.VISIBLE }
-        navDrawerOverlay.setOnClickListener { navDrawerOverlay.visibility = View.GONE }
-        for ((btn, title) in soonNavButtons) {
-            btn.setOnClickListener { showComingSoon(btn, title) }
+        // Navigation Rail (Tablet) & Adaptive Bottom Bar (Compact) -> 4 Không gian thật
+        railItemClass.setOnClickListener { switchTab(0) }
+        railItemWork.setOnClickListener { switchTab(1) }
+        railItemChat.setOnClickListener { switchTab(2) }
+        railItemFiles.setOnClickListener { switchTab(3) }
+
+        btnBottomHome.setOnClickListener { switchTab(0) }
+        btnBottomLecture.setOnClickListener { switchTab(1) }
+        btnBottomChat.setOnClickListener { switchTab(2) }
+        btnBottomRaise.setOnClickListener { switchTab(3) }
+
+        // Classwork Filter Chips (Trắc nghiệm | Bài tập | Khảo sát | Điểm số)
+        chipWorkQuiz.setOnClickListener { switchWorkSubTab("QUIZ") }
+        chipWorkHomework.setOnClickListener { switchWorkSubTab("HOMEWORK") }
+        chipWorkSurvey.setOnClickListener { switchWorkSubTab("SURVEY") }
+        chipWorkResults.setOnClickListener { switchWorkSubTab("RESULTS") }
+
+        // Tài liệu lớp học
+        btnRefreshFiles.setOnClickListener {
+            refreshReceivedFilesPanel()
+            Toast.makeText(this, "Đã làm mới danh sách tài liệu", Toast.LENGTH_SHORT).show()
         }
-        findViewById<View>(R.id.btnHomeRaise).setOnClickListener { switchTab(2) }
-        findViewById<View>(R.id.btnHomeChat).setOnClickListener { switchTab(1) }
-        findViewById<View>(R.id.btnHomeLecture).setOnClickListener { switchTab(0) }
 
-        // Hand Raise Listeners (Quick Button, Hero Button on Screen Share Card, Main Button, and Fullscreen Button)
+        // Hand Raise Controls (Top App Bar 1-chạm + Chọn lý do + Fullscreen Pill)
         btnRaiseHand.setOnClickListener { toggleRaiseHand() }
-        findViewById<View?>(R.id.btnHeroRaiseHand)?.setOnClickListener { toggleRaiseHand() }
-        btnMainRaiseHand.setOnClickListener { toggleRaiseHand() }
-        btnFullscreenRaiseHand.setOnClickListener { toggleRaiseHand() }
-
-        // Hand Raise Reason Chips
-        btnReasonSpeaking.setOnClickListener { selectHandRaiseReason("Phát biểu") }
-        btnReasonQuestion.setOnClickListener { selectHandRaiseReason("Đặt câu hỏi") }
-        btnReasonHelp.setOnClickListener { selectHandRaiseReason("Trợ giúp") }
+        btnFullscreenRaiseHand.setOnClickListener {
+            scheduleBroadcastControlsAutoHide()
+            toggleRaiseHand()
+        }
+        btnTopHandReason.setOnClickListener { showHandRaiseReasonDialog() }
 
         // Chat Send Listener
         btnSendChat.setOnClickListener { sendChatMessage() }
         switchChatChannel("TEACHER")
 
-        // Screen Broadcast Fullscreen Toggle
+        // Fullscreen Broadcast Toggle
         btnFullscreenBroadcast.setOnClickListener {
-            broadcastOverlay.visibility = View.VISIBLE
+            openFullscreenBroadcastOverlay()
         }
-
         btnCloseBroadcast.setOnClickListener {
+            broadcastUiHideJob?.cancel()
             broadcastOverlay.visibility = View.GONE
         }
 
-        // Bottom Navigation Bar Listeners (Matching Stitch 4-Tab Specification)
-        btnBottomHome.setOnClickListener { switchTab(3) }
-        btnBottomLecture.setOnClickListener {
-            val navBtn = findViewById<TextView>(R.id.btnNavQuiz)
-            showComingSoon(navBtn, "Kiểm tra trắc nghiệm")
-        }
-        btnBottomChat.setOnClickListener { switchTab(1) }
-        btnBottomRaise.setOnClickListener { navDrawerOverlay.visibility = View.VISIBLE }
-
-        // Nút Quay lại Trang chủ
-        btnHeaderBack.setOnClickListener { switchTab(3) }
-        btnSoonBack.setOnClickListener { switchTab(3) }
-
-        // Top Header Logout & Stitch Quick Actions
+        // Top Header Leave Class & Teacher Notice Quick Feedback
         findViewById<View?>(R.id.btnHeaderLogout)?.setOnClickListener { showExitConfirmation() }
-        findViewById<View?>(R.id.btnHomeQuiz)?.setOnClickListener {
-            val navBtn = findViewById<TextView>(R.id.btnNavQuiz)
-            showComingSoon(navBtn, "Kiểm tra trắc nghiệm")
-        }
-        findViewById<View?>(R.id.btnHomeSnapshot)?.setOnClickListener {
-            Toast.makeText(this, "Đã lưu ảnh chụp bài giảng vào Thư viện", Toast.LENGTH_SHORT).show()
-        }
         findViewById<View?>(R.id.btnLectureSnapshot)?.setOnClickListener {
-            Toast.makeText(this, "Đã lưu ảnh chụp bài giảng vào Thư viện", Toast.LENGTH_SHORT).show()
+            saveLectureSnapshotToStorage()
         }
         findViewById<View?>(R.id.btnNoticeUnderstood)?.setOnClickListener {
-            Toast.makeText(this, "Đã gửi phản hồi: Đã hiểu bài (+1)", Toast.LENGTH_SHORT).show()
+            val sCode = currentStudentCode.ifBlank { "HS001" }
+            sendRawTcpLine("CHAT|$sCode|TEACHER|👍 Em đã hiểu nội dung vừa giảng ạ!")
+            messageCard.visibility = View.GONE
+            Toast.makeText(this, "Đã gửi phản hồi 'Đã hiểu bài' tới Giáo viên", Toast.LENGTH_SHORT).show()
         }
         findViewById<View?>(R.id.btnNoticeReexplain)?.setOnClickListener {
-            Toast.makeText(this, "Đã gửi yêu cầu: Xin thầy giảng lại", Toast.LENGTH_SHORT).show()
+            selectHandRaiseReason("Cần giảng lại")
+            if (!isHandRaised) toggleRaiseHand()
+            messageCard.visibility = View.GONE
         }
 
-        // Bắt sự kiện phím Quay lại (Back gesture & Hardware Back)
+        // Back gesture & Hardware Back
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (navDrawerOverlay.visibility == View.VISIBLE) {
-                    navDrawerOverlay.visibility = View.GONE
-                } else if (broadcastOverlay.visibility == View.VISIBLE) {
+                if (broadcastOverlay.visibility == View.VISIBLE && !isForceBroadcastMode) {
+                    broadcastUiHideJob?.cancel()
                     broadcastOverlay.visibility = View.GONE
-                } else if (connectedPanel.visibility == View.VISIBLE && currentTab != 3) {
-                    switchTab(3)
-                } else if (connectedPanel.visibility == View.VISIBLE && currentTab == 3) {
+                } else if (connectedPanel.visibility == View.VISIBLE && currentTab != 0) {
+                    switchTab(0)
+                } else if (connectedPanel.visibility == View.VISIBLE) {
                     showExitConfirmation()
                 } else {
                     isEnabled = false
@@ -1095,25 +1014,345 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun openFullscreenBroadcastOverlay() {
+        broadcastOverlay.visibility = View.VISIBLE
+        showBroadcastControlsAndScheduleHide()
+    }
+
+    private fun toggleBroadcastControlsVisibility() {
+        val visibleNow = floatingBroadcastDock.visibility == View.VISIBLE
+        if (visibleNow) {
+            broadcastUiHideJob?.cancel()
+            floatingBroadcastDock.animate().alpha(0f).setDuration(180).withEndAction {
+                floatingBroadcastDock.visibility = View.GONE
+                topBroadcastBadgeBar.visibility = View.GONE
+            }.start()
+        } else {
+            showBroadcastControlsAndScheduleHide()
+        }
+    }
+
+    private fun showBroadcastControlsAndScheduleHide() {
+        floatingBroadcastDock.animate().cancel()
+        floatingBroadcastDock.alpha = 1f
+        floatingBroadcastDock.visibility = View.VISIBLE
+        topBroadcastBadgeBar.alpha = 1f
+        topBroadcastBadgeBar.visibility = View.VISIBLE
+        scheduleBroadcastControlsAutoHide()
+    }
+
+    private fun scheduleBroadcastControlsAutoHide() {
+        broadcastUiHideJob?.cancel()
+        broadcastUiHideJob = lifecycleScope.launch {
+            delay(4000)
+            if (broadcastOverlay.visibility == View.VISIBLE && floatingBroadcastDock.visibility == View.VISIBLE) {
+                floatingBroadcastDock.animate().alpha(0f).setDuration(240).withEndAction {
+                    floatingBroadcastDock.visibility = View.GONE
+                    topBroadcastBadgeBar.visibility = View.GONE
+                }.start()
+            }
+        }
+    }
+
+    /**
+     * Hộp thoại Modal Cấu hình Máy chủ Giáo viên (IP / Cổng LAN) chuẩn Material —
+     * gọn sạch, không đẩy xô lệch giao diện màn hình chính.
+     */
+    private fun showServerIpConfigDialog() {
+        val density = resources.displayMetrics.density
+        fun dp(v: Int): Int = (v * density).toInt()
+
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(22), dp(14), dp(22), dp(8))
+        }
+
+        container.addView(TextView(this).apply {
+            text = "Thông thường thiết bị tự động tìm thấy lớp học qua mạng LAN. Chỉ nhập IP thủ công khi mạng trường học chặn quảng bá khác tầng Wi-Fi:"
+            textSize = 13.5f
+            setTextColor(0xFF475569.toInt())
+            setPadding(0, 0, 0, dp(12))
+        })
+
+        val inputIp = EditText(this).apply {
+            hint = "Địa chỉ IP máy Giáo viên (VD: 192.168.1.10 hoặc 10.0.2.2)"
+            setText(edtTeacherIp.text.toString().trim().ifBlank { discoveredTeacherIp ?: "" })
+            textSize = 15.5f
+            setSingleLine(true)
+            setBackgroundResource(R.drawable.bg_m3_pin_input)
+            setPadding(dp(14), dp(12), dp(14), dp(12))
+        }
+        container.addView(inputIp)
+
+        val quickRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(10) }
+        }
+        val btnAutoLan = Button(this).apply {
+            text = "Tự động dò LAN"
+            isAllCaps = false
+            textSize = 12.5f
+            setTextColor(0xFF1A73E8.toInt())
+            setBackgroundResource(R.drawable.bg_m3_chip_selected)
+            setPadding(dp(12), 0, dp(12), 0)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(36)).apply {
+                marginEnd = dp(8)
+            }
+            setOnClickListener { inputIp.setText("") }
+        }
+        val btnEmulatorHost = Button(this).apply {
+            text = "Máy chủ Emulator (10.0.2.2)"
+            isAllCaps = false
+            textSize = 12.5f
+            setTextColor(0xFF475569.toInt())
+            setBackgroundResource(R.drawable.bg_m3_chip_unselected)
+            setPadding(dp(12), 0, dp(12), 0)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(36))
+            setOnClickListener { inputIp.setText("10.0.2.2") }
+        }
+        quickRow.addView(btnAutoLan)
+        quickRow.addView(btnEmulatorHost)
+        container.addView(quickRow)
+
+        AlertDialog.Builder(this)
+            .setTitle("Cấu hình Máy chủ Giáo viên")
+            .setView(container)
+            .setPositiveButton("Lưu & Kiểm tra") { _, _ ->
+                val typedIp = inputIp.text.toString().trim()
+                edtTeacherIp.setText(typedIp)
+                val name = edtStudentName.text.toString().trim()
+                val code = edtStudentCode.text.toString().trim()
+                val pass = edtPassword.text.toString().trim().ifBlank { "123456" }
+                savePreferences(name, code, pass, typedIp, chkRemember.isChecked)
+                if (typedIp.isNotBlank()) {
+                    discoveredTeacherIp = typedIp.substringBefore(":")
+                    txtDiscoveryHeader.text = "MÁY CHỦ ĐÃ CHỈ ĐỊNH"
+                    txtStatus.text = "Máy chủ Giáo viên: $typedIp — Bấm 'Vào lớp học' để kết nối"
+                } else {
+                    startAutoDiscovery()
+                }
+            }
+            .setNegativeButton("Đóng", null)
+            .show()
+    }
+
+    private fun showHandRaiseReasonDialog() {
+        val reasons = arrayOf(
+            "✋ Phát biểu xây dựng bài",
+            "❓ Đặt câu hỏi cho Giáo viên",
+            "🆘 Cần hỗ trợ kỹ thuật / bài tập"
+        )
+        val values = listOf("Phát biểu", "Đặt câu hỏi", "Trợ giúp")
+        val checkedIdx = values.indexOf(currentHandRaiseReason).coerceAtLeast(0)
+        AlertDialog.Builder(this)
+            .setTitle("Chọn mục đích Giơ tay")
+            .setSingleChoiceItems(reasons, checkedIdx) { dialog, which ->
+                val picked = values.getOrElse(which) { "Phát biểu" }
+                selectHandRaiseReason(picked)
+                if (!isHandRaised) {
+                    toggleRaiseHand()
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton("Đóng", null)
+            .show()
+    }
+
+    /**
+     * Chụp và lưu khung hình bài giảng thực tế vào bộ nhớ thiết bị (Downloads/QASmartClass)
+     * và hiển thị ngay trong mục Tài liệu lớp học.
+     */
+    private fun saveLectureSnapshotToStorage() {
+        val bmp = ((imgBroadcastScreen.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap
+            ?: (imgInlineBroadcast.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap)
+
+        if (bmp == null || bmp.isRecycled) {
+            Toast.makeText(this, "Hiện chưa có khung hình chiếu trực tiếp để chụp lưu.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val copyBmp = try {
+            bmp.copy(android.graphics.Bitmap.Config.ARGB_8888, false)
+        } catch (_: Exception) {
+            null
+        } ?: return
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val stamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+                val fileName = "BaiGiang_$stamp.jpg"
+                val dir = java.io.File(getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES), "QASmartClass")
+                if (!dir.exists()) dir.mkdirs()
+                val outFile = java.io.File(dir, fileName)
+                java.io.FileOutputStream(outFile).use { fos ->
+                    copyBmp.compress(android.graphics.Bitmap.CompressFormat.JPEG, 95, fos)
+                }
+                copyBmp.recycle()
+                val timeNow = SimpleDateFormat("HH:mm • dd/MM", Locale.getDefault()).format(Date())
+                withContext(Dispatchers.Main) {
+                    receivedTeacherFiles.add(
+                        0,
+                        ReceivedFileItem(
+                            fileName = fileName,
+                            urlOrPath = outFile.absolutePath,
+                            timeText = "Ảnh chụp bài giảng lúc $timeNow",
+                            isLocalSnapshot = true
+                        )
+                    )
+                    refreshReceivedFilesPanel()
+                    Toast.makeText(this@MainActivity, "📸 Đã lưu ảnh bài giảng ($fileName) vào mục Tài liệu", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, "Không thể lưu ảnh chụp: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun refreshReceivedFilesPanel() {
+        if (!::layoutReceivedFiles.isInitialized) return
+        layoutReceivedFiles.removeAllViews()
+        val density = resources.displayMetrics.density
+        fun dp(v: Int): Int = (v * density).toInt()
+
+        // Quét thêm các ảnh/tệp đã lưu trước đó trong thư mục cục bộ
+        val combined = mutableListOf<ReceivedFileItem>()
+        combined.addAll(receivedTeacherFiles)
+        try {
+            val picDir = java.io.File(getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES), "QASmartClass")
+            picDir.listFiles()?.sortedByDescending { it.lastModified() }?.take(12)?.forEach { f ->
+                if (combined.none { it.urlOrPath == f.absolutePath }) {
+                    val t = SimpleDateFormat("HH:mm • dd/MM", Locale.getDefault()).format(Date(f.lastModified()))
+                    combined.add(ReceivedFileItem(f.name, f.absolutePath, "Đã lưu lúc $t", isLocalSnapshot = true))
+                }
+            }
+        } catch (_: Exception) {}
+
+        if (combined.isEmpty()) {
+            val emptyBox = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+                setBackgroundResource(R.drawable.bg_m3_tonal_card)
+                setPadding(dp(20), dp(28), dp(20), dp(28))
+            }
+            emptyBox.addView(TextView(this).apply {
+                text = "Chưa có tài liệu nào trong phiên học này"
+                textSize = 14.5f
+                setTypeface(null, Typeface.BOLD)
+                setTextColor(0xFF334155.toInt())
+                gravity = Gravity.CENTER
+            })
+            emptyBox.addView(TextView(this).apply {
+                text = "Khi Giáo viên gửi tệp bài giảng hoặc khi bạn bấm '📸 Chụp lưu' trên màn hình chiếu, tệp sẽ xuất hiện tại đây."
+                textSize = 13f
+                setTextColor(0xFF64748B.toInt())
+                gravity = Gravity.CENTER
+                setPadding(0, dp(6), 0, 0)
+            })
+            layoutReceivedFiles.addView(emptyBox)
+            return
+        }
+
+        combined.forEach { item ->
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setBackgroundResource(R.drawable.bg_m3_tonal_card)
+                setPadding(dp(14), dp(12), dp(14), dp(12))
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = dp(8) }
+            }
+
+            val iconText = TextView(this).apply {
+                text = if (item.isLocalSnapshot) "🖼️" else "📄"
+                textSize = 18f
+                setPadding(0, 0, dp(12), 0)
+            }
+            row.addView(iconText)
+
+            val infoCol = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+            infoCol.addView(TextView(this).apply {
+                text = item.fileName
+                textSize = 14f
+                setTypeface(null, Typeface.BOLD)
+                setTextColor(0xFF0F172A.toInt())
+                maxLines = 1
+            })
+            infoCol.addView(TextView(this).apply {
+                text = item.timeText
+                textSize = 12f
+                setTextColor(0xFF64748B.toInt())
+            })
+            row.addView(infoCol)
+
+            val btnOpen = Button(this).apply {
+                text = if (item.isLocalSnapshot) "Xem ảnh" else "Tải / Mở"
+                isAllCaps = false
+                textSize = 12.5f
+                setTypeface(null, Typeface.BOLD)
+                setTextColor(0xFF1A73E8.toInt())
+                setBackgroundResource(R.drawable.bg_m3_chip_selected)
+                minWidth = 0
+                minimumWidth = 0
+                setPadding(dp(12), 0, dp(12), 0)
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(34))
+                setOnClickListener {
+                    if (item.isLocalSnapshot) {
+                        val bmp = BitmapFactory.decodeFile(item.urlOrPath)
+                        if (bmp != null) {
+                            val iv = ImageView(this@MainActivity).apply {
+                                setImageBitmap(bmp)
+                                adjustViewBounds = true
+                                setPadding(dp(12), dp(12), dp(12), dp(12))
+                            }
+                            AlertDialog.Builder(this@MainActivity)
+                                .setTitle(item.fileName)
+                                .setView(iv)
+                                .setPositiveButton("Đóng", null)
+                                .show()
+                        }
+                    } else {
+                        try {
+                            startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(item.urlOrPath)).apply {
+                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            })
+                        } catch (_: Exception) {
+                            Toast.makeText(this@MainActivity, "Không thể mở đường dẫn: ${item.urlOrPath}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            row.addView(btnOpen)
+            layoutReceivedFiles.addView(row)
+        }
+    }
+
     private fun showExitConfirmation() {
         AlertDialog.Builder(this)
             .setTitle("Tài khoản & Phòng học")
-            .setMessage("Đang đăng nhập: ${currentStudentName.ifBlank { edtStudentName.text.toString().ifBlank { "Học sinh" } }} (${currentStudentCode.ifBlank { edtStudentCode.text.toString().ifBlank { "HS001" } }})\n\nBạn muốn đổi sang tài khoản học sinh khác hay rời phòng học?")
-            .setPositiveButton("Đổi tài khoản khác") { _, _ ->
+            .setMessage("Đang đăng nhập: ${currentStudentName.ifBlank { edtStudentName.text.toString().ifBlank { "Học sinh" } }} (${currentStudentCode.ifBlank { edtStudentCode.text.toString().ifBlank { "HS001" } }})\n\nBạn muốn đổi sang học sinh khác hay rời phòng học?")
+            .setPositiveButton("Đổi học sinh khác") { _, _ ->
                 showSwitchAccountDialog(autoReconnectIfConnected = true)
             }
             .setNeutralButton("Rời lớp") { _, _ ->
                 isUserInitiatedDisconnect = true
-                disconnectFromTeacher("Học sinh chủ động rời lớp")
+                disconnectFromTeacher("Đã rời phòng học")
             }
             .setNegativeButton("Ở lại", null)
             .show()
     }
 
     /**
-     * Hộp thoại Đổi tài khoản / Học sinh khác (dùng được ở cả Màn hình 1 và khi đang trong Lớp học).
-     * Cho phép chọn nhanh Mã bàn (HS001..HS006) hoặc nhập Mã HS / Họ tên / Mật khẩu mới,
-     * tự động ngắt phiên cũ và kết nối lại bằng tài khoản mới.
+     * Hộp thoại Đổi tài khoản / Học sinh khác (dùng được ở cả Màn hình Vào lớp và khi đang trong Lớp học).
      */
     private fun showSwitchAccountDialog(autoReconnectIfConnected: Boolean) {
         val density = resources.displayMetrics.density
@@ -1125,8 +1364,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         val subTitle = TextView(this).apply {
-            text = "Chọn nhanh số bàn hoặc nhập Mã học sinh và Họ tên của em:"
-            textSize = 14f
+            text = "Chọn nhanh bàn học mẫu hoặc nhập Mã học sinh của bạn:"
+            textSize = 13.5f
             setTextColor(0xFF475569.toInt())
             setPadding(0, 0, 0, dp(10))
         }
@@ -1136,20 +1375,20 @@ class MainActivity : AppCompatActivity() {
         val initName = resolveOfficialStudentName(initCode, edtStudentName.text.toString().trim())
 
         val inputCode = EditText(this).apply {
-            hint = "Mã học sinh / Tài khoản (VD: 10A1-002, 12A3-001)"
+            hint = "Mã học sinh (VD: 10A1-002, 12A3-001)"
             setText(initCode)
-            textSize = 16f
+            textSize = 15.5f
             setSingleLine(true)
-            setBackgroundResource(R.drawable.bg_input_field)
+            setBackgroundResource(R.drawable.bg_m3_pin_input)
             setPadding(dp(14), dp(10), dp(14), dp(10))
         }
 
         val inputName = EditText(this).apply {
-            hint = "Họ và tên học sinh (Tự động điền theo Mã HS)"
+            hint = "Họ và tên học sinh"
             setText(initName)
-            textSize = 16f
+            textSize = 15.5f
             setSingleLine(true)
-            setBackgroundResource(R.drawable.bg_input_field)
+            setBackgroundResource(R.drawable.bg_m3_pin_input)
             setPadding(dp(14), dp(10), dp(14), dp(10))
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -1157,7 +1396,6 @@ class MainActivity : AppCompatActivity() {
             ).apply { topMargin = dp(10) }
         }
 
-        // Tự động điền đúng Họ tên học sinh ngay khi gõ Mã học sinh
         inputCode.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -1173,10 +1411,10 @@ class MainActivity : AppCompatActivity() {
         val inputPass = EditText(this).apply {
             hint = "Mật khẩu lớp học (Mặc định: 123456)"
             setText(edtPassword.text.toString().trim().ifBlank { "123456" })
-            textSize = 16f
+            textSize = 15.5f
             setSingleLine(true)
             inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-            setBackgroundResource(R.drawable.bg_input_field)
+            setBackgroundResource(R.drawable.bg_m3_pin_input)
             setPadding(dp(14), dp(10), dp(14), dp(10))
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -1184,7 +1422,6 @@ class MainActivity : AppCompatActivity() {
             ).apply { topMargin = dp(10) }
         }
 
-        // Hàng nút chọn nhanh bàn học phổ biến + Nút xóa trắng để nhập mới
         val quickRow = HorizontalScrollView(this).apply {
             isHorizontalScrollBarEnabled = false
             layoutParams = LinearLayout.LayoutParams(
@@ -1197,15 +1434,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         val btnClearNew = Button(this).apply {
-            text = "+ Nhập TK mới"
+            text = "+ Nhập mới"
             isAllCaps = false
-            textSize = 13f
+            textSize = 12.5f
             setTextColor(0xFFDC2626.toInt())
-            setBackgroundResource(R.drawable.bg_pill_btn_white)
-            setPadding(dp(12), dp(6), dp(12), dp(6))
+            setBackgroundResource(R.drawable.bg_m3_chip_unselected)
+            setPadding(dp(12), 0, dp(12), 0)
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
-                dp(40)
+                dp(36)
             ).apply { marginEnd = dp(8) }
             setOnClickListener {
                 inputCode.setText("")
@@ -1227,13 +1464,13 @@ class MainActivity : AppCompatActivity() {
             val chip = Button(this).apply {
                 text = "$qCode • $qName"
                 isAllCaps = false
-                textSize = 13f
-                setTextColor(0xFF1D4ED8.toInt())
-                setBackgroundResource(R.drawable.bg_pill_btn_white)
-                setPadding(dp(12), dp(6), dp(12), dp(6))
+                textSize = 12.5f
+                setTextColor(0xFF1A73E8.toInt())
+                setBackgroundResource(R.drawable.bg_m3_chip_selected)
+                setPadding(dp(12), 0, dp(12), 0)
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
-                    dp(40)
+                    dp(36)
                 ).apply { marginEnd = dp(8) }
                 setOnClickListener {
                     inputCode.setText(qCode)
@@ -1242,45 +1479,26 @@ class MainActivity : AppCompatActivity() {
             }
             chipContainer.addView(chip)
         }
-        val inputClassCode = EditText(this).apply {
-            hint = "🔑 Mã vào lớp trên bảng Giáo viên (4 chữ số)"
-            setText(edtJoinClassCode.text.toString().trim().ifBlank { lastEnteredClassCode })
-            textSize = 16f
-            setSingleLine(true)
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER
-            setBackgroundResource(R.drawable.bg_input_field)
-            setPadding(dp(14), dp(10), dp(14), dp(10))
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = dp(10) }
-        }
-
         quickRow.addView(chipContainer)
         container.addView(quickRow)
         container.addView(inputCode)
         container.addView(inputName)
         container.addView(inputPass)
-        container.addView(inputClassCode)
 
         val wasConnected = connectedPanel.visibility == View.VISIBLE || tcpSocket != null
-        val positiveLabel = if (wasConnected || autoReconnectIfConnected) "Đăng nhập tài khoản này" else "Lưu tài khoản"
+        val positiveLabel = if (wasConnected || autoReconnectIfConnected) "Chuyển sang học sinh này" else "Lưu hồ sơ"
 
         AlertDialog.Builder(this)
-            .setTitle("Đổi tài khoản Học sinh")
+            .setTitle("Hồ sơ Học sinh / Bàn học")
             .setView(container)
             .setPositiveButton(positiveLabel) { _, _ ->
                 val newCode = inputCode.text.toString().trim().ifBlank { "10A1-001" }
                 val newName = resolveOfficialStudentName(newCode, inputName.text.toString().trim())
                 val newPass = inputPass.text.toString().trim().ifBlank { "123456" }
-                val newClassCode = inputClassCode.text.toString().trim()
 
                 edtStudentCode.setText(newCode)
                 edtStudentName.setText(newName)
                 edtPassword.setText(newPass)
-                if (newClassCode.isNotBlank()) {
-                    edtJoinClassCode.setText(newClassCode)
-                }
                 currentStudentCode = newCode
                 currentStudentName = newName
                 val ip = edtTeacherIp.text.toString().trim().ifBlank { discoveredTeacherIp ?: currentTeacherIp ?: "10.0.2.2" }
@@ -1289,168 +1507,113 @@ class MainActivity : AppCompatActivity() {
 
                 if (wasConnected || autoReconnectIfConnected) {
                     isUserInitiatedDisconnect = true
-                    disconnectFromTeacher("Đang chuyển sang tài khoản $newName ($newCode)...")
+                    disconnectFromTeacher("Đang chuyển sang $newName ($newCode)...")
                     btnConnect.postDelayed({
                         btnConnect.performClick()
                     }, 350)
                 } else {
-                    Toast.makeText(this, "Đã chuyển hồ sơ bàn học sang: $newName ($newCode)", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Đã lưu hồ sơ: $newName ($newCode)", Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNeutralButton("Cấu hình nâng cao") { _, _ ->
-                if (wasConnected) {
-                    isUserInitiatedDisconnect = true
-                    disconnectFromTeacher("Mở cấu hình tài khoản & máy chủ")
-                }
-                val form = findViewById<View>(R.id.formContainer)
-                form.visibility = View.VISIBLE
-                edtStudentCode.requestFocus()
+            .setNeutralButton("Máy chủ IP") { _, _ ->
+                showServerIpConfigDialog()
             }
             .setNegativeButton("Hủy", null)
             .show()
     }
 
+    /**
+     * Điều hướng chuẩn Material Design 3 giữa 4 không gian thật:
+     * 0 = Lớp học (Live Stream + Sổ nháp)
+     * 1 = Bài tập (Trắc nghiệm, Bài tập giao, Khảo sát, Điểm số)
+     * 2 = Thảo luận (Chat Cả lớp / Tổ nhóm / Giáo viên)
+     * 3 = Tài liệu & Thông tin phiên học
+     */
     private fun switchTab(index: Int) {
         currentTab = index
+        hideSoftKeyboard()
+
         panelLecture.visibility = if (index == 0) View.VISIBLE else View.GONE
-        panelChat.visibility = if (index == 1) View.VISIBLE else View.GONE
-        panelHandRaise.visibility = if (index == 2) View.VISIBLE else View.GONE
-        panelHome.visibility = if (index == 3) View.VISIBLE else View.GONE
-        panelSoon.visibility = View.GONE
+        panelSoon.visibility = if (index == 1) View.VISIBLE else View.GONE
+        panelChat.visibility = if (index == 2) View.VISIBLE else View.GONE
+        panelFilesProfile.visibility = if (index == 3) View.VISIBLE else View.GONE
 
-        btnHeaderBack.visibility = if (index == 3) View.GONE else View.VISIBLE
-
-        val activeBtn = when (index) {
-            0 -> btnTabLecture
-            1 -> btnTabChat
-            2 -> btnTabHandRaise
-            else -> btnNavHome
-        }
+        val realClass = homeClassName.ifBlank { currentClassName }.trim()
         txtPageTitle.text = when (index) {
-            0 -> "Bài giảng trực tiếp"
-            1 -> "Hỏi bài Giáo viên"
-            2 -> "Giơ tay phát biểu"
-            else -> {
-                val clean = homeClassName.replace("• Phòng 204 • Phòng 204", "• Phòng 204").trim()
-                if (clean.isNotBlank()) {
-                    if (clean.contains("Phòng")) clean else "$clean • Phòng 204"
-                } else "Lớp 10A1 • Phòng 204"
-            }
+            1 -> "Bài tập & Kiểm tra  •  $realClass"
+            2 -> "Thảo luận lớp học  •  $realClass"
+            3 -> "Tài liệu & Phiên học  •  $realClass"
+            else -> realClass.ifBlank { "SMART CLASS" }
         }
-        setNavActive(activeBtn)
 
-        // Cập nhật trạng thái Bottom Navigation Bar (Stitch Specification: Active Capsule Solid Blue, Icon Pure White)
-        val activeTextColor = 0xFF2563EB.toInt()
-        val activeIconColor = 0xFFFFFFFF.toInt()
-        val inactiveColor = 0xFF64748B.toInt()
+        val activeBlue = 0xFF1A73E8.toInt()
+        val inactiveSlate = 0xFF64748B.toInt()
 
-        capsuleBottomHome.setBackgroundResource(if (index == 3) R.drawable.bg_bottom_nav_capsule else 0)
-        iconBottomHome.imageTintList = ColorStateList.valueOf(if (index == 3) activeIconColor else inactiveColor)
-        labelBottomHome.setTextColor(if (index == 3) activeTextColor else inactiveColor)
-        labelBottomHome.setTypeface(null, if (index == 3) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
+        // Đồng bộ Navigation Rail (Tablet)
+        fun styleRail(pill: FrameLayout, icon: ImageView, label: TextView, active: Boolean) {
+            pill.setBackgroundResource(if (active) R.drawable.bg_m3_rail_indicator else 0)
+            icon.imageTintList = ColorStateList.valueOf(if (active) activeBlue else inactiveSlate)
+            label.setTextColor(if (active) activeBlue else inactiveSlate)
+            label.setTypeface(null, if (active) Typeface.BOLD else Typeface.NORMAL)
+        }
+        styleRail(pillRailClass, iconRailClass, labelRailClass, index == 0)
+        styleRail(pillRailWork, iconRailWork, labelRailWork, index == 1)
+        styleRail(pillRailChat, iconRailChat, labelRailChat, index == 2)
+        styleRail(pillRailFiles, iconRailFiles, labelRailFiles, index == 3)
 
-        capsuleBottomLecture.setBackgroundResource(if (index == 0) R.drawable.bg_bottom_nav_capsule else 0)
-        iconBottomLecture.imageTintList = ColorStateList.valueOf(if (index == 0) activeIconColor else inactiveColor)
-        labelBottomLecture.setTextColor(if (index == 0) activeTextColor else inactiveColor)
-        labelBottomLecture.setTypeface(null, if (index == 0) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
-
-        capsuleBottomChat.setBackgroundResource(if (index == 1) R.drawable.bg_bottom_nav_capsule else 0)
-        iconBottomChat.imageTintList = ColorStateList.valueOf(if (index == 1) activeIconColor else inactiveColor)
-        labelBottomChat.setTextColor(if (index == 1) activeTextColor else inactiveColor)
-        labelBottomChat.setTypeface(null, if (index == 1) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
-
-        capsuleBottomRaise.setBackgroundResource(if (index == 2) R.drawable.bg_bottom_nav_capsule else 0)
-        iconBottomRaise.imageTintList = ColorStateList.valueOf(if (index == 2) activeIconColor else inactiveColor)
-        labelBottomRaise.setTextColor(if (index == 2) activeTextColor else inactiveColor)
-        labelBottomRaise.setTypeface(null, if (index == 2) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
+        // Đồng bộ Bottom Navigation Bar (Compact < 600dp)
+        styleRail(capsuleBottomHome, iconBottomHome, labelBottomHome, index == 0)
+        styleRail(capsuleBottomLecture, iconBottomLecture, labelBottomLecture, index == 1)
+        styleRail(capsuleBottomChat, iconBottomChat, labelBottomChat, index == 2)
+        styleRail(capsuleBottomRaise, iconBottomRaise, labelBottomRaise, index == 3)
 
         focusReporter.currentPage = when (index) {
-            0 -> "Bài giảng"
-            1 -> "Tin nhắn"
-            2 -> "Giơ tay"
-            else -> "Trang chủ"
+            0 -> "Lớp học"
+            1 -> "Bài tập"
+            2 -> "Thảo luận"
+            else -> "Tài liệu"
         }
-        navDrawerOverlay.visibility = View.GONE
 
-        if (index == 1) {
-            btnTabChat.text = "Hỏi bài Giáo viên"
-            unreadTeacherChatCount = 0
-            if (::txtHomeChatBadge.isInitialized) {
-                txtHomeChatBadge.text = "Trực tuyến"
-                txtHomeChatBadge.setBackgroundResource(R.drawable.bg_pill_badge_blue)
-                txtHomeChatBadge.setTextColor(0xFF1D4ED8.toInt())
+        when (index) {
+            0 -> refreshHome()
+            1 -> {
+                badgeRailWork.visibility = View.GONE
+                switchWorkSubTab(currentWorkSubTab)
             }
-            scrollChat.post { scrollChat.fullScroll(View.FOCUS_DOWN) }
-        }
-        if (index == 3) refreshHome()
-    }
-
-    /** Tô sáng mục đang chọn trên Sidebar (card xanh nhạt bo góc hiện đại). */
-    private fun setNavActive(active: TextView?) {
-        val all = mutableListOf(btnNavHome, btnTabLecture, btnTabChat, btnTabHandRaise)
-        all += soonNavButtons.map { it.first }
-        val activeColor = 0xFF1D4ED8.toInt()
-        val inactiveColor = 0xFF475569.toInt()
-        for (btn in all) {
-            val drawables = btn.compoundDrawablesRelative
-            val startIcon = drawables[0] ?: btn.compoundDrawables[0]
-            val endIcon = drawables[2] ?: btn.compoundDrawables[2]
-            if (btn === active) {
-                btn.setBackgroundResource(R.drawable.bg_tab_selected)
-                btn.setTextColor(activeColor)
-                startIcon?.setTint(activeColor)
-                endIcon?.setTint(activeColor)
-            } else {
-                btn.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                btn.setTextColor(inactiveColor)
-                startIcon?.setTint(inactiveColor)
-                endIcon?.setTint(0xFFCBD5E1.toInt())
+            2 -> {
+                unreadTeacherChatCount = 0
+                badgeRailChat.visibility = View.GONE
+                scrollChat.post { scrollChat.fullScroll(View.FOCUS_DOWN) }
             }
-            btn.setCompoundDrawablesRelativeWithIntrinsicBounds(startIcon, null, endIcon, null)
+            3 -> refreshReceivedFilesPanel()
         }
     }
 
-    /** Các trang của bản Windows chưa có trên Android: hiển thị trang thông báo thay vì bỏ trống. */
-    private fun showComingSoon(btn: TextView, title: String) {
-        currentTab = 4
-        panelHome.visibility = View.GONE
-        panelLecture.visibility = View.GONE
-        panelChat.visibility = View.GONE
-        panelHandRaise.visibility = View.GONE
-        panelSoon.visibility = View.VISIBLE
-        btnHeaderBack.visibility = View.VISIBLE
+    private fun switchWorkSubTab(subTab: String) {
+        currentWorkSubTab = subTab
+        fun styleChip(btn: Button, active: Boolean) {
+            btn.setBackgroundResource(if (active) R.drawable.bg_m3_chip_selected else R.drawable.bg_m3_chip_unselected)
+            btn.setTextColor(if (active) 0xFF1A73E8.toInt() else 0xFF475569.toInt())
+        }
+        styleChip(chipWorkQuiz, subTab == "QUIZ")
+        styleChip(chipWorkHomework, subTab == "HOMEWORK")
+        styleChip(chipWorkSurvey, subTab == "SURVEY")
+        styleChip(chipWorkResults, subTab == "RESULTS")
+
+        val title = when (subTab) {
+            "HOMEWORK" -> "Bài tập Giáo viên giao"
+            "SURVEY" -> "Khảo sát ý kiến nhanh"
+            "RESULTS" -> "Kết quả & Điểm số"
+            else -> "Kiểm tra trắc nghiệm"
+        }
         txtSoonTitle.text = title
-        txtPageTitle.text = title
-        setNavActive(btn)
-        focusReporter.currentPage = title.substringAfter(" ")
-        navDrawerOverlay.visibility = View.GONE
+        renderInteractiveFeaturePanel(0, title)
+    }
 
-        val isQuiz = title.contains("trắc nghiệm", ignoreCase = true)
-        val activeTextColor = 0xFF2563EB.toInt()
-        val activeIconColor = 0xFFFFFFFF.toInt()
-        val inactiveColor = 0xFF64748B.toInt()
-
-        capsuleBottomHome.setBackgroundResource(0)
-        iconBottomHome.imageTintList = ColorStateList.valueOf(inactiveColor)
-        labelBottomHome.setTextColor(inactiveColor)
-        labelBottomHome.setTypeface(null, android.graphics.Typeface.NORMAL)
-
-        capsuleBottomLecture.setBackgroundResource(if (isQuiz) R.drawable.bg_bottom_nav_capsule else 0)
-        iconBottomLecture.imageTintList = ColorStateList.valueOf(if (isQuiz) activeIconColor else inactiveColor)
-        labelBottomLecture.setTextColor(if (isQuiz) activeTextColor else inactiveColor)
-        labelBottomLecture.setTypeface(null, if (isQuiz) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
-
-        capsuleBottomChat.setBackgroundResource(0)
-        iconBottomChat.imageTintList = ColorStateList.valueOf(inactiveColor)
-        labelBottomChat.setTextColor(inactiveColor)
-        labelBottomChat.setTypeface(null, android.graphics.Typeface.NORMAL)
-
-        capsuleBottomRaise.setBackgroundResource(0)
-        iconBottomRaise.imageTintList = ColorStateList.valueOf(inactiveColor)
-        labelBottomRaise.setTextColor(inactiveColor)
-        labelBottomRaise.setTypeface(null, android.graphics.Typeface.NORMAL)
-
-        renderInteractiveFeaturePanel(btn.id, title)
+    private fun openWorkSubTabFromTeacherCommand(subTab: String) {
+        currentWorkSubTab = subTab
+        badgeRailWork.visibility = if (currentTab == 1) View.GONE else View.VISIBLE
+        switchTab(1)
     }
 
     private fun sendRawTcpLine(line: String) {
@@ -1474,12 +1637,10 @@ class MainActivity : AppCompatActivity() {
         val density = resources.displayMetrics.density
         fun dp(v: Int): Int = (v * density).toInt()
 
-        val isQuizView = btnId == R.id.btnNavQuiz || title.contains("trắc nghiệm", ignoreCase = true) || title.contains("kiểm tra", ignoreCase = true)
-        val isSurveyView = btnId == R.id.btnNavSurvey || title.contains("khảo sát", ignoreCase = true)
-        val isAssignmentView = btnId == R.id.btnNavAssignment || title.contains("bài tập", ignoreCase = true)
-        val isResultsView = btnId == R.id.btnNavResults || title.contains("kết quả", ignoreCase = true) || btnId == R.id.btnNavProgress || title.contains("tiến trình", ignoreCase = true) || title.contains("tiến độ", ignoreCase = true)
-        val isGuideView = btnId == R.id.btnNavGuide || title.contains("hướng dẫn", ignoreCase = true)
-        val isSettingsView = btnId == R.id.btnNavSettings || title.contains("cài đặt", ignoreCase = true)
+        val isQuizView = currentWorkSubTab == "QUIZ" || title.contains("trắc nghiệm", ignoreCase = true) || title.contains("kiểm tra", ignoreCase = true)
+        val isSurveyView = currentWorkSubTab == "SURVEY" || title.contains("khảo sát", ignoreCase = true)
+        val isAssignmentView = currentWorkSubTab == "HOMEWORK" || title.contains("bài tập", ignoreCase = true)
+        val isResultsView = currentWorkSubTab == "RESULTS" || title.contains("kết quả", ignoreCase = true) || title.contains("điểm", ignoreCase = true)
 
         when {
             isQuizView -> {
@@ -1488,7 +1649,7 @@ class MainActivity : AppCompatActivity() {
                     txtSoonSubtitle.text = if (lastQuizScoreText.isNotBlank()) {
                         "Kết quả bài kiểm tra gần nhất: $lastQuizScoreText\n$lastQuizCorrectDetail"
                     } else {
-                        "Hiện chưa có đề kiểm tra nào đang mở.\nKhi Giáo viên phát đề từ máy chủ, câu hỏi sẽ tự động hiển thị tại đây để bạn làm bài và nộp trực tiếp."
+                        "Hiện chưa có đề kiểm tra đang mở. Khi Giáo viên phát đề từ máy chủ, câu hỏi sẽ tự động hiện tại đây để bạn làm bài và nộp trực tiếp."
                     }
                     layoutInteractiveFeature.visibility = View.GONE
                     return
@@ -1505,8 +1666,8 @@ class MainActivity : AppCompatActivity() {
                 activeQuizQuestions.forEachIndexed { index, q ->
                     val card = LinearLayout(this).apply {
                         orientation = LinearLayout.VERTICAL
-                        setBackgroundResource(R.drawable.bg_card_action_elevated)
-                        setPadding(dp(16), dp(14), dp(16), dp(14))
+                        setBackgroundResource(R.drawable.bg_m3_surface_card)
+                        setPadding(dp(18), dp(16), dp(18), dp(16))
                         layoutParams = LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.MATCH_PARENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT
@@ -1548,11 +1709,11 @@ class MainActivity : AppCompatActivity() {
 
                         fun styleOption(selected: Boolean) {
                             if (selected) {
-                                btnOpt.setBackgroundColor(0xFF2563EB.toInt())
-                                btnOpt.setTextColor(0xFFFFFFFF.toInt())
+                                btnOpt.setBackgroundResource(R.drawable.bg_m3_chip_selected)
+                                btnOpt.setTextColor(0xFF1A73E8.toInt())
                                 btnOpt.setTypeface(null, Typeface.BOLD)
                             } else {
-                                btnOpt.setBackgroundColor(0xFFF1F5F9.toInt())
+                                btnOpt.setBackgroundResource(R.drawable.bg_m3_chip_unselected)
                                 btnOpt.setTextColor(0xFF1E293B.toInt())
                                 btnOpt.setTypeface(null, Typeface.NORMAL)
                             }
@@ -1565,8 +1726,8 @@ class MainActivity : AppCompatActivity() {
                             optionButtons.forEachIndexed { i, b ->
                                 val l = letters.getOrElse(i) { "${i + 1}" }
                                 val sel = l == letter
-                                b.setBackgroundColor(if (sel) 0xFF2563EB.toInt() else 0xFFF1F5F9.toInt())
-                                b.setTextColor(if (sel) 0xFFFFFFFF.toInt() else 0xFF1E293B.toInt())
+                                b.setBackgroundResource(if (sel) R.drawable.bg_m3_chip_selected else R.drawable.bg_m3_chip_unselected)
+                                b.setTextColor(if (sel) 0xFF1A73E8.toInt() else 0xFF1E293B.toInt())
                                 b.setTypeface(null, if (sel) Typeface.BOLD else Typeface.NORMAL)
                             }
                         }
@@ -1583,7 +1744,7 @@ class MainActivity : AppCompatActivity() {
                         textSize = 14.5f
                         setTypeface(null, Typeface.BOLD)
                         setTextColor(0xFF15803D.toInt())
-                        setBackgroundColor(0xFFDCFCE7.toInt())
+                        setBackgroundResource(R.drawable.bg_pill_badge_green)
                         setPadding(dp(16), dp(12), dp(16), dp(12))
                         layoutParams = LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.MATCH_PARENT,
@@ -1594,16 +1755,17 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 val btnSubmitQuiz = Button(this).apply {
-                    text = if (quizSubmitted) "ĐÃ NỘP BÀI KIỂM TRA" else "NỘP BÀI KIỂM TRA"
+                    text = if (quizSubmitted) "ĐÃ NỘP BÀI KIỂM TRA" else "Nộp bài kiểm tra"
                     isAllCaps = false
                     textSize = 15f
                     setTypeface(null, Typeface.BOLD)
                     setTextColor(0xFFFFFFFF.toInt())
-                    setBackgroundColor(if (quizSubmitted) 0xFF64748B.toInt() else 0xFF16A34A.toInt())
+                    setBackgroundResource(R.drawable.bg_m3_primary_pill)
+                    backgroundTintList = ColorStateList.valueOf(if (quizSubmitted) 0xFF64748B.toInt() else 0xFF1A73E8.toInt())
                     isEnabled = !quizSubmitted
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
-                        dp(50)
+                        dp(48)
                     ).apply { topMargin = dp(4); bottomMargin = dp(8) }
                     setOnClickListener {
                         if (selectedQuizAnswers.isEmpty()) {
@@ -1631,19 +1793,19 @@ class MainActivity : AppCompatActivity() {
             isSurveyView -> {
                 if (activeSurveyQuestion.isBlank()) {
                     iconSoonWrapper.visibility = View.VISIBLE
-                    txtSoonSubtitle.text = "Hiện chưa có phiên khảo sát nào đang mở.\nKhi Giáo viên phát phiếu khảo sát nhanh trên lớp, nội dung câu hỏi sẽ hiển thị tại đây."
+                    txtSoonSubtitle.text = "Hiện chưa có phiên khảo sát nào đang mở. Khi Giáo viên phát phiếu khảo sát nhanh trên lớp, nội dung sẽ hiển thị tại đây."
                     layoutInteractiveFeature.visibility = View.GONE
                     return
                 }
 
                 iconSoonWrapper.visibility = View.GONE
-                txtSoonSubtitle.text = if (surveySubmitted) "Cảm ơn bạn đã gửi phản hồi khảo sát!" else activeSurveyTitle
+                txtSoonSubtitle.text = if (surveySubmitted) "Đã gửi phản hồi khảo sát cho Giáo viên." else activeSurveyTitle
                 layoutInteractiveFeature.visibility = View.VISIBLE
 
                 val card = LinearLayout(this).apply {
                     orientation = LinearLayout.VERTICAL
-                    setBackgroundResource(R.drawable.bg_card_action_elevated)
-                    setPadding(dp(16), dp(16), dp(16), dp(16))
+                    setBackgroundResource(R.drawable.bg_m3_surface_card)
+                    setPadding(dp(18), dp(16), dp(18), dp(16))
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
@@ -1675,8 +1837,8 @@ class MainActivity : AppCompatActivity() {
                         setPadding(dp(14), dp(10), dp(14), dp(10))
                         isEnabled = !surveySubmitted
                         val sel = selectedSurveyOptionIdx == idx
-                        setBackgroundColor(if (sel) 0xFF2563EB.toInt() else 0xFFF1F5F9.toInt())
-                        setTextColor(if (sel) 0xFFFFFFFF.toInt() else 0xFF1E293B.toInt())
+                        setBackgroundResource(if (sel) R.drawable.bg_m3_chip_selected else R.drawable.bg_m3_chip_unselected)
+                        setTextColor(if (sel) 0xFF1A73E8.toInt() else 0xFF1E293B.toInt())
                         layoutParams = LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.MATCH_PARENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT
@@ -1687,8 +1849,8 @@ class MainActivity : AppCompatActivity() {
                             selectedSurveyStar = (5 - idx).coerceIn(1, 5)
                             optionBtns.forEachIndexed { i, b ->
                                 val s = i == idx
-                                b.setBackgroundColor(if (s) 0xFF2563EB.toInt() else 0xFFF1F5F9.toInt())
-                                b.setTextColor(if (s) 0xFFFFFFFF.toInt() else 0xFF1E293B.toInt())
+                                b.setBackgroundResource(if (s) R.drawable.bg_m3_chip_selected else R.drawable.bg_m3_chip_unselected)
+                                b.setTextColor(if (s) 0xFF1A73E8.toInt() else 0xFF1E293B.toInt())
                             }
                         }
                     }
@@ -1699,16 +1861,17 @@ class MainActivity : AppCompatActivity() {
                 layoutInteractiveFeature.addView(card)
 
                 val btnSubmitSurvey = Button(this).apply {
-                    text = if (surveySubmitted) "ĐÃ GỬI KHẢO SÁT" else "GỬI PHẢN HỒI KHẢO SÁT"
+                    text = if (surveySubmitted) "ĐÃ GỬI KHẢO SÁT" else "Gửi phản hồi khảo sát"
                     isAllCaps = false
                     textSize = 15f
                     setTypeface(null, Typeface.BOLD)
                     setTextColor(0xFFFFFFFF.toInt())
-                    setBackgroundColor(if (surveySubmitted) 0xFF64748B.toInt() else 0xFF2563EB.toInt())
+                    setBackgroundResource(R.drawable.bg_m3_primary_pill)
+                    backgroundTintList = ColorStateList.valueOf(if (surveySubmitted) 0xFF64748B.toInt() else 0xFF1A73E8.toInt())
                     isEnabled = !surveySubmitted
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
-                        dp(50)
+                        dp(48)
                     )
                     setOnClickListener {
                         if (selectedSurveyOptionIdx < 0) {
@@ -1732,7 +1895,7 @@ class MainActivity : AppCompatActivity() {
             isAssignmentView -> {
                 if (activeHwTitle.isBlank() && activeHwDesc.isBlank()) {
                     iconSoonWrapper.visibility = View.VISIBLE
-                    txtSoonSubtitle.text = "Hiện chưa có bài tập mới nào được giao.\nKhi Giáo viên giao bài tập trên lớp hoặc về nhà, đề bài và khung nộp bài sẽ hiển thị tại đây."
+                    txtSoonSubtitle.text = "Hiện chưa có bài tập mới nào được giao. Khi Giáo viên giao bài tập trên lớp, đề bài và khung làm bài sẽ hiện tại đây."
                     layoutInteractiveFeature.visibility = View.GONE
                     return
                 }
@@ -1747,8 +1910,8 @@ class MainActivity : AppCompatActivity() {
 
                 val card = LinearLayout(this).apply {
                     orientation = LinearLayout.VERTICAL
-                    setBackgroundResource(R.drawable.bg_card_action_elevated)
-                    setPadding(dp(16), dp(16), dp(16), dp(16))
+                    setBackgroundResource(R.drawable.bg_m3_surface_card)
+                    setPadding(dp(18), dp(16), dp(18), dp(16))
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
@@ -1759,7 +1922,7 @@ class MainActivity : AppCompatActivity() {
                     text = "Môn: ${activeHwSubject.ifBlank { activeLessonSubject.ifBlank { "Bài tập lớp học" } }}" +
                         if (activeHwDeadline.isNotBlank()) "  •  Hạn nộp: $activeHwDeadline" else ""
                     textSize = 12.5f
-                    setTextColor(0xFF2563EB.toInt())
+                    setTextColor(0xFF1A73E8.toInt())
                     setTypeface(null, Typeface.BOLD)
                 }
                 card.addView(tvSubject)
@@ -1774,7 +1937,7 @@ class MainActivity : AppCompatActivity() {
                 card.addView(tvTitle)
 
                 val tvDesc = TextView(this).apply {
-                    text = activeHwDesc.ifBlank { "Em hãy trình bày lời giải hoặc câu trả lời vào ô bên dưới." }
+                    text = activeHwDesc.ifBlank { "Trình bày lời giải hoặc câu trả lời vào ô bên dưới." }
                     textSize = 14f
                     setTextColor(0xFF334155.toInt())
                     setPadding(0, 0, 0, dp(12))
@@ -1787,24 +1950,25 @@ class MainActivity : AppCompatActivity() {
                     textSize = 14f
                     minLines = 4
                     gravity = Gravity.TOP or Gravity.START
-                    setBackgroundColor(0xFFF8FAFC.toInt())
-                    setPadding(dp(12), dp(10), dp(12), dp(10))
+                    setBackgroundResource(R.drawable.bg_m3_pin_input)
+                    setPadding(dp(14), dp(12), dp(14), dp(12))
                     isEnabled = !hwSubmitted
                 }
                 card.addView(edtAnswer)
                 layoutInteractiveFeature.addView(card)
 
                 val btnSubmitHw = Button(this).apply {
-                    text = if (hwSubmitted) "ĐÃ NỘP BÀI TẬP" else "NỘP BÀI TẬP CHO GIÁO VIÊN"
+                    text = if (hwSubmitted) "ĐÃ NỘP BÀI TẬP" else "Nộp bài tập cho Giáo viên"
                     isAllCaps = false
                     textSize = 15f
                     setTypeface(null, Typeface.BOLD)
                     setTextColor(0xFFFFFFFF.toInt())
-                    setBackgroundColor(if (hwSubmitted) 0xFF64748B.toInt() else 0xFF16A34A.toInt())
+                    setBackgroundResource(R.drawable.bg_m3_primary_pill)
+                    backgroundTintList = ColorStateList.valueOf(if (hwSubmitted) 0xFF64748B.toInt() else 0xFF16A34A.toInt())
                     isEnabled = !hwSubmitted
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
-                        dp(50)
+                        dp(48)
                     )
                     setOnClickListener {
                         val ans = edtAnswer.text.toString().trim()
@@ -1826,13 +1990,13 @@ class MainActivity : AppCompatActivity() {
 
             isResultsView -> {
                 iconSoonWrapper.visibility = View.GONE
-                txtSoonSubtitle.text = "Tổng hợp kết quả học tập và tương tác trong phiên học hiện tại"
+                txtSoonSubtitle.text = "Tổng hợp kết quả kiểm tra và bài tập thực tế trong phiên học hiện tại"
                 layoutInteractiveFeature.visibility = View.VISIBLE
 
                 val summaryCard = LinearLayout(this).apply {
                     orientation = LinearLayout.VERTICAL
-                    setBackgroundResource(R.drawable.bg_card_action_elevated)
-                    setPadding(dp(16), dp(16), dp(16), dp(16))
+                    setBackgroundResource(R.drawable.bg_m3_surface_card)
+                    setPadding(dp(18), dp(16), dp(18), dp(16))
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
@@ -1842,10 +2006,10 @@ class MainActivity : AppCompatActivity() {
                 val rows = listOf(
                     "Học sinh" to "${currentStudentName.ifBlank { "Học sinh" }} (${currentStudentCode.ifBlank { "—" }})",
                     "Lớp học" to homeClassName.ifBlank { currentClassName },
-                    "Điểm kiểm tra gần nhất" to lastQuizScoreText.ifBlank { "Chưa có điểm" },
-                    "Chi tiết bài kiểm tra" to lastQuizCorrectDetail.ifBlank { if (quizSubmitted) "Đã nộp bài — Chờ chấm" else "Chưa làm bài" },
-                    "Trạng thái bài tập" to if (hwSubmitted) "Đã nộp bài tập" else if (activeHwTitle.isNotBlank()) "Đang có 1 bài tập cần nộp" else "Chưa có bài tập",
-                    "Khảo sát lớp học" to if (surveySubmitted) "Đã hoàn thành khảo sát" else "Chưa tham gia"
+                    "Điểm trắc nghiệm gần nhất" to lastQuizScoreText.ifBlank { "Chưa có điểm" },
+                    "Chi tiết câu đúng" to lastQuizCorrectDetail.ifBlank { if (quizSubmitted) "Đã nộp bài — Chờ chấm" else "Chưa làm bài" },
+                    "Bài tập Giáo viên giao" to if (hwSubmitted) "Đã nộp bài tập" else if (activeHwTitle.isNotBlank()) "Đang có bài tập cần nộp: $activeHwTitle" else "Chưa có bài tập",
+                    "Khảo sát lớp học" to if (surveySubmitted) "Đã gửi phản hồi" else "Chưa tham gia"
                 )
 
                 rows.forEach { (k, v) ->
@@ -1868,209 +2032,61 @@ class MainActivity : AppCompatActivity() {
                 }
                 layoutInteractiveFeature.addView(summaryCard)
             }
-
-            isGuideView -> {
-                iconSoonWrapper.visibility = View.GONE
-                txtSoonSubtitle.text = "Hướng dẫn nhanh cho Học sinh sử dụng thiết bị trong lớp học SMART CLASS"
-                layoutInteractiveFeature.visibility = View.VISIBLE
-
-                val guideCard = LinearLayout(this).apply {
-                    orientation = LinearLayout.VERTICAL
-                    setBackgroundResource(R.drawable.bg_card_action_elevated)
-                    setPadding(dp(16), dp(16), dp(16), dp(16))
-                }
-                val steps = listOf(
-                    "1. Xem bài giảng trực tiếp: Chạm vào mục Bài giảng hoặc khung Xem màn hình Giáo viên tại Trang chủ để xem trình chiếu thời gian thực.",
-                    "2. Làm bài kiểm tra & Khảo sát: Khi Giáo viên phát đề kiểm tra hoặc khảo sát, ứng dụng sẽ tự động mở màn hình câu hỏi để bạn chọn đáp án và nộp bài.",
-                    "3. Hỏi bài & Thảo luận nhóm: Chuyển sang tab Hỏi bài Giáo viên để nhắn riêng cho Giáo viên hoặc trao đổi trong nhóm học tập.",
-                    "4. Giơ tay phát biểu: Nhấn nút Giơ tay phát biểu và chọn lý do (Phát biểu, Đặt câu hỏi, Trợ giúp) để báo hiệu cho Giáo viên."
-                )
-                steps.forEach { s ->
-                    guideCard.addView(TextView(this).apply {
-                        text = s
-                        textSize = 14f
-                        setTextColor(0xFF1E293B.toInt())
-                        setPadding(0, dp(6), 0, dp(6))
-                    })
-                }
-                layoutInteractiveFeature.addView(guideCard)
-            }
-
-            isSettingsView -> {
-                iconSoonWrapper.visibility = View.GONE
-                txtSoonSubtitle.text = "Quản lý tài khoản học sinh đang đăng nhập trên máy tính bảng và thông tin kết nối LAN"
-                layoutInteractiveFeature.visibility = View.VISIBLE
-
-                val accountCard = LinearLayout(this).apply {
-                    orientation = LinearLayout.VERTICAL
-                    setBackgroundResource(R.drawable.bg_card_action_elevated)
-                    setPadding(dp(18), dp(18), dp(18), dp(18))
-                }
-
-                val curName = currentStudentName.ifBlank { edtStudentName.text.toString().ifBlank { "Học sinh" } }
-                val curCode = currentStudentCode.ifBlank { edtStudentCode.text.toString().ifBlank { "HS001" } }
-                val curIp = currentTeacherIp ?: discoveredTeacherIp ?: edtTeacherIp.text.toString().ifBlank { "10.0.2.2" }
-
-                accountCard.addView(TextView(this).apply {
-                    text = "HỒ SƠ ĐANG ĐĂNG NHẬP"
-                    textSize = 12f
-                    setTypeface(null, Typeface.BOLD)
-                    setTextColor(0xFF2563EB.toInt())
-                })
-                accountCard.addView(TextView(this).apply {
-                    text = "$curName  •  Mã HS: $curCode"
-                    textSize = 18f
-                    setTypeface(null, Typeface.BOLD)
-                    setTextColor(0xFF0F172A.toInt())
-                    setPadding(0, dp(6), 0, dp(4))
-                })
-                accountCard.addView(TextView(this).apply {
-                    text = "Lớp hiện tại: ${homeClassName.ifBlank { currentClassName }}  |  Máy chủ GV: $curIp (Ping: ${lastMeasuredPingMs}ms)"
-                    textSize = 14f
-                    setTextColor(0xFF475569.toInt())
-                    setPadding(0, 0, 0, dp(16))
-                })
-
-                val btnSwitchNow = Button(this).apply {
-                    text = "ĐỔI TÀI KHOẢN / ĐĂNG NHẬP HỌC SINH KHÁC"
-                    isAllCaps = false
-                    textSize = 15f
-                    setTypeface(null, Typeface.BOLD)
-                    setTextColor(0xFFFFFFFF.toInt())
-                    setBackgroundColor(0xFF2563EB.toInt())
-                    layoutParams = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        dp(50)
-                    ).apply { bottomMargin = dp(10) }
-                    setOnClickListener {
-                        showSwitchAccountDialog(autoReconnectIfConnected = true)
-                    }
-                }
-                accountCard.addView(btnSwitchNow)
-
-                val btnLeaveRoom = Button(this).apply {
-                    text = "RỜI LỚP HỌC VỀ MÀN HÌNH CHỜ"
-                    isAllCaps = false
-                    textSize = 14f
-                    setTypeface(null, Typeface.BOLD)
-                    setTextColor(0xFFDC2626.toInt())
-                    setBackgroundColor(0xFFFEE2E2.toInt())
-                    layoutParams = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        dp(48)
-                    )
-                    setOnClickListener {
-                        isUserInitiatedDisconnect = true
-                        disconnectFromTeacher("Học sinh chủ động rời lớp")
-                    }
-                }
-                accountCard.addView(btnLeaveRoom)
-
-                layoutInteractiveFeature.addView(accountCard)
-            }
-
-            else -> {
-                iconSoonWrapper.visibility = View.VISIBLE
-                txtSoonSubtitle.text = "Chế độ này đang chờ Giáo viên kích hoạt trên máy chủ lớp học."
-                layoutInteractiveFeature.visibility = View.GONE
-            }
         }
     }
 
-    /** Cập nhật Trang chủ (dashboard) từ trạng thái thật của phiên lớp. */
+    /** Cập nhật Không gian Lớp học từ trạng thái thực tế của phiên kết nối (100% không dữ liệu ảo). */
     private fun refreshHome() {
         if (!::txtHomeGreeting.isInitialized) return
-        val dateText = SimpleDateFormat("EEEE, dd/MM/yyyy", Locale("vi", "VN")).format(Date())
-        txtHomeGreeting.text = "Xin chào, ${homeStudentName.ifBlank { "Học sinh" }}"
-        txtHomeSub.text = "$dateText  •  $homeClassName"
-        txtStatClass.text = homeClassName.ifBlank { "—" }
-        txtStatTeacher.text = homeTeacherName.ifBlank { "—" }
-        txtStatBroadcast.text = when {
-            isScreenBroadcastActive -> "Đang chiếu"
-            isLessonActive -> "Đang dạy"
-            else -> "Chưa phát"
-        }
-        txtStatHand.text = if (isHandRaised) "Đang giơ tay" else "Không"
+        val realClass = homeClassName.ifBlank { currentClassName }.trim()
+        val teacherDisplay = homeTeacherName.ifBlank { currentTeacherName }.trim()
+        val pingSuffix = if (lastMeasuredPingMs > 0L) " • Ping ${lastMeasuredPingMs}ms" else ""
 
-        val showActiveLesson = isLessonActive || isScreenBroadcastActive
-        layoutHomeLessonActive.visibility = if (showActiveLesson) View.VISIBLE else View.GONE
-        layoutHomeLessonWaiting.visibility = if (showActiveLesson) View.GONE else View.VISIBLE
+        txtHomeGreeting.text = "Xin chào, ${homeStudentName.ifBlank { currentStudentName.ifBlank { "Học sinh" } }}"
+        txtHomeSub.text = buildString {
+            if (realClass.isNotBlank()) append(realClass)
+            if (teacherDisplay.isNotBlank()) {
+                if (isNotEmpty()) append("  •  ")
+                append("GV: $teacherDisplay")
+            }
+            append("\nKhi Giáo viên chia sẻ màn hình hoặc mở tiết học, hình ảnh trực tiếp sẽ tự động hiển thị tại đây.")
+        }
+
+        layoutHomeLessonActive.visibility = if (isLessonActive && !isScreenBroadcastActive) View.VISIBLE else View.GONE
+        layoutHomeLessonWaiting.visibility = if (!isLessonActive && !isScreenBroadcastActive) View.VISIBLE else View.GONE
 
         if (::txtHeaderLiveBadge.isInitialized) {
             txtHeaderLiveBadge.text = when {
-                isScreenBroadcastActive -> "● Đang xem chiếu màn hình"
-                isLessonActive -> "● Đang học trực tiếp"
-                else -> "● Đã kết nối — Chờ bắt đầu tiết"
+                isScreenBroadcastActive -> "🔴 Đang xem chiếu trực tiếp  •  GV: $teacherDisplay$pingSuffix"
+                isLessonActive -> "● Đang học trực tiếp  •  GV: $teacherDisplay$pingSuffix"
+                else -> "● Đã kết nối ổn định  •  GV: $teacherDisplay$pingSuffix"
+            }
+            txtHeaderLiveBadge.setTextColor(if (isScreenBroadcastActive) 0xFFDC2626.toInt() else 0xFF16A34A.toInt())
+        }
+
+        if (!isScreenBroadcastActive) {
+            txtInlineBroadcastTitle.text = if (isLessonActive) {
+                activeLessonTitle.ifBlank { "Bài giảng trực tiếp" }
+            } else {
+                realClass.ifBlank { "Màn hình lớp học" }
             }
         }
 
-        val teacherDisplay = homeTeacherName.ifBlank { "Giáo viên" }
-        if (showActiveLesson) {
-            txtHomeLessonTitle.text = activeLessonTitle.ifBlank {
-                if (isScreenBroadcastActive) "Màn hình bài giảng trực tiếp" else "Tiết học trực tiếp — ${homeClassName.ifBlank { "Lớp học" }}"
-            }
-            txtHomeSubjectBadge.text = activeLessonSubject.ifBlank { homeClassName.ifBlank { "Bài giảng trên lớp" } }
+        if (isLessonActive) {
+            txtHomeLessonTitle.text = activeLessonTitle.ifBlank { "Tiết học trực tiếp" }
+            txtHomeSubjectBadge.text = activeLessonSubject.ifBlank { realClass.ifBlank { "Bài giảng" } }
             txtHomeStageBadge.text = if (activeLessonStage in 1..6) "Giai đoạn $activeLessonStage/6" else "Đang giảng dạy"
-            txtHomeLessonSub.text = if (isScreenBroadcastActive) {
-                "$teacherDisplay đang chia sẻ màn hình..."
-            } else {
-                "$teacherDisplay đang giảng bài..."
+            txtHomeBoardContent.text = activeLessonSummary.ifBlank {
+                "Giáo viên ($teacherDisplay) đang điều hành nội dung bài học trên bảng chính."
             }
-            txtHomeBoardPointer.text = "$teacherDisplay đang giảng"
-            if (::txtHomeBoardContent.isInitialized) {
-                txtHomeBoardContent.text = activeLessonSummary.ifBlank {
-                    activeLessonTitle.ifBlank { "Đang đồng bộ nội dung bài giảng trực tiếp từ Giáo viên..." }
-                }
-                val stageDesc = when (activeLessonStage) {
-                    1 -> "Bước 1/6 — Chuẩn bị & Kiểm tra sĩ số"
-                    2 -> "Bước 2/6 — Khởi động & Kiểm tra bài cũ"
-                    3 -> "Bước 3/6 — Giảng bài & Khám phá kiến thức"
-                    4 -> "Bước 4/6 — Luyện tập & Hoạt động nhóm"
-                    5 -> "Bước 5/6 — Đánh giá & Chấm điểm"
-                    6 -> "Bước 6/6 — Tổng kết & Giao bài tập về nhà"
-                    else -> "Đang theo dõi tiến trình giảng dạy trên lớp"
-                }
-                txtHomeBoardNote1.text = "●  Tiến trình: $stageDesc"
-                txtHomeBoardNote2.text = "✔  Môn: ${activeLessonSubject.ifBlank { "Bài học" }}  •  Lớp ${homeClassName.ifBlank { "—" }}"
-            }
-        }
-        if (::txtHomeQuizBadge.isInitialized) {
-            if (activeLessonStage == 4 || activeLessonStage == 2) {
-                txtHomeQuizBadge.text = "Đang mở"
-                txtHomeQuizBadge.setBackgroundResource(R.drawable.bg_pill_solid_green)
-                txtHomeQuizBadge.setTextColor(0xFFFFFFFF.toInt())
-                txtHomeQuizSub.text = "Giáo viên đang mở phần câu hỏi / hoạt động trên lớp"
-            } else {
-                txtHomeQuizBadge.text = "Chờ giao bài"
-                txtHomeQuizBadge.setBackgroundResource(R.drawable.bg_chip_pill)
-                txtHomeQuizBadge.setTextColor(0xFF64748B.toInt())
-                txtHomeQuizSub.text = "Nhận đề kiểm tra và bài tập trực tiếp từ Giáo viên"
-            }
-        }
-        txtHomeTeacherChip.text = "GV: ${homeTeacherName.ifBlank { "—" }}"
-
-        if (::txtHomeTeacherAvatar.isInitialized) {
-            val words = teacherDisplay.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
-            txtHomeTeacherAvatar.text = when {
-                words.size >= 2 -> "${words.first().first()}${words.last().first()}".uppercase()
-                words.size == 1 -> words.first().take(2).uppercase()
-                else -> "GV"
-            }
-            txtHomeNoticeHeader.text = "Lời nhắc của Giáo viên ($teacherDisplay):"
-            layoutNoticeFeedback.visibility = if (hasTeacherNotice || showActiveLesson) View.VISIBLE else View.GONE
         }
     }
 
     private fun selectHandRaiseReason(reason: String) {
         currentHandRaiseReason = reason
-        val activeBgTint = ColorStateList.valueOf(0xFFDBEAFE.toInt())
-        val idleBgTint = ColorStateList.valueOf(0xFFF1F5F9.toInt())
-
-        btnReasonSpeaking.backgroundTintList = if (reason == "Phát biểu") activeBgTint else idleBgTint
-        btnReasonQuestion.backgroundTintList = if (reason == "Đặt câu hỏi") activeBgTint else idleBgTint
-        btnReasonHelp.backgroundTintList = if (reason == "Trợ giúp") activeBgTint else idleBgTint
-
-        Toast.makeText(this, "Lý do: $reason", Toast.LENGTH_SHORT).show()
+        if (::btnTopHandReason.isInitialized) {
+            btnTopHandReason.text = "$reason ▾"
+        }
     }
 
     private fun lookupRosterStudentName(rawCode: String): String? {
@@ -2159,10 +2175,6 @@ class MainActivity : AppCompatActivity() {
             !s.startsWith("Học sinh ", ignoreCase = true)
     }
 
-    /**
-     * Trả về đúng Họ tên học sinh theo tài khoản đăng nhập (Mã học sinh) hoặc tên người dùng nhập,
-     * tuyệt đối loại bỏ nhãn placeholder cũ "Học sinh Android" hoặc chuỗi mã hóa gói tin.
-     */
     private fun resolveOfficialStudentName(rawCode: String, rawInputName: String = ""): String {
         val code = sanitizeStudentCode(rawCode)
         val rosterName = lookupRosterStudentName(code)
@@ -2189,21 +2201,17 @@ class MainActivity : AppCompatActivity() {
         }
         val rawSeatNum = Regex("(\\d+)$").find(code)?.groupValues?.getOrNull(1)?.toIntOrNull() ?: 1
         val seatDigits = String.format(Locale.US, "%02d", rawSeatNum)
-        val screenWidthDp = resources.displayMetrics.widthPixels / resources.displayMetrics.density
         txtStudentIdentityName.text = name
-        txtSeatBadge.text = "BÀN SỐ $seatDigits  •  MÃ: $code"
-        txtStudentIdentityCode.text = if (screenWidthDp < 600f) {
-            "Nhập Mã vào lớp ở thẻ bên dưới để tham gia tiết học."
-        } else {
-            "Nhập Mã vào lớp ở thẻ bên phải để tham gia tiết học."
+        txtSeatBadge.text = "Bàn $seatDigits  •  Mã HS: $code"
+        txtStudentIdentityCode.text = "Tự động tìm phòng học mở trong cùng mạng Wi-Fi / LAN."
+        if (::txtJoinAvatarInitials.isInitialized) {
+            val parts = name.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+            txtJoinAvatarInitials.text = when {
+                parts.size >= 2 -> "${parts.first().first()}${parts.last().first()}".uppercase()
+                parts.size == 1 -> parts.first().take(2).uppercase()
+                else -> "HS"
+            }
         }
-    }
-
-    private fun updateSlideViewerState() {
-        if (!::txtSlidePageIndicator.isInitialized) return
-        val stageTotal = totalSlideCount.coerceAtLeast(1)
-        val cur = currentSlideIndex.coerceIn(1, stageTotal)
-        txtSlidePageIndicator.text = String.format(Locale.US, "%02d / %02d", cur, stageTotal)
     }
 
     private fun applyDocumentZoom() {
@@ -2214,28 +2222,23 @@ class MainActivity : AppCompatActivity() {
         imgInlineBroadcast.scaleY = scale
     }
 
-    /**
-     * Micro-interaction: Thanh tiến trình Upload 0% -> 100% khi học sinh bấm Nộp bài / Gửi ghi chú trên Màn hình 3.
-     */
     private fun performQuickNoteOrHomeworkUpload() {
         val noteText = edtQuickLessonAnswer.text.toString().trim()
         val strokeCount = quickNoteCanvas.getStrokeCount()
         if (noteText.isBlank() && strokeCount == 0) {
-            Toast.makeText(this, "Vui lòng viết nháp hoặc nhập nội dung câu trả lời trước khi nộp!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Vui lòng viết nháp hoặc nhập đáp án trước khi gửi!", Toast.LENGTH_SHORT).show()
             return
         }
 
         btnQuickSubmitWork.isEnabled = false
-        btnQuickSubmitWork.text = "Đang gửi bài về máy Giáo viên..."
+        btnQuickSubmitWork.text = "Đang gửi tới Giáo viên..."
         layoutUploadProgress.visibility = View.VISIBLE
         progressUploadBar.progress = 0
         txtUploadPercent.text = "0%"
-        txtUploadStatusLabel.text = "Đang đóng gói dữ liệu bài làm..."
 
         lifecycleScope.launch {
-            val steps = listOf(25, 55, 85, 100)
-            for (p in steps) {
-                delay(110)
+            for (p in listOf(30, 65, 100)) {
+                delay(90)
                 progressUploadBar.progress = p
                 txtUploadPercent.text = "$p%"
             }
@@ -2245,17 +2248,18 @@ class MainActivity : AppCompatActivity() {
                 if (noteText.isNotBlank()) append(noteText.replace("|", " "))
                 if (strokeCount > 0) {
                     if (isNotEmpty()) append(" ")
-                    append("[Kèm bản vẽ nháp $strokeCount nét]")
+                    append("[Kèm sổ nháp $strokeCount nét]")
                 }
             }
             sendRawTcpLine("HOMEWORK_SUBMIT|$hwIdVal|$payloadSummary|[]")
             hwSubmitted = true
-            txtUploadStatusLabel.text = "Máy chủ Giáo viên đã nhận bài nộp"
-            btnQuickSubmitWork.text = "ĐÃ NỘP BÀI THÀNH CÔNG"
-            btnQuickSubmitWork.backgroundTintList = ColorStateList.valueOf(0xFF16A34A.toInt())
-            Toast.makeText(this@MainActivity, "Đã nộp bài làm về máy Giáo viên!", Toast.LENGTH_SHORT).show()
+            edtQuickLessonAnswer.setText("")
+            btnQuickSubmitWork.text = "✓ Đã gửi cho Giáo viên"
+            Toast.makeText(this@MainActivity, "Đã gửi bài làm / ghi chú về máy Giáo viên!", Toast.LENGTH_SHORT).show()
 
-            delay(1800)
+            delay(1600)
+            layoutUploadProgress.visibility = View.GONE
+            btnQuickSubmitWork.text = "Gửi bài làm / Ghi chú"
             btnQuickSubmitWork.isEnabled = true
         }
     }
@@ -2263,10 +2267,8 @@ class MainActivity : AppCompatActivity() {
     private fun toggleRaiseHand() {
         val targetState = !isHandRaised
         isHandAcceptedByTeacher = false
-        animateRaiseHandMicroInteraction(btnFullscreenRaiseHand)
-        animateRaiseHandMicroInteraction(btnMainRaiseHand)
-        findViewById<View?>(R.id.btnHeroRaiseHand)?.let { animateRaiseHandMicroInteraction(it) }
         animateRaiseHandMicroInteraction(btnRaiseHand)
+        animateRaiseHandMicroInteraction(btnFullscreenRaiseHand)
         updateHandRaiseUI(targetState)
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -2284,33 +2286,26 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (targetState) {
-            Toast.makeText(this, "Đã gửi tín hiệu Giơ tay ($currentHandRaiseReason) tới Giáo viên", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "✋ Đã giơ tay ($currentHandRaiseReason) — Đang chờ Giáo viên mời", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "Đã hạ tay", Toast.LENGTH_SHORT).show()
         }
     }
 
-    /**
-     * Micro-interaction cho nút Giơ tay: Rung xúc giác nhẹ + Hiệu ứng thu phóng đàn hồi (0.92 -> 1.06 -> 1.0).
-     */
     private fun animateRaiseHandMicroInteraction(targetView: View) {
         try {
             targetView.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
             targetView.animate()
-                .scaleX(0.92f)
-                .scaleY(0.92f)
-                .setDuration(75)
+                .scaleX(0.94f)
+                .scaleY(0.94f)
+                .setDuration(70)
                 .withEndAction {
                     targetView.animate()
-                        .scaleX(1.06f)
-                        .scaleY(1.06f)
-                        .setDuration(110)
+                        .scaleX(1.04f)
+                        .scaleY(1.04f)
+                        .setDuration(100)
                         .withEndAction {
-                            targetView.animate()
-                                .scaleX(1.0f)
-                                .scaleY(1.0f)
-                                .setDuration(90)
-                                .start()
+                            targetView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(80).start()
                         }
                         .start()
                 }
@@ -2321,39 +2316,31 @@ class MainActivity : AppCompatActivity() {
     private fun updateHandRaiseUI(raised: Boolean, acceptedByTeacher: Boolean = false) {
         isHandRaised = raised
         isHandAcceptedByTeacher = acceptedByTeacher
-        runOnUiThread { if (::txtStatHand.isInitialized) txtStatHand.text = if (raised) "Đang giơ tay" else "Không" }
         runOnUiThread {
-            val heroBtn = findViewById<View?>(R.id.btnHeroRaiseHand)
             when {
                 raised && acceptedByTeacher -> {
-                    btnRaiseHand.backgroundTintList = ColorStateList.valueOf(0xFF16A34A.toInt())
-                    heroBtn?.backgroundTintList = ColorStateList.valueOf(0xFF16A34A.toInt())
-                    btnFullscreenRaiseHand.text = "GV mời"
-                    btnFullscreenRaiseHand.backgroundTintList = ColorStateList.valueOf(0xFF16A34A.toInt())
+                    btnRaiseHand.text = "🎤 GV mời phát biểu"
+                    btnRaiseHand.setBackgroundResource(R.drawable.bg_pill_badge_green)
+                    btnRaiseHand.setTextColor(0xFF15803D.toInt())
 
-                    btnMainRaiseHand.setBackgroundResource(R.drawable.bg_hand_raise_active)
-                    txtHandRaiseStatus.text = "GIÁO VIÊN ĐÃ MỜI\nPHÁT BIỂU"
-                    txtHandRaiseStatus.setTextColor(0xFFFFFFFF.toInt())
+                    btnFullscreenRaiseHand.text = "🎤 GV mời phát biểu"
+                    btnFullscreenRaiseHand.setTextColor(0xFF86EFAC.toInt())
                 }
                 raised -> {
-                    btnRaiseHand.backgroundTintList = ColorStateList.valueOf(0xFFD97706.toInt())
-                    heroBtn?.backgroundTintList = ColorStateList.valueOf(0xFFD97706.toInt())
-                    btnFullscreenRaiseHand.text = "Đang chờ"
-                    btnFullscreenRaiseHand.backgroundTintList = ColorStateList.valueOf(0xFFD97706.toInt())
+                    btnRaiseHand.text = "✋ Đang giơ tay"
+                    btnRaiseHand.setBackgroundResource(R.drawable.bg_pill_badge_amber)
+                    btnRaiseHand.setTextColor(0xFFB45309.toInt())
 
-                    btnMainRaiseHand.setBackgroundResource(R.drawable.bg_hand_raise_active)
-                    txtHandRaiseStatus.text = "ĐANG GIƠ TAY\n(Chờ GV mời)"
-                    txtHandRaiseStatus.setTextColor(0xFFFFFFFF.toInt())
+                    btnFullscreenRaiseHand.text = "✋ Hạ tay"
+                    btnFullscreenRaiseHand.setTextColor(0xFFFDE047.toInt())
                 }
                 else -> {
-                    btnRaiseHand.backgroundTintList = ColorStateList.valueOf(0xFFF59E0B.toInt())
-                    heroBtn?.backgroundTintList = ColorStateList.valueOf(0xFFF59E0B.toInt())
-                    btnFullscreenRaiseHand.text = "Giơ tay"
-                    btnFullscreenRaiseHand.backgroundTintList = ColorStateList.valueOf(0xFFF59E0B.toInt())
+                    btnRaiseHand.text = "✋ Giơ tay"
+                    btnRaiseHand.setBackgroundResource(R.drawable.bg_m3_outlined_pill)
+                    btnRaiseHand.setTextColor(0xFFB45309.toInt())
 
-                    btnMainRaiseHand.setBackgroundResource(R.drawable.bg_hand_raise_idle)
-                    txtHandRaiseStatus.text = "Bấm để Giơ tay"
-                    txtHandRaiseStatus.setTextColor(0xFFB45309.toInt())
+                    btnFullscreenRaiseHand.text = "✋ Giơ tay"
+                    btnFullscreenRaiseHand.setTextColor(0xFFFDE68A.toInt())
                 }
             }
         }
@@ -2373,7 +2360,6 @@ class MainActivity : AppCompatActivity() {
         edtChatMessage.setText("")
         addChatMessage(currentStudentName.ifBlank { "Học sinh" }, text, isSelf = true, channel = channel)
 
-        // Giao thức: CHAT|code|ALL|text (cả lớp) | CHAT|code|GROUP_xxx|text (nhóm) | CHAT|code|TEACHER|text (riêng với GV)
         val wireChannel = when {
             channel == "CLASS" -> "ALL"
             channel.startsWith("GROUP_") -> channel
@@ -2390,7 +2376,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** Chuyển kênh chat (Lớp / Nhóm / Giáo viên), vẽ lại lịch sử của kênh đó. */
     private fun switchChatChannel(channel: String) {
         currentChatChannel = channel
         unreadChatChannels.remove(channel)
@@ -2399,18 +2384,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun chatChannelLabel(channel: String): String = when {
-        channel == "CLASS" -> "👥 Nhắn với lớp"
+        channel == "CLASS" -> "🏫 Cả lớp"
         channel.startsWith("GROUP_") ->
-            chatGroups.firstOrNull { it.code == channel }?.let { "${it.emoji} ${it.name}" } ?: "📋 Nhóm"
-        else -> "👨‍🏫 Nhắn với giáo viên"
+            chatGroups.firstOrNull { it.code == channel }?.let { "${it.emoji} ${it.name}" } ?: "👥 Tổ nhóm"
+        else -> "👨‍🏫 Giáo viên"
     }
 
-    /** Vẽ lại thanh tab: Lớp → các Nhóm → Giáo viên (cuộn ngang nếu nhiều nhóm). */
     private fun updateChatTabStyles() {
         val density = resources.displayMetrics.density
-        val channels = mutableListOf("CLASS")
+        fun dp(v: Int): Int = (v * density).toInt()
+        val channels = mutableListOf("TEACHER", "CLASS")
         channels.addAll(chatGroups.map { it.code })
-        channels.add("TEACHER")
 
         chatTabBar.removeAllViews()
         channels.forEachIndexed { i, ch ->
@@ -2419,33 +2403,37 @@ class MainActivity : AppCompatActivity() {
             val btn = Button(this).apply {
                 text = if (unreadChatChannels.contains(ch) && !active) "$label  ●" else label
                 isAllCaps = false
-                textSize = 12.5f
+                textSize = 13f
                 setTypeface(null, Typeface.BOLD)
                 minWidth = 0
                 minimumWidth = 0
-                setPadding((14 * density).toInt(), 0, (14 * density).toInt(), 0)
-                setBackgroundColor(if (active) 0xFF2563EB.toInt() else 0xFFE2E8F0.toInt())
-                setTextColor(if (active) 0xFFFFFFFF.toInt() else 0xFF475569.toInt())
+                setPadding(dp(14), 0, dp(14), 0)
+                setBackgroundResource(if (active) R.drawable.bg_m3_chip_selected else R.drawable.bg_m3_chip_unselected)
+                setTextColor(if (active) 0xFF1A73E8.toInt() else 0xFF475569.toInt())
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
-                    (40 * density).toInt()
-                ).apply { if (i > 0) marginStart = (6 * density).toInt() }
+                    dp(36)
+                ).apply { if (i > 0) marginStart = dp(8) }
                 setOnClickListener { switchChatChannel(ch) }
             }
             chatTabBar.addView(btn)
         }
 
         val isClass = currentChatChannel == "CLASS"
-        txtChatChannelBadge.text = "Gửi: ${chatChannelLabel(currentChatChannel).replace("Nhắn với ", "")}"
+        txtChatChannelBadge.text = when {
+            isClass && classChatMuted -> "🔇 Cả lớp đang tạm khóa"
+            isClass -> "Công khai cả lớp"
+            currentChatChannel.startsWith("GROUP_") -> "Nhóm học tập"
+            else -> "Riêng tư với Giáo viên"
+        }
         edtChatMessage.hint = when {
             isClass && classChatMuted -> "Giáo viên đang tạm khóa trò chuyện cả lớp"
-            isClass -> "Nhập tin nhắn gửi cả lớp..."
-            currentChatChannel.startsWith("GROUP_") -> "Nhập tin nhắn gửi nhóm..."
-            else -> "Nhập tin nhắn riêng gửi Giáo viên..."
+            isClass -> "Nhập tin nhắn trao đổi với cả lớp..."
+            currentChatChannel.startsWith("GROUP_") -> "Nhập tin nhắn thảo luận nhóm..."
+            else -> "Nhập câu hỏi / tin nhắn riêng gửi Giáo viên..."
         }
     }
 
-    /** Nhận danh sách nhóm từ GV: JSON [{"id":"GROUP_x","n":"Tên","e":"📋"}] — chỉ nhóm mà HS là thành viên. */
     private fun applyChatGroups(json: String) {
         try {
             val arr = org.json.JSONArray(json)
@@ -2454,13 +2442,12 @@ class MainActivity : AppCompatActivity() {
                 val o = arr.getJSONObject(i)
                 val id = o.optString("id")
                 if (id.startsWith("GROUP_")) {
-                    list.add(ChatGroupChannel(id, o.optString("n", "Nhóm"), o.optString("e", "📋")))
+                    list.add(ChatGroupChannel(id, o.optString("n", "Nhóm"), o.optString("e", "👥")))
                 }
             }
             runOnUiThread {
                 chatGroups.clear()
                 chatGroups.addAll(list)
-                // Nếu kênh đang mở là nhóm đã bị xoá → về kênh Giáo viên
                 if (currentChatChannel.startsWith("GROUP_") && chatGroups.none { it.code == currentChatChannel }) {
                     switchChatChannel("TEACHER")
                 } else {
@@ -2475,25 +2462,29 @@ class MainActivity : AppCompatActivity() {
     private fun renderChat() {
         chatContainer.removeAllViews()
         val density = resources.displayMetrics.density
-        val notice = TextView(this).apply {
-            text = when {
-                currentChatChannel == "CLASS" -> "👥 Tin nhắn tại đây được gửi tới Cả lớp."
-                currentChatChannel.startsWith("GROUP_") -> "📋 Tin nhắn tại đây được gửi tới nhóm “${chatGroups.firstOrNull { it.code == currentChatChannel }?.name ?: ""}”."
-                else -> "🔒 Tin nhắn tại đây chỉ gửi riêng cho Giáo viên."
+        fun dp(v: Int): Int = (v * density).toInt()
+        val filtered = chatHistory.filter { it.channel == currentChatChannel }
+        if (filtered.isEmpty()) {
+            val emptyChat = TextView(this).apply {
+                text = when {
+                    currentChatChannel == "CLASS" -> "🏫 Kênh thảo luận chung của cả lớp. Hãy giữ thái độ lịch sự khi trao đổi bài học."
+                    currentChatChannel.startsWith("GROUP_") -> "👥 Không gian thảo luận riêng của nhóm học tập."
+                    else -> "👨‍🏫 Tin nhắn tại đây chỉ gửi riêng trực tiếp tới Giáo viên."
+                }
+                textSize = 13f
+                gravity = Gravity.CENTER
+                setTextColor(0xFF64748B.toInt())
+                setBackgroundResource(R.drawable.bg_m3_tonal_card)
+                setPadding(dp(16), dp(14), dp(16), dp(14))
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { bottomMargin = dp(10) }
             }
-            textSize = 11f
-            gravity = Gravity.CENTER
-            setTextColor(0xFF64748B.toInt())
-            setBackgroundColor(0xFFF1F5F9.toInt())
-            val p = (8 * density).toInt()
-            setPadding(p, p, p, p)
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = (8 * density).toInt() }
+            chatContainer.addView(emptyChat)
+            return
         }
-        chatContainer.addView(notice)
-        chatHistory.filter { it.channel == currentChatChannel }.forEach { appendChatBubble(it) }
+        filtered.forEach { appendChatBubble(it) }
     }
 
     private fun addChatMessage(sender: String, message: String, isSelf: Boolean, channel: String = "TEACHER") {
@@ -2505,7 +2496,11 @@ class MainActivity : AppCompatActivity() {
             )
             chatHistory.add(entry)
             if (entry.channel == currentChatChannel) {
-                appendChatBubble(entry)
+                if (chatHistory.count { it.channel == currentChatChannel } == 1) {
+                    renderChat()
+                } else {
+                    appendChatBubble(entry)
+                }
             } else {
                 unreadChatChannels.add(entry.channel)
                 updateChatTabStyles()
@@ -2513,55 +2508,64 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Phải gọi trên UI thread
     private fun appendChatBubble(entry: ChatEntry) {
         val sender = entry.sender
         val message = entry.message
         val isSelf = entry.isSelf
+        val isTeacherMsg = !isSelf && sender.contains("Giáo viên", ignoreCase = true)
         val density = resources.displayMetrics.density
         val padH = (14 * density).toInt()
         val padV = (10 * density).toInt()
-        val marginV = (6 * density).toInt()
+        val marginV = (5 * density).toInt()
 
         val bubbleLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            val params = LinearLayout.LayoutParams(
+            layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(0, marginV, 0, marginV)
-            }
-            layoutParams = params
+            ).apply { setMargins(0, marginV, 0, marginV) }
         }
 
         val senderLabel = TextView(this).apply {
-            text = if (isSelf) "Bạn" else sender
-            textSize = 11f
-            setTextColor(if (isSelf) 0xFF2563EB.toInt() else 0xFF475569.toInt())
+            text = if (isSelf) "Bạn • ${entry.time}" else "$sender • ${entry.time}"
+            textSize = 11.5f
+            setTextColor(
+                when {
+                    isSelf -> 0xFF1A73E8.toInt()
+                    isTeacherMsg -> 0xFF4338CA.toInt()
+                    else -> 0xFF64748B.toInt()
+                }
+            )
             setTypeface(null, Typeface.BOLD)
-            val params = LinearLayout.LayoutParams(
+            layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply {
                 gravity = if (isSelf) Gravity.END else Gravity.START
-                bottomMargin = (2 * density).toInt()
+                bottomMargin = (3 * density).toInt()
             }
-            layoutParams = params
         }
         bubbleLayout.addView(senderLabel)
 
         val msgTextView = TextView(this).apply {
-            text = "$message   ${entry.time}"
-            textSize = 13.5f
+            text = message
+            textSize = 14f
             setPadding(padH, padV, padH, padV)
-            if (isSelf) {
-                setBackgroundResource(R.drawable.bg_chat_student)
-                setTextColor(0xFFFFFFFF.toInt())
-            } else {
-                setBackgroundResource(R.drawable.bg_chat_teacher)
-                setTextColor(0xFF1E293B.toInt())
+            when {
+                isSelf -> {
+                    setBackgroundResource(R.drawable.bg_chat_bubble_self)
+                    setTextColor(0xFFFFFFFF.toInt())
+                }
+                isTeacherMsg -> {
+                    setBackgroundResource(R.drawable.bg_chat_bubble_teacher)
+                    setTextColor(0xFF1E1B4B.toInt())
+                }
+                else -> {
+                    setBackgroundResource(R.drawable.bg_chat_bubble_peer)
+                    setTextColor(0xFF0F172A.toInt())
+                }
             }
-            maxWidth = (resources.displayMetrics.widthPixels * 0.72).toInt()
+            maxWidth = (resources.displayMetrics.widthPixels * 0.68).toInt()
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -2601,26 +2605,21 @@ class MainActivity : AppCompatActivity() {
         lastMeasuredPingMs = pingMs
         if (!::txtLanPingBadge.isInitialized) return
         if (!online) {
-            txtLanPingBadge.text = "Offline • Chưa thấy máy chủ"
+            txtLanPingBadge.text = "● Offline • Chưa thấy lớp"
             txtLanPingBadge.setBackgroundResource(R.drawable.bg_pill_badge_red)
             txtLanPingBadge.setTextColor(0xFFDC2626.toInt())
             return
         }
-        val bars = when {
-            pingMs <= 15L -> "4 vạch"
-            pingMs <= 45L -> "3 vạch"
-            else -> "2 vạch"
-        }
-        txtLanPingBadge.text = "Ping: ${pingMs}ms • $bars"
+        txtLanPingBadge.text = "● LAN sẵn sàng • ${pingMs}ms"
         txtLanPingBadge.setBackgroundResource(R.drawable.bg_pill_badge_green)
         txtLanPingBadge.setTextColor(0xFF15803D.toInt())
     }
 
     private fun startAutoDiscovery() {
         syncStudentIdentityCard()
-        txtDiscoveryHeader.text = "ĐANG QUÉT LỚP HỌC..."
+        txtDiscoveryHeader.text = "ĐANG TÌM LỚP HỌC..."
         txtDiscoveryDot.setTextColor(0xFFD97706.toInt())
-        txtStatus.text = "Đang quét tự động các lớp học đang mở trong mạng LAN..."
+        txtStatus.text = "Đang quét tự động lớp học mở trong mạng nội bộ..."
         progressBar.visibility = View.VISIBLE
         btnRefresh.visibility = View.GONE
 
@@ -2649,12 +2648,12 @@ class MainActivity : AppCompatActivity() {
                     val rtt = measureLanPingMs(host, TCP_PORT)
                     updateLanSignalBadge(rtt, true)
                     val info = withContext(Dispatchers.IO) { queryClassInfo(host) }
-                    txtDiscoveryHeader.text = "PHÒNG HỌC ĐANG MỞ TRONG LAN"
+                    txtDiscoveryHeader.text = "LỚP HỌC ĐANG MỞ"
                     txtDiscoveryDot.setTextColor(0xFF16A34A.toInt())
                     if (info != null && info.size >= 3) {
                         currentClassName = info[1]
                         currentTeacherName = info[2]
-                        txtStatus.text = "${info[1]}  •  Giáo viên: ${info[2]}"
+                        txtStatus.text = "${info[1]}  •  GV: ${info[2]}"
                     } else {
                         txtStatus.text = "Lớp học SmartClass ($host) — Sẵn sàng kết nối"
                     }
@@ -2663,7 +2662,7 @@ class MainActivity : AppCompatActivity() {
                     updateLanSignalBadge(0L, false)
                     txtDiscoveryHeader.text = "CHƯA TÌM THẤY LỚP HỌC"
                     txtDiscoveryDot.setTextColor(0xFFDC2626.toInt())
-                    txtStatus.text = "Chưa tìm thấy lớp học trong LAN. Hãy bấm 'Quét lại' hoặc 'Cấu hình IP' góc trên."
+                    txtStatus.text = "Hãy kiểm tra máy Giáo viên đã mở lớp hoặc bấm 'Máy chủ IP' góc trên."
                 }
                 progressBar.visibility = View.GONE
                 btnRefresh.visibility = View.VISIBLE
@@ -2680,10 +2679,10 @@ class MainActivity : AppCompatActivity() {
         currentTeacherName = beacon.teacherName
         val rtt = measureLanPingMs(beacon.teacherIp, beacon.tcpPort)
         updateLanSignalBadge(rtt, true)
-        txtDiscoveryHeader.text = "PHÒNG HỌC ĐANG MỞ TRONG LAN (KÊNH ${beacon.channelId})"
+        txtDiscoveryHeader.text = "LỚP HỌC ĐANG MỞ (KÊNH ${beacon.channelId})"
         txtDiscoveryDot.setTextColor(0xFF16A34A.toInt())
-        val pinTag = if (beacon.requirePin) " 🔒 Có khóa PIN" else " 🔓 Mở tự động"
-        txtStatus.text = "[Kênh ${beacon.channelId}] ${beacon.className}  •  GV: ${beacon.teacherName}$pinTag"
+        val pinTag = if (beacon.requirePin) " • 🔒 Nhập mã PIN" else " • 🔓 Vào tự động"
+        txtStatus.text = "${beacon.className}  •  GV: ${beacon.teacherName}$pinTag"
         edtTeacherIp.setText(beacon.teacherIp)
     }
 
@@ -2907,35 +2906,33 @@ class MainActivity : AppCompatActivity() {
         progressBar.visibility = View.GONE
 
         txtConnectedClassInfo.text = "Lớp: $className"
-        txtStudentDetail.text = "Học sinh: $name ($code)"
-        txtTeacherDetail.text = "Giáo viên: $teacherName"
+        txtStudentDetail.text = "$name ($code)"
+        txtTeacherDetail.text = "Giáo viên: ${teacherName.ifBlank { "Đang kết nối" }}"
         txtServerIpDetail.text = "Máy chủ: $ip:$TCP_PORT"
         messageCard.visibility = View.GONE
 
         updateHandRaiseUI(false)
         selectHandRaiseReason("Phát biểu")
         homeStudentName = name
-        homeClassName = className.replace("• Phòng 204 • Phòng 204", "• Phòng 204").trim()
+        homeClassName = className.trim()
         homeTeacherName = teacherName
         isLessonActive = false
         activeLessonTitle = ""
         activeLessonSubject = ""
         activeLessonStage = 0
         hasTeacherNotice = false
-        txtHomeNotice.text = "Chưa có lời nhắc mới từ Giáo viên."
-        txtHomeNoticeTime.text = "🕒 Chờ thông báo"
-        layoutNoticeFeedback.visibility = View.GONE
         requestScreenCapture()
 
-        // Reset broadcast UI state
+        // Reset broadcast UI state and open directly into 📺 Lớp học (Tab 0)
         stopScreenBroadcast()
         refreshHome()
-        switchTab(3)
+        refreshReceivedFilesPanel()
+        switchTab(0)
 
         // Yêu cầu máy chủ đồng bộ trạng thái tiết học & trình chiếu hiện tại (nếu Giáo viên đã bắt đầu tiết trước đó)
         requestCurrentLessonAndBroadcastStatus()
 
-        Toast.makeText(this, "Đã kết nối trực tiếp với SmartClass!", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Đã kết nối trực tiếp với lớp học!", Toast.LENGTH_SHORT).show()
     }
 
     private fun requestCurrentLessonAndBroadcastStatus() {
@@ -3238,42 +3235,27 @@ class MainActivity : AppCompatActivity() {
                     val decodedTeacher = try { URLDecoder.decode(teacherEnc, "UTF-8") } catch (_: Exception) { teacherEnc }
                     if (decodedTeacher.isNotBlank()) {
                         homeTeacherName = decodedTeacher
+                        txtTeacherDetail.text = "Giáo viên: $decodedTeacher"
                     }
                     activeLessonStage = if (stageVal >= 2) stageVal else 2
                     isLessonActive = true
-                    if (::txtHomeBoardHeader.isInitialized) {
-                        txtHomeBoardHeader.text = "Nội dung bài giảng hiện tại:"
-                    }
-
-                    if (!hasTeacherNotice) {
-                        val displayLesson = activeLessonTitle.ifBlank { "bài giảng trên bảng" }
-                        txtHomeNotice.text = "“Các em chú ý theo dõi bài giảng $displayLesson và chuẩn bị thảo luận nhóm.”"
-                        txtHomeNoticeTime.text = "🕒 Vừa xong"
-                        hasTeacherNotice = true
-                    }
+                    hasTeacherNotice = true
                     refreshHome()
                     Toast.makeText(this, "📖 Giáo viên đã bắt đầu tiết học: ${activeLessonTitle.ifBlank { "Bài giảng mới" }}", Toast.LENGTH_SHORT).show()
                 }
                 cleanCmd.startsWith("CMD|LESSON_FOCUS|") -> {
                     val cmdParts = cleanCmd.substringBefore("|id=").split("|")
                     val sortOrder = cmdParts.getOrNull(2)?.toIntOrNull() ?: 1
-                    val contentType = cmdParts.getOrNull(3) ?: ""
                     val dataEnc = cmdParts.getOrNull(4) ?: ""
                     val decodedData = try { URLDecoder.decode(dataEnc, "UTF-8") } catch (_: Exception) { dataEnc }
                     isLessonActive = true
                     if (decodedData.isNotBlank()) {
                         activeLessonSummary = decodedData.replace("\\n", "\n")
                     }
-                    if (::txtHomeBoardHeader.isInitialized) {
-                        txtHomeBoardHeader.text = "🎯 Nội dung trọng tâm Giáo viên đang chiếu (#$sortOrder):"
-                    }
                     refreshHome()
                     Toast.makeText(this, "🎯 Giáo viên yêu cầu tập trung vào nội dung #$sortOrder", Toast.LENGTH_SHORT).show()
                 }
                 cleanCmd.startsWith("CMD|LESSON_UNFOCUS") -> {
-                    if (::txtHomeBoardHeader.isInitialized) {
-                        txtHomeBoardHeader.text = "Nội dung bài giảng hiện tại:"
-                    }
                     refreshHome()
                 }
                 cleanCmd.startsWith("CMD|LESSON_STAGE|") -> {
@@ -3396,23 +3378,16 @@ class MainActivity : AppCompatActivity() {
                     val senderLabel = if (peerClassMatch != null) "👨‍🎓 ${peerClassMatch.groupValues[1]}" else "👨‍🏫 Giáo viên"
                     val displayBody = if (peerClassMatch != null) peerClassMatch.groupValues[2] else msgText
                     addChatMessage(senderLabel, displayBody, isSelf = false, channel = incomingChannel)
-                    if (peerClassMatch == null) {
+                    if (peerClassMatch == null && (cleanCmd.startsWith("MSG|") || cleanCmd.startsWith("CMD|MESSAGE|"))) {
                         messageCard.visibility = View.VISIBLE
                         txtTeacherMessage.text = msgText
-                        txtHomeNotice.text = "📩 Giáo viên: $msgText"
-                        txtHomeNoticeTime.text = "🕒 Vừa xong"
                         hasTeacherNotice = true
-                        layoutNoticeFeedback.visibility = View.VISIBLE
                     }
 
-                    if (currentTab != 1) {
-                        btnTabChat.text = "💬  Tin nhắn  ●"
+                    if (currentTab != 2) {
                         unreadTeacherChatCount++
-                        if (::txtHomeChatBadge.isInitialized) {
-                            txtHomeChatBadge.text = "● $unreadTeacherChatCount tin mới"
-                            txtHomeChatBadge.setBackgroundResource(R.drawable.bg_pill_badge_red)
-                            txtHomeChatBadge.setTextColor(0xFFDC2626.toInt())
-                        }
+                        badgeRailChat.text = unreadTeacherChatCount.toString()
+                        badgeRailChat.visibility = View.VISIBLE
                     }
                     Toast.makeText(this, if (peerClassMatch != null) "💬 ${peerClassMatch.groupValues[1]}: $displayBody" else "📩 Tin nhắn từ GV: $msgText", Toast.LENGTH_LONG).show()
                 }
@@ -3455,14 +3430,7 @@ class MainActivity : AppCompatActivity() {
                             }
                             activeQuizQuestions.add(QuizQuestionItem(id, content, optsList, points))
                         }
-                        if (::txtHomeQuizBadge.isInitialized) {
-                            txtHomeQuizBadge.text = "Đang mở (${activeQuizQuestions.size} câu)"
-                            txtHomeQuizBadge.setBackgroundResource(R.drawable.bg_pill_solid_green)
-                            txtHomeQuizBadge.setTextColor(0xFFFFFFFF.toInt())
-                            txtHomeQuizSub.text = "Bấm để làm bài kiểm tra trực tiếp (${activeQuizQuestions.size} câu hỏi)"
-                        }
-                        val navBtn = findViewById<TextView>(R.id.btnNavQuiz)
-                        showComingSoon(navBtn, "Kiểm tra trắc nghiệm")
+                        openWorkSubTabFromTeacherCommand("QUIZ")
                         Toast.makeText(this, "Giáo viên đã phát đề kiểm tra (${activeQuizQuestions.size} câu)", Toast.LENGTH_LONG).show()
                     } catch (e: Exception) {
                         Log.w(TAG, "Failed to parse CMD|QUIZ_DATA: ${e.message}")
@@ -3473,8 +3441,7 @@ class MainActivity : AppCompatActivity() {
                     if (qId > 0) activeQuizId = qId
                     quizSubmitted = false
                     if (activeQuizQuestions.isNotEmpty()) {
-                        val navBtn = findViewById<TextView>(R.id.btnNavQuiz)
-                        showComingSoon(navBtn, "Kiểm tra trắc nghiệm")
+                        openWorkSubTabFromTeacherCommand("QUIZ")
                     }
                 }
                 cleanCmd.startsWith("CMD|QUIZ_GRADE|") -> {
@@ -3485,16 +3452,15 @@ class MainActivity : AppCompatActivity() {
                     lastQuizScoreText = "$finalScore / 10 điểm"
                     lastQuizCorrectDetail = "Số câu đúng: $correctCount / $totalQ câu"
                     quizSubmitted = true
-                    val navBtn = findViewById<TextView>(R.id.btnNavQuiz)
-                    if (currentTab == 4) {
-                        renderInteractiveFeaturePanel(R.id.btnNavQuiz, txtSoonTitle.text.toString())
+                    if (currentTab == 1) {
+                        switchWorkSubTab(currentWorkSubTab)
                     }
                     Toast.makeText(this, "Điểm kiểm tra của bạn: $lastQuizScoreText ($correctCount/$totalQ câu đúng)", Toast.LENGTH_LONG).show()
                 }
                 cleanCmd.startsWith("CMD|QUIZ_END") -> {
                     quizSubmitted = true
-                    if (currentTab == 4) {
-                        renderInteractiveFeaturePanel(R.id.btnNavQuiz, txtSoonTitle.text.toString())
+                    if (currentTab == 1) {
+                        switchWorkSubTab(currentWorkSubTab)
                     }
                     Toast.makeText(this, "Giáo viên đã kết thúc phiên kiểm tra", Toast.LENGTH_SHORT).show()
                 }
@@ -3511,8 +3477,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     selectedSurveyOptionIdx = -1
                     surveySubmitted = false
-                    val navBtn = findViewById<TextView>(R.id.btnNavSurvey)
-                    showComingSoon(navBtn, "Khảo sát")
+                    openWorkSubTabFromTeacherCommand("SURVEY")
                     Toast.makeText(this, "Giáo viên vừa gửi một khảo sát mới", Toast.LENGTH_LONG).show()
                 }
                 cleanCmd.contains("\"Action\":\"SURVEY_START\"") || cleanCmd.contains("\"SURVEY_START\"") -> {
@@ -3534,8 +3499,7 @@ class MainActivity : AppCompatActivity() {
                         }
                         selectedSurveyOptionIdx = -1
                         surveySubmitted = false
-                        val navBtn = findViewById<TextView>(R.id.btnNavSurvey)
-                        showComingSoon(navBtn, "Khảo sát")
+                        openWorkSubTabFromTeacherCommand("SURVEY")
                         Toast.makeText(this, "Giáo viên đã bắt đầu khảo sát: $activeSurveyTitle", Toast.LENGTH_LONG).show()
                     } catch (e: Exception) {
                         Log.w(TAG, "Failed to parse SURVEY_START JSON: ${e.message}")
@@ -3543,8 +3507,8 @@ class MainActivity : AppCompatActivity() {
                 }
                 cleanCmd.startsWith("CMD|SURVEY_END") || cleanCmd.contains("\"SURVEY_END\"") -> {
                     surveySubmitted = true
-                    if (currentTab == 4) {
-                        renderInteractiveFeaturePanel(R.id.btnNavSurvey, txtSoonTitle.text.toString())
+                    if (currentTab == 1) {
+                        switchWorkSubTab(currentWorkSubTab)
                     }
                     Toast.makeText(this, "Giáo viên đã đóng khảo sát", Toast.LENGTH_SHORT).show()
                 }
@@ -3569,16 +3533,15 @@ class MainActivity : AppCompatActivity() {
                         activeHwTitle = hwPayload.substringBefore(":").ifBlank { "Bài tập mới" }
                         activeHwDesc = hwPayload.substringAfter(":", hwPayload)
                     }
-                    val navBtn = findViewById<TextView>(R.id.btnNavAssignment)
-                    showComingSoon(navBtn, "Bài tập học tập")
+                    openWorkSubTabFromTeacherCommand("HOMEWORK")
                     Toast.makeText(this, "Giáo viên vừa giao bài tập: $activeHwTitle", Toast.LENGTH_LONG).show()
                 }
                 cleanCmd.startsWith("CMD|HOMEWORK_ACK|") -> {
                     val ackMsg = cleanCmd.substringBefore("|id=").removePrefix("CMD|HOMEWORK_ACK|")
                     hwSubmitted = true
                     lastHwAckMessage = ackMsg
-                    if (currentTab == 4) {
-                        renderInteractiveFeaturePanel(R.id.btnNavAssignment, txtSoonTitle.text.toString())
+                    if (currentTab == 1) {
+                        switchWorkSubTab(currentWorkSubTab)
                     }
                     Toast.makeText(this, ackMsg, Toast.LENGTH_SHORT).show()
                 }
@@ -3665,10 +3628,21 @@ class MainActivity : AppCompatActivity() {
                     val fileName = pParts.getOrNull(0)?.ifBlank { "TaiLieu_LopHoc" } ?: "TaiLieu_LopHoc"
                     val fileUrl = pParts.firstOrNull { it.startsWith("http://", true) || it.startsWith("https://", true) }
                         ?: "http://${currentTeacherIp ?: discoveredTeacherIp}:$currentTeacherWebPort/files/$fileName"
+                    val nowText = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+                    receivedTeacherFiles.add(
+                        0,
+                        ReceivedFileItem(
+                            fileName = fileName,
+                            urlOrPath = fileUrl,
+                            timeText = "Nhận từ Giáo viên lúc $nowText",
+                            isLocalSnapshot = false
+                        )
+                    )
+                    refreshReceivedFilesPanel()
                     Toast.makeText(this, "📁 Giáo viên vừa gửi tệp: $fileName", Toast.LENGTH_LONG).show()
                     AlertDialog.Builder(this)
                         .setTitle("📁 Nhận tài liệu từ Giáo viên")
-                        .setMessage("Giáo viên vừa gửi tệp bài học:\n• $fileName\n\nBạn có muốn tải và mở tệp này ngay không?")
+                        .setMessage("Giáo viên vừa gửi tệp bài học:\n• $fileName\n\nTệp đã lưu trong tab 'Tài liệu'. Bạn có muốn mở ngay không?")
                         .setPositiveButton("Tải & Mở ngay") { _, _ ->
                             try {
                                 startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(fileUrl)).apply {
@@ -3678,7 +3652,7 @@ class MainActivity : AppCompatActivity() {
                                 Toast.makeText(this, "Không thể mở đường dẫn tải tệp: $fileUrl", Toast.LENGTH_SHORT).show()
                             }
                         }
-                        .setNegativeButton("Để sau", null)
+                        .setNegativeButton("Xem sau ở Tài liệu", null)
                         .show()
                 }
                 cleanCmd.startsWith("KICK") -> {
@@ -3777,8 +3751,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun startScreenBroadcast(token: String, webPort: Int, isForce: Boolean, title: String) {
         isScreenBroadcastActive = true
+        isForceBroadcastMode = isForce
         runOnUiThread {
-            if (::txtStatBroadcast.isInitialized) txtStatBroadcast.text = "Đang phát"
             if (title.isNotBlank() && activeLessonTitle.isBlank()) {
                 activeLessonTitle = title
             }
@@ -3788,7 +3762,7 @@ class MainActivity : AppCompatActivity() {
         currentTeacherWebPort = webPort
 
         val displayTitle = if (title.isNotBlank()) title else "Màn hình Giáo viên"
-        txtBroadcastStatus.text = "● Trực tiếp - 0.2s  |  $displayTitle"
+        txtBroadcastStatus.text = "● TRỰC TIẾP  •  $displayTitle"
         txtInlineBroadcastTitle.text = displayTitle
 
         layoutNoBroadcast.visibility = View.GONE
@@ -3798,6 +3772,7 @@ class MainActivity : AppCompatActivity() {
         if (isForce) {
             broadcastOverlay.visibility = View.VISIBLE
             btnCloseBroadcast.visibility = View.GONE
+            showBroadcastControlsAndScheduleHide()
         } else {
             btnCloseBroadcast.visibility = View.VISIBLE
         }
@@ -3874,9 +3849,6 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             imgInlineBroadcast.setImageBitmap(frame)
                             (imgInlineBroadcast.drawable as? android.graphics.drawable.BitmapDrawable)?.isFilterBitmap = true
-                            imgHomeBroadcastPreview.setImageBitmap(frame)
-                            imgHomeBroadcastPreview.visibility = View.VISIBLE
-                            layoutWhiteboardStitchPreview.visibility = View.GONE
                         }
                         progressBroadcastLoading.visibility = View.GONE
 
@@ -4003,7 +3975,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopScreenBroadcast() {
         isScreenBroadcastActive = false
-        runOnUiThread { if (::txtStatBroadcast.isInitialized) txtStatBroadcast.text = "Chưa phát" }
+        isForceBroadcastMode = false
+        broadcastUiHideJob?.cancel()
+        broadcastUiHideJob = null
         broadcastPollJob?.cancel()
         broadcastPollJob = null
 
@@ -4013,13 +3987,6 @@ class MainActivity : AppCompatActivity() {
             layoutNoBroadcast.visibility = View.VISIBLE
             imgInlineBroadcast.setImageDrawable(null)
             imgBroadcastScreen.setImageDrawable(null)
-            if (::imgHomeBroadcastPreview.isInitialized) {
-                imgHomeBroadcastPreview.setImageDrawable(null)
-                imgHomeBroadcastPreview.visibility = View.GONE
-            }
-            if (::layoutWhiteboardStitchPreview.isInitialized) {
-                layoutWhiteboardStitchPreview.visibility = View.VISIBLE
-            }
             progressBroadcastLoading.visibility = View.GONE
             refreshHome()
         }
@@ -4134,8 +4101,8 @@ class MainActivity : AppCompatActivity() {
 
         runOnUiThread {
             lockOverlay.visibility = View.GONE
-            navDrawerOverlay.visibility = View.GONE
-            btnHeaderBack.visibility = View.GONE
+            if (::badgeRailChat.isInitialized) badgeRailChat.visibility = View.GONE
+            if (::badgeRailWork.isInitialized) badgeRailWork.visibility = View.GONE
             connectedPanel.visibility = View.GONE
             discoveryPanel.visibility = View.VISIBLE
             btnConnect.isEnabled = true

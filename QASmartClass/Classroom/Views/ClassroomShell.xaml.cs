@@ -257,6 +257,36 @@ namespace QASmartClass.Classroom.Views
 
 
 
+		/// <summary>Khởi tạo sẵn ClassControlHub + BroadcastPage + mạng LAN ở chế độ nền khi GV bấm Quảng bá từ FloatingModeBar mà chưa mở cửa sổ SMART CLASS.</summary>
+		public void EnsureControlHubReadyForBackgroundBroadcast()
+		{
+			try
+			{
+				new System.Windows.Interop.WindowInteropHelper(this).EnsureHandle();
+				if (!_pageCache.TryGetValue("FHUB", out var hubPage) || hubPage is not ClassControlHub hub)
+				{
+					NavigateTo("FHUB");
+					if (_pageCache.TryGetValue("FHUB", out var created) && created is ClassControlHub createdHub)
+					{
+						createdHub.EnsureBroadcastPageLoaded();
+					}
+				}
+				else
+				{
+					hub.EnsureBroadcastPageLoaded();
+				}
+
+				if (ClassroomAppContext.Network != null && !ClassroomAppContext.Network.IsBroadcasting)
+				{
+					_ = StartNetworkAsync();
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Warning("[ClassroomShell] EnsureControlHubReadyForBackgroundBroadcast error: {Err}", ex.Message);
+			}
+		}
+
 		/// <summary>Auto-start network broadcast so students can connect</summary>
 
 		private async Task StartNetworkAsync()

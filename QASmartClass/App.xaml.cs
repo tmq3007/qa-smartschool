@@ -578,6 +578,32 @@ namespace QASmartTouch
                 _classroomShell != null);
         }
 
+        internal bool EnsureClassroomBroadcastEngineReady()
+        {
+            if (UserRoleService.IsSmartTouchOnly || UserRoleService.CurrentRole == QASmartClass.Shared.UserRole.Guest)
+            {
+                MessageBox.Show("Chế độ hiện tại chỉ dùng Bảng trắng độc lập (Smart Touch Only), không bật kết nối lớp học.",
+                    "Quảng bá lớp học", MessageBoxButton.OK, MessageBoxImage.Information);
+                return false;
+            }
+
+            if (!QASmartTouch.Services.License.LicenseService.Instance.HasFeature("smartclass"))
+            {
+                MessageBox.Show("Tính năng Quản lý & Quảng bá Lớp học không có trong gói bản quyền của bạn.",
+                    "Không có quyền", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (_classroomShell == null)
+            {
+                _classroomShell = new ClassroomShell();
+                ConfigureWindowCaching(_classroomShell);
+            }
+
+            _classroomShell.EnsureControlHubReadyForBackgroundBroadcast();
+            return true;
+        }
+
         public void ShowWhiteboard()
         {
             // [LOI_VID_50] Fade-out cửa sổ cũ thay vì Hide đột ngột

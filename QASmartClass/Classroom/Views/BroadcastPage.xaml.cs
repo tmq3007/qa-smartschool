@@ -50,6 +50,10 @@ namespace QASmartClass.Classroom.Views
             };
             _cacheRefreshTimer.Tick += CacheRefreshTimer_Tick;
 
+            // Đăng ký ngay từ Constructor để dù trang chạy ngầm (chưa mở tab Broadcast) vẫn dừng phát chuẩn xác khi bấm từ FloatingModeBar
+            ScreenShareController.Instance.StopRequested -= OnStopShareRequested;
+            ScreenShareController.Instance.StopRequested += OnStopShareRequested;
+
             Loaded += async (s, ev) =>
             {
                 _cacheRefreshTimer.Start();
@@ -193,14 +197,94 @@ namespace QASmartClass.Classroom.Views
                 Broadcast_Click(this, new RoutedEventArgs());
                 if (_isBroadcasting && autoMinimizeShell)
                 {
-                    var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
-                    if (shell != null) shell.WindowState = WindowState.Minimized;
+                    var shell = (Window.GetWindow(this) as ClassroomShell)
+                        ?? Application.Current?.Windows.OfType<ClassroomShell>().FirstOrDefault();
+                    if (shell != null && shell.IsVisible) shell.WindowState = WindowState.Minimized;
                 }
             }
             finally
             {
                 _skipConfirmForQuickBroadcast = false;
             }
+        }
+
+        // ═══ CÁC ĐIỂM VÀO TRỰC TIẾP TỪ FLOATING MODE BAR (CHẠY XUYÊN SUỐT Ở CẢ 3 CHẾ ĐỘ) ═══
+
+        public void StartOrSwitchSourceFromFloatingBar()
+        {
+            if (_isBroadcasting)
+            {
+                OpenSourcePicker(ScreenSourceKind.Screen, out _);
+            }
+            else
+            {
+                PickSourceAndStart_Click(this, new RoutedEventArgs());
+            }
+        }
+
+        public void StartOrSwitchRegionFromFloatingBar()
+        {
+            if (_isBroadcasting)
+            {
+                PickRegion_Click(this, new RoutedEventArgs());
+            }
+            else
+            {
+                PickRegionAndStart_Click(this, new RoutedEventArgs());
+            }
+        }
+
+        public void StartOrSwitchQaPageFromFloatingBar()
+        {
+            if (_isBroadcasting)
+            {
+                OpenSourcePicker(ScreenSourceKind.QaClassPage, out _);
+            }
+            else
+            {
+                PickQaPageAndStart_Click(this, new RoutedEventArgs());
+            }
+        }
+
+        public void ShareSmartTouchBoardImmediately()
+        {
+            var src = new ScreenSourceInfo
+            {
+                Kind = ScreenSourceKind.QaClassPage,
+                PageFormId = "SMART_TOUCH",
+                Title = "Bảng trắng tương tác SMART TOUCH",
+                Width = (int)SystemParameters.PrimaryScreenWidth,
+                Height = (int)SystemParameters.PrimaryScreenHeight,
+                AutoNavigateToPage = false
+            };
+
+            ApplyPickedSource(src);
+
+            if (!_isBroadcasting)
+            {
+                _skipConfirmForQuickBroadcast = true;
+                try
+                {
+                    Broadcast_Click(this, new RoutedEventArgs());
+                }
+                finally
+                {
+                    _skipConfirmForQuickBroadcast = false;
+                }
+            }
+        }
+
+        public void TogglePauseFromFloatingBar()
+        {
+            if (_isBroadcasting || _isVncBroadcasting)
+            {
+                Pause_Click(this, new RoutedEventArgs());
+            }
+        }
+
+        public void ShowFloatingPipFromFloatingBar()
+        {
+            ShowFloatingBar_Click(this, new RoutedEventArgs());
         }
 
         private void EnsureFloatingBroadcastBarShown(string sourceDescription, string resolution, string fps)
@@ -476,20 +560,37 @@ namespace QASmartClass.Classroom.Views
         {
             if (sender is Border border && border.Tag is string tag)
             {
-                var tabs = new[] { tabScreen, tabNotice, tabMedia, tabWeb };
-                foreach (var t in tabs)
-                {
-                    t.Background = Brushes.White;
-                    t.BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224));
-                }
-                border.Background = new SolidColorBrush(Color.FromRgb(227, 242, 253));
-                border.BorderBrush = new SolidColorBrush(Color.FromRgb(25, 118, 210));
-
-                panelScreen.Visibility = tag == "screen" ? Visibility.Visible : Visibility.Collapsed;
-                panelNotice.Visibility = tag == "notice" ? Visibility.Visible : Visibility.Collapsed;
-                panelMedia.Visibility = tag == "media" ? Visibility.Visible : Visibility.Collapsed;
-                panelWeb.Visibility = tag == "web" ? Visibility.Visible : Visibility.Collapsed;
+                SelectBroadcastSubTab(tag);
             }
+        }
+
+        public void SelectBroadcastSubTab(string tag)
+        {
+            var tabs = new[] { tabScreen, tabNotice, tabMedia, tabWeb };
+            Border? activeBorder = tag switch
+            {
+                "notice" => tabNotice,
+                "media" => tabMedia,
+                "web" => tabWeb,
+                _ => tabScreen
+            };
+
+            foreach (var t in tabs)
+            {
+                if (t == null) continue;
+                t.Background = Brushes.White;
+                t.BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224));
+            }
+            if (activeBorder != null)
+            {
+                activeBorder.Background = new SolidColorBrush(Color.FromRgb(227, 242, 253));
+                activeBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(25, 118, 210));
+            }
+
+            if (panelScreen != null) panelScreen.Visibility = tag == "screen" ? Visibility.Visible : Visibility.Collapsed;
+            if (panelNotice != null) panelNotice.Visibility = tag == "notice" ? Visibility.Visible : Visibility.Collapsed;
+            if (panelMedia != null) panelMedia.Visibility = tag == "media" ? Visibility.Visible : Visibility.Collapsed;
+            if (panelWeb != null) panelWeb.Visibility = tag == "web" ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -2010,8 +2111,9 @@ namespace QASmartClass.Classroom.Views
                     Broadcast_Click(this, new RoutedEventArgs());
                     if (_isBroadcasting && autoMin)
                     {
-                        var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
-                        if (shell != null) shell.WindowState = WindowState.Minimized;
+                        var shell = (Window.GetWindow(this) as ClassroomShell)
+                            ?? Application.Current?.Windows.OfType<ClassroomShell>().FirstOrDefault();
+                        if (shell != null && shell.IsVisible) shell.WindowState = WindowState.Minimized;
                     }
                 }
                 finally
@@ -2116,9 +2218,27 @@ namespace QASmartClass.Classroom.Views
                 return false;
             }
 
-            var owner = Window.GetWindow(this);
+            var owner = Window.GetWindow(this) ?? Application.Current?.Windows.OfType<ClassroomShell>().FirstOrDefault();
             IntPtr self = owner != null ? new System.Windows.Interop.WindowInteropHelper(owner).Handle : IntPtr.Zero;
-            var dlg = new ScreenSourcePickerWindow(self, IsCurrentSource, initialTab, _hideClassroomShellFromStudents) { Owner = owner };
+            Window? visibleOwner = (owner != null && owner.IsVisible && owner.WindowState != WindowState.Minimized)
+                ? owner
+                : Application.Current?.Windows.OfType<Window>().FirstOrDefault(w =>
+                    w.IsVisible
+                    && w.WindowState != WindowState.Minimized
+                    && w is not QASmartClass.Shared.FloatingModeBar
+                    && w is not FloatingBroadcastBarWindow
+                    && w is not BroadcastPrivacyBorder);
+
+            var dlg = new ScreenSourcePickerWindow(self, IsCurrentSource, initialTab, _hideClassroomShellFromStudents);
+            if (visibleOwner != null)
+            {
+                dlg.Owner = visibleOwner;
+            }
+            else
+            {
+                dlg.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                dlg.Topmost = true;
+            }
             dlg.SourceInitialized += (_, _) =>
             {
                 // Luôn ẩn hộp chọn khỏi ảnh chụp màn hình để ảnh preview của Màn hình 1 không bị đè bởi chính hộp chọn này
