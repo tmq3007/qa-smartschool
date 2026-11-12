@@ -917,13 +917,12 @@
                         android:orientation="horizontal"
                         android:baselineAligned="false">
 
-                        <!-- CỘT TRÁI (70%): MÀN HÌNH BÀI GIẢNG / CHIẾU TRỰC TIẾP -->
+                        <!-- KHUNG CHÍNH (100%): MÀN HÌNH BÀI GIẢNG / CHIẾU TRỰC TIẾP (Đã bỏ Sổ nháp nhanh) -->
                         <LinearLayout
                             android:id="@+id/colLectureDocument"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
-                            android:layout_weight="7.2"
-                            android:layout_marginEnd="12dp"
+                            android:layout_weight="1"
                             android:orientation="vertical"
                             android:background="@drawable/bg_m3_surface_card"
                             android:padding="12dp">
@@ -1060,6 +1059,49 @@
                                     android:textStyle="bold"
                                     android:textColor="#475569"
                                     android:visibility="gone"
+                                    android:stateListAnimator="@null" />
+                            </LinearLayout>
+
+                            <!-- Thanh xem lại nhanh Đề bài / Tài liệu Giáo viên gửi ngay trên màn Lớp học -->
+                            <LinearLayout
+                                android:id="@+id/layoutLatestTeacherFileBar"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:background="@drawable/bg_callout_blue"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="7dp"
+                                android:layout_marginBottom="8dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:visibility="gone">
+
+                                <TextView
+                                    android:id="@+id/txtLatestTeacherFileName"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="📎 Tài liệu GV gửi"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#0F172A"
+                                    android:maxLines="1"
+                                    android:ellipsize="middle" />
+
+                                <androidx.appcompat.widget.AppCompatButton
+                                    android:id="@+id/btnPreviewLatestTeacherFile"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="28dp"
+                                    android:minWidth="0dp"
+                                    android:layout_marginStart="6dp"
+                                    android:paddingHorizontal="10dp"
+                                    android:background="@drawable/bg_m3_chip_selected"
+                                    android:text="👁 Xem lại"
+                                    android:textAllCaps="false"
+                                    android:textSize="11.5sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#1A73E8"
                                     android:stateListAnimator="@null" />
                             </LinearLayout>
 
@@ -1213,16 +1255,16 @@
                                         android:contentDescription="Màn hình bài giảng trực tiếp" />
                                 </LinearLayout>
 
-                                <!-- Cục tròn EasyTouch nổi thu gọn cho Thanh Thu Phóng / Bài giảng tại trang chủ -->
+                                <!-- Cục tròn EasyTouch nổi gọn nhẹ (40dp) cho Thanh Thu Phóng / Bài giảng tại trang chủ -->
                                 <FrameLayout
                                     android:id="@+id/btnExpandLectureToolbarOrb"
-                                    android:layout_width="46dp"
-                                    android:layout_height="46dp"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
                                     android:layout_gravity="top|end"
                                     android:layout_margin="10dp"
                                     android:background="@drawable/bg_easytouch_orb"
-                                    android:elevation="10dp"
-                                    android:alpha="0.88"
+                                    android:elevation="8dp"
+                                    android:alpha="0.80"
                                     android:clickable="true"
                                     android:focusable="true"
                                     android:visibility="gone" />
@@ -1314,49 +1356,6 @@
                                     android:textSize="11.5sp"
                                     android:textStyle="bold"
                                     android:textColor="#DC2626" />
-                            </LinearLayout>
-
-                            <!-- Thanh xem lại nhanh Đề bài / Tài liệu Giáo viên gửi ngay trên màn Lớp học -->
-                            <LinearLayout
-                                android:id="@+id/layoutLatestTeacherFileBar"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:background="@drawable/bg_callout_blue"
-                                android:paddingHorizontal="10dp"
-                                android:paddingVertical="7dp"
-                                android:layout_marginBottom="8dp"
-                                android:clickable="true"
-                                android:focusable="true"
-                                android:visibility="gone">
-
-                                <TextView
-                                    android:id="@+id/txtLatestTeacherFileName"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:text="📎 Tài liệu GV gửi"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold"
-                                    android:textColor="#0F172A"
-                                    android:maxLines="1"
-                                    android:ellipsize="middle" />
-
-                                <androidx.appcompat.widget.AppCompatButton
-                                    android:id="@+id/btnPreviewLatestTeacherFile"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="28dp"
-                                    android:minWidth="0dp"
-                                    android:layout_marginStart="6dp"
-                                    android:paddingHorizontal="10dp"
-                                    android:background="@drawable/bg_m3_chip_selected"
-                                    android:text="👁 Xem lại"
-                                    android:textAllCaps="false"
-                                    android:textSize="11.5sp"
-                                    android:textStyle="bold"
-                                    android:textColor="#1A73E8"
-                                    android:stateListAnimator="@null" />
                             </LinearLayout>
 
                             <com.qasmartclass.student.views.QuickNoteCanvasView
@@ -2116,27 +2115,27 @@
             android:elevation="14dp"
             android:stateListAnimator="@null" />
 
-        <!-- NÚT TRÒN NỔI EASYTOUCH CHUẨN ASSISTIVETOUCH (Kéo thả tự do, tự hít mép, chạm để bung/thu gọn) -->
+        <!-- NÚT TRÒN NỔI EASYTOUCH GỌN NHẸ 40dp CHUẨN ASSISTIVETOUCH -->
         <FrameLayout
             android:id="@+id/btnEasyTouchBroadcast"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_gravity="top|end"
             android:layout_marginTop="72dp"
-            android:layout_marginEnd="14dp"
+            android:layout_marginEnd="12dp"
             android:background="@drawable/bg_easytouch_orb"
-            android:alpha="0.88"
-            android:elevation="16dp">
+            android:alpha="0.80"
+            android:elevation="12dp">
 
             <FrameLayout
-                android:layout_width="14dp"
-                android:layout_height="14dp"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
                 android:layout_gravity="top|end"
-                android:layout_marginTop="2dp"
-                android:layout_marginEnd="2dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginEnd="1dp"
                 android:background="@drawable/bg_meet_circle_btn"
                 android:backgroundTint="#FFFFFF"
-                android:padding="2dp">
+                android:padding="1.5dp">
 
                 <View
                     android:id="@+id/dotEasyTouchLive"
@@ -2151,20 +2150,20 @@
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnQuickExitBroadcastPill"
             android:layout_width="wrap_content"
-            android:layout_height="38dp"
+            android:layout_height="34dp"
             android:layout_gravity="top|end"
-            android:layout_marginTop="81dp"
-            android:layout_marginEnd="78dp"
+            android:layout_marginTop="75dp"
+            android:layout_marginEnd="60dp"
             android:minWidth="0dp"
-            android:paddingHorizontal="14dp"
+            android:paddingHorizontal="12dp"
             android:background="@drawable/bg_easytouch_light_pod"
             android:backgroundTint="#ECFDF5"
             android:text="🔓 ↙ Ra ngoài / Thu nhỏ"
             android:textAllCaps="false"
             android:textColor="#047857"
-            android:textSize="12.5sp"
+            android:textSize="12sp"
             android:textStyle="bold"
-            android:elevation="17dp"
+            android:elevation="15dp"
             android:visibility="gone"
             android:stateListAnimator="@null" />
 
@@ -2175,7 +2174,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="top|end"
             android:layout_marginTop="72dp"
-            android:layout_marginEnd="74dp"
+            android:layout_marginEnd="60dp"
             android:orientation="vertical"
             android:background="@drawable/bg_easytouch_light_pod"
             android:padding="12dp"

@@ -1,58 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Vỏ kính tròn sáng ngọc trai Sky-Indigo hiện đại (Không dùng theme đen) -->
+    <!-- Vỏ kính tròn gọn nhẹ 40dp chuẩn AssistiveTouch Sky-Indigo -->
     <item>
         <shape android:shape="oval">
             <gradient
                 android:angle="315"
-                android:startColor="#F238BDF8"
-                android:centerColor="#F23B82F6"
-                android:endColor="#F26366F1" />
+                android:startColor="#E038BDF8"
+                android:centerColor="#E03B82F6"
+                android:endColor="#E06366F1" />
             <stroke
-                android:width="2dp"
-                android:color="#EEFFFFFF" />
+                android:width="1.5dp"
+                android:color="#E8FFFFFF" />
         </shape>
     </item>
 
-    <!-- Vòng đồng tâm ngoài pha lê sáng -->
+    <!-- Vòng đồng tâm ngoài thanh mảnh (~27dp trên 40dp) -->
     <item
-        android:left="8dp"
-        android:top="8dp"
-        android:right="8dp"
-        android:bottom="8dp">
+        android:left="6.5dp"
+        android:top="6.5dp"
+        android:right="6.5dp"
+        android:bottom="6.5dp">
         <shape android:shape="oval">
-            <solid android:color="#2BFFFFFF" />
+            <solid android:color="#24FFFFFF" />
             <stroke
-                android:width="1.3dp"
-                android:color="#88FFFFFF" />
+                android:width="1dp"
+                android:color="#7AFFFFFF" />
         </shape>
     </item>
 
-    <!-- Vòng đồng tâm giữa ngọc trai -->
+    <!-- Vòng đồng tâm giữa (~18dp trên 40dp) -->
     <item
-        android:left="14dp"
-        android:top="14dp"
-        android:right="14dp"
-        android:bottom="14dp">
+        android:left="11dp"
+        android:top="11dp"
+        android:right="11dp"
+        android:bottom="11dp">
         <shape android:shape="oval">
-            <solid android:color="#48FFFFFF" />
+            <solid android:color="#40FFFFFF" />
             <stroke
-                android:width="1.3dp"
-                android:color="#BBFFFFFF" />
+                android:width="1dp"
+                android:color="#B5FFFFFF" />
         </shape>
     </item>
 
-    <!-- Nhân sáng trắng trung tâm -->
+    <!-- Nhân sáng trắng trung tâm vừa vặn (~10dp trên 40dp) -->
     <item
-        android:left="20dp"
-        android:top="20dp"
-        android:right="20dp"
-        android:bottom="20dp">
+        android:left="15dp"
+        android:top="15dp"
+        android:right="15dp"
+        android:bottom="15dp">
         <shape android:shape="oval">
             <gradient
                 android:angle="315"
                 android:startColor="#FFFFFFFF"
-                android:endColor="#FFEEF2FF" />
+                android:endColor="#FFE0E7FF" />
         </shape>
     </item>
 </layer-list>

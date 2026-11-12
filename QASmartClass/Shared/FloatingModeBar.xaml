@@ -7,17 +7,17 @@
         ResizeMode="NoResize"
         WindowStartupLocation="Manual">
 
-    <Grid Margin="8">
+    <Grid Margin="6">
         <!-- ═══════════════════════════════════════════════════════════════════ -->
-        <!-- 1. CỤC TRÒN NỔI EASYTOUCH SÁNG NGỌC TRAI SKY-INDIGO (MẶC ĐỊNH)     -->
+        <!-- 1. CỤC TRÒN NỔI EASYTOUCH GỌN NHẸ (40x40 DIP CHUẨN ASSISTIVETOUCH) -->
         <!-- ═══════════════════════════════════════════════════════════════════ -->
         <Border x:Name="pnlCollapsed"
-                Width="58" Height="58"
-                CornerRadius="29"
-                BorderThickness="2"
-                BorderBrush="#EEFFFFFF"
+                Width="40" Height="40"
+                CornerRadius="20"
+                BorderThickness="1.5"
+                BorderBrush="#E8FFFFFF"
                 Cursor="Hand"
-                Opacity="0.90"
+                Opacity="0.82"
                 Visibility="Visible"
                 MouseEnter="Orb_MouseEnter"
                 MouseLeave="Orb_MouseLeave"
@@ -31,58 +31,58 @@
                 ToolTip="Chạm để mở Trung tâm Điều khiển Nhanh • Giữ kéo để di chuyển">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#F238BDF8" Offset="0"/>
-                    <GradientStop Color="#F23B82F6" Offset="0.48"/>
-                    <GradientStop Color="#F26366F1" Offset="1"/>
+                    <GradientStop Color="#E038BDF8" Offset="0"/>
+                    <GradientStop Color="#E03B82F6" Offset="0.48"/>
+                    <GradientStop Color="#E06366F1" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
             <Border.Effect>
-                <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.34" Color="#2563EB"/>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.24" Color="#1D4ED8"/>
             </Border.Effect>
 
             <Grid>
-                <!-- Vòng sáng viền trong pha lê sáng -->
+                <!-- Vòng sáng ngoài thanh mảnh -->
                 <Ellipse x:Name="orbOuterRing"
-                         Width="42" Height="42"
-                         Fill="#29FFFFFF"
-                         Stroke="#85FFFFFF"
-                         StrokeThickness="1.3"
+                         Width="27" Height="27"
+                         Fill="#24FFFFFF"
+                         Stroke="#7AFFFFFF"
+                         StrokeThickness="1.0"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"/>
 
-                <!-- Vòng đồng tâm ngọc trai thứ 2 -->
+                <!-- Vòng đồng tâm giữa -->
                 <Ellipse x:Name="orbMiddleRing"
-                         Width="30" Height="30"
-                         Fill="#47FFFFFF"
-                         Stroke="#BDFFFFFF"
-                         StrokeThickness="1.3"
+                         Width="18" Height="18"
+                         Fill="#40FFFFFF"
+                         Stroke="#B5FFFFFF"
+                         StrokeThickness="1.0"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center"/>
 
-                <!-- Nhân sáng ngọc trai trung tâm -->
+                <!-- Nhân sáng trung tâm vừa vặn -->
                 <Ellipse x:Name="orbInnerCore"
-                         Width="16" Height="16"
+                         Width="9.5" Height="9.5"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center">
                     <Ellipse.Fill>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                             <GradientStop Color="#FFFFFFFF" Offset="0"/>
-                            <GradientStop Color="#EEF2FF" Offset="1"/>
+                            <GradientStop Color="#E0E7FF" Offset="1"/>
                         </LinearGradientBrush>
                     </Ellipse.Fill>
                 </Ellipse>
 
-                <!-- Chấm trạng thái nổi góc trên phải (Viền trắng sáng sạch sẽ) -->
+                <!-- Chấm trạng thái nhỏ gọn góc trên phải -->
                 <Border x:Name="bdrOrbStatusHalo"
-                        Width="15" Height="15"
-                        CornerRadius="7.5"
+                        Width="10" Height="10"
+                        CornerRadius="5"
                         Background="#FFFFFF"
                         BorderBrush="#DBEAFE"
-                        BorderThickness="1"
-                        Padding="2"
+                        BorderThickness="0.8"
+                        Padding="1.5"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
-                        Margin="0,1,1,0">
+                        Margin="0,0.5,0.5,0">
                     <Ellipse x:Name="dotOrbStatus" Fill="#10B981"/>
                 </Border>
             </Grid>
@@ -112,23 +112,8 @@
                 </Border.Effect>
 
                 <StackPanel Orientation="Vertical">
-                    <!-- ─── HÀNG 1: THANH KÉO + TRẠNG THÁI + THU GỌN / ẨN ─── -->
+                    <!-- ─── HÀNG 1: THANH KÉO + TRẠNG THÁI + THU GỌN (ĐÃ BỎ NÚT X ẨN HẲN) ─── -->
                     <DockPanel LastChildFill="True" Margin="0,0,0,9">
-                        <!-- Nút Ẩn hẳn cục tròn (Có xác nhận an toàn) -->
-                        <Border DockPanel.Dock="Right"
-                                Width="28" Height="28" CornerRadius="14"
-                                Background="#FEE2E2" BorderBrush="#FECACA" BorderThickness="1" Cursor="Hand"
-                                Margin="5,0,0,0"
-                                MouseLeftButtonDown="OnCloseClick"
-                                PreviewTouchDown="OnCloseTouchDown"
-                                ToolTip="Ẩn nút điều khiển nổi (Ctrl+Alt+M để mở lại)">
-                            <Viewbox Width="11" Height="11" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Canvas Width="24" Height="24">
-                                    <Path Fill="#DC2626" Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
-                                </Canvas>
-                            </Viewbox>
-                        </Border>
-
                         <!-- Nút Thu gọn lại thành Cục tròn -->
                         <Border x:Name="btnCollapseBar"
                                 DockPanel.Dock="Right"

@@ -540,44 +540,24 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 3. Tab 0 (Lớp học Split-View): 70:30 full-height trên Tablet, xếp dọc trên Compact
+        // 3. Tab 0 (Lớp học): [MYTHWARE_LITE] Đã bỏ hoàn toàn Sổ nháp nhanh, khung Bài giảng chiếm 100% diện tích
         if (::lectureSplitContainer.isInitialized) {
+            isLessonSidebarVisible = false
             if (isCompact) {
                 lectureSplitContainer.orientation = LinearLayout.VERTICAL
                 colLectureDocument.layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     0,
-                    if (isLessonSidebarVisible) 6.0f else 10.0f
-                ).apply { bottomMargin = if (isLessonSidebarVisible) dp(10) else 0 }
-                colLectureSidebar.layoutParams = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    0,
-                    4.0f
-                )
+                    1.0f
+                ).apply { bottomMargin = 0 }
             } else {
                 lectureSplitContainer.orientation = LinearLayout.HORIZONTAL
-                if (isLessonSidebarVisible) {
-                    val docWeight = if (isExpanded) 7.4f else 6.6f
-                    val sideWeight = if (isExpanded) 3.6f else 4.4f
-                    colLectureDocument.layoutParams = LinearLayout.LayoutParams(
-                        0,
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        docWeight
-                    ).apply { marginEnd = dp(12) }
-                    colLectureSidebar.layoutParams = LinearLayout.LayoutParams(
-                        0,
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        sideWeight
-                    )
-                } else {
-                    colLectureDocument.layoutParams = LinearLayout.LayoutParams(
-                        0,
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        11.0f
-                    )
-                }
+                colLectureDocument.layoutParams = LinearLayout.LayoutParams(
+                    0,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    1.0f
+                ).apply { marginEnd = 0 }
             }
-            // [MYTHWARE_LITE] Đảm bảo phần Sổ nháp nhanh luôn ẩn, nhường 100% chiều rộng cho khung bài giảng
             colLectureSidebar.visibility = View.GONE
             if (::btnToggleLessonSidebar.isInitialized) {
                 btnToggleLessonSidebar.visibility = View.GONE
@@ -995,12 +975,9 @@ class MainActivity : AppCompatActivity() {
             saveLectureSnapshotToStorage()
         }
 
-        // Split-Screen Lesson Viewer Controls
-        btnToggleLessonSidebar.setOnClickListener {
-            isLessonSidebarVisible = !isLessonSidebarVisible
-            btnToggleLessonSidebar.text = if (isLessonSidebarVisible) "Ẩn nháp" else "Mở nháp"
-            applyResponsiveLayout()
-        }
+        // [MYTHWARE_LITE] Đã bỏ phần Sổ nháp nhanh trên Android học sinh theo yêu cầu
+        btnToggleLessonSidebar.visibility = View.GONE
+        colLectureSidebar.visibility = View.GONE
 
         btnZoomOut.setOnClickListener {
             currentZoomPercent = (currentZoomPercent - 15).coerceAtLeast(70)
@@ -1290,7 +1267,7 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             (parent.width.toFloat() - v.width.toFloat() - margin).coerceAtLeast(margin)
                         }
-                        v.animate().x(snapX).alpha(0.84f).setDuration(180).start()
+                        v.animate().x(snapX).alpha(0.72f).setDuration(180).start()
                     }
                     true
                 }
@@ -1307,12 +1284,12 @@ class MainActivity : AppCompatActivity() {
 
             val podW = (if (floatingBroadcastDock.width > 0) floatingBroadcastDock.width else dpPx(274)).toFloat()
             val podH = (if (floatingBroadcastDock.height > 0) floatingBroadcastDock.height else dpPx(218)).toFloat()
-            val gap = dpPx(10).toFloat()
-            val margin = dpPx(12).toFloat()
+            val gap = dpPx(8).toFloat()
+            val margin = dpPx(10).toFloat()
 
             val bx = btnEasyTouchBroadcast.x
             val by = btnEasyTouchBroadcast.y
-            val bw = btnEasyTouchBroadcast.width.coerceAtLeast(dpPx(52)).toFloat()
+            val bw = btnEasyTouchBroadcast.width.coerceAtLeast(dpPx(40)).toFloat()
 
             val targetX = if (bx + bw / 2f > parentW / 2f) {
                 (bx - podW - gap).coerceIn(margin, (parentW - podW - margin).coerceAtLeast(margin))

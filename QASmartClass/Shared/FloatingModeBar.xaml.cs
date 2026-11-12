@@ -157,13 +157,13 @@ namespace QASmartClass.Shared
             _mediaMeterTimer.Tick += OnMediaMeterTimerTick;
             _mediaMeterTimer.Start();
 
-            _idleOrbDimTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3.5) };
+            _idleOrbDimTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3.2) };
             _idleOrbDimTimer.Tick += (_, _) =>
             {
                 _idleOrbDimTimer.Stop();
                 if (pnlCollapsed.Visibility == Visibility.Visible && !_isOrbMouseDown && !_isOrbTouchDown)
                 {
-                    pnlCollapsed.Opacity = _isBroadcasting ? 0.88 : 0.78;
+                    pnlCollapsed.Opacity = _isBroadcasting ? 0.78 : 0.65;
                 }
             };
             _idleOrbDimTimer.Start();
@@ -195,7 +195,7 @@ namespace QASmartClass.Shared
             try
             {
                 var workArea = SystemParameters.WorkArea;
-                _orbAnchorLeft = Math.Max(workArea.Left + 12, workArea.Right - 82);
+                _orbAnchorLeft = Math.Max(workArea.Left + 8, workArea.Right - 58);
                 _orbAnchorTop = Math.Max(workArea.Top + 72, workArea.Top + workArea.Height * 0.18);
                 Left = _orbAnchorLeft;
                 Top = _orbAnchorTop;
@@ -236,15 +236,15 @@ namespace QASmartClass.Shared
             try
             {
                 var workArea = SystemParameters.WorkArea;
-                double orbW = ActualWidth > 0 ? ActualWidth : 74;
-                double orbH = ActualHeight > 0 ? ActualHeight : 74;
+                double orbW = ActualWidth > 0 ? ActualWidth : 52;
+                double orbH = ActualHeight > 0 ? ActualHeight : 52;
                 double centerX = Left + orbW * 0.5;
                 double midScreenX = workArea.Left + workArea.Width * 0.5;
 
                 Left = (centerX < midScreenX)
-                    ? workArea.Left + 8
-                    : Math.Max(workArea.Left + 8, workArea.Right - orbW - 8);
-                Top = Math.Max(workArea.Top + 8, Math.Min(Top, workArea.Bottom - orbH - 8));
+                    ? workArea.Left + 6
+                    : Math.Max(workArea.Left + 6, workArea.Right - orbW - 6);
+                Top = Math.Max(workArea.Top + 6, Math.Min(Top, workArea.Bottom - orbH - 6));
 
                 _orbAnchorLeft = Left;
                 _orbAnchorTop = Top;
@@ -258,8 +258,8 @@ namespace QASmartClass.Shared
             {
                 var workArea = SystemParameters.WorkArea;
                 UpdateLayout();
-                double curW = ActualWidth > 0 ? ActualWidth : (pnlExpanded.Visibility == Visibility.Visible ? 412 : 74);
-                double curH = ActualHeight > 0 ? ActualHeight : (pnlExpanded.Visibility == Visibility.Visible ? 320 : 74);
+                double curW = ActualWidth > 0 ? ActualWidth : (pnlExpanded.Visibility == Visibility.Visible ? 410 : 52);
+                double curH = ActualHeight > 0 ? ActualHeight : (pnlExpanded.Visibility == Visibility.Visible ? 320 : 52);
 
                 Left = Math.Max(workArea.Left + 6, Math.Min(Left, workArea.Right - curW - 6));
                 Top = Math.Max(workArea.Top + 6, Math.Min(Top, workArea.Bottom - curH - 6));
@@ -285,10 +285,10 @@ namespace QASmartClass.Shared
                     }
                     EnsureWithinScreenBounds();
                     var workArea = SystemParameters.WorkArea;
-                    double curW = ActualWidth > 0 ? ActualWidth : 412;
+                    double curW = ActualWidth > 0 ? ActualWidth : 410;
                     _orbAnchorLeft = (Left + curW * 0.5 > workArea.Left + workArea.Width * 0.5)
-                        ? Math.Max(workArea.Left + 8, workArea.Right - 74 - 8)
-                        : workArea.Left + 8;
+                        ? Math.Max(workArea.Left + 6, workArea.Right - 52 - 6)
+                        : workArea.Left + 6;
                     _orbAnchorTop = Top;
                 }
                 catch
@@ -445,7 +445,7 @@ namespace QASmartClass.Shared
 
             pnlExpanded.Visibility = Visibility.Collapsed;
             pnlCollapsed.Visibility = Visibility.Visible;
-            pnlCollapsed.Opacity = 0.92;
+            pnlCollapsed.Opacity = 0.82;
             UpdateLayout();
 
             if (_orbAnchorLeft >= 0 && _orbAnchorTop >= 0)
@@ -484,7 +484,7 @@ namespace QASmartClass.Shared
 
             // Mở rộng thông minh: nếu cục tròn ở nửa phải màn hình thì bung sang trái, nửa trái thì bung sang phải
             double targetLeft = (anchorX > workArea.Left + workArea.Width * 0.5)
-                ? (anchorX + 74 - hubW)
+                ? (anchorX + 52 - hubW)
                 : anchorX;
 
             Left = Math.Max(workArea.Left + 8, Math.Min(targetLeft, workArea.Right - hubW - 8));
@@ -1852,51 +1852,21 @@ namespace QASmartClass.Shared
             }
         }
 
-        private void OnCloseTouchDown(object? sender, TouchEventArgs e)
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            e.Handled = true;
-            if (!AcquireQuickActionDebounce()) return;
-            ExecuteCloseBar();
+#if !SMARTTOUCH_STANDALONE
+            // Không cho đóng/ẩn mất EasyTouch bằng Alt+F4 khi ứng dụng đang chạy — chỉ thu nhỏ về cục tròn
+            if (!QASmartTouch.App._isAppShuttingDown)
+            {
+                e.Cancel = true;
+                CollapseBar();
+                return;
+            }
+#endif
+            base.OnClosing(e);
         }
 
-        private void OnCloseClick(object sender, MouseButtonEventArgs e)
-        {
-            e.Handled = true;
-            if (!AcquireQuickActionDebounce()) return;
-            ExecuteCloseBar();
-        }
-
-        private void ExecuteCloseBar()
-        {
-            bool isLiveShare = ScreenShareController.Instance.IsLive;
-            bool isMicOn = LiveBroadcastMediaService.Instance.IsMicrophoneEnabled;
-            bool isRec = QASmartTouch.Services.ScreenRecorderService.Instance.IsSessionActive;
-            bool isTransmitting = isLiveShare || isMicOn || isRec;
-
-            string warningMsg = "Ẩn nút điều khiển tròn EasyTouch?\n\nBạn có thể mở lại bất cứ lúc nào bằng tổ hợp phím Ctrl+Alt+M.";
-            if (isTransmitting)
-            {
-                warningMsg = "⚠️ Hệ thống đang phát màn hình / âm thanh hoặc ghi hình.\n\n" +
-                             "Bạn có muốn DỪNG tất cả phiên phát sóng và ẩn nút điều khiển không?\n" +
-                             "(YES: Dừng & Ẩn • NO: Chỉ ẩn nút • CANCEL: Hủy)";
-            }
-
-            var result = MessageBox.Show(warningMsg, "Xác nhận ẩn nút điều khiển",
-                isTransmitting ? MessageBoxButton.YesNoCancel : MessageBoxButton.YesNo,
-                isTransmitting ? MessageBoxImage.Warning : MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                if (isLiveShare) ScreenShareController.Instance.RequestStop();
-                if (isMicOn) LiveBroadcastMediaService.Instance.SetMicrophoneEnabled(false);
-                if (isRec) QASmartTouch.Services.ScreenRecorderService.Instance.StopRecording();
-                Hide();
-            }
-            else if (result == MessageBoxResult.No && isTransmitting)
-            {
-                Hide();
-            }
-        }
+        // [MYTHWARE_LITE] Đã bỏ chức năng Ẩn hẳn EasyTouch (nút X & Ctrl+Alt+M), chỉ giữ lại Thu gọn về cục tròn.
 
         #endregion
     }

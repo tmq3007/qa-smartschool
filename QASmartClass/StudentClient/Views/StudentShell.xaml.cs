@@ -9639,70 +9639,70 @@ namespace QASmartClass.StudentClient.Views
 				};
 
 				var orbGradient = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
-				orbGradient.GradientStops.Add(new GradientStop(Color.FromArgb(242, 0x38, 0xBD, 0xF8), 0.0));
-				orbGradient.GradientStops.Add(new GradientStop(Color.FromArgb(242, 0x3B, 0x82, 0xF6), 0.48));
-				orbGradient.GradientStops.Add(new GradientStop(Color.FromArgb(242, 0x63, 0x66, 0xF1), 1.0));
+				orbGradient.GradientStops.Add(new GradientStop(Color.FromArgb(224, 0x38, 0xBD, 0xF8), 0.0));
+				orbGradient.GradientStops.Add(new GradientStop(Color.FromArgb(224, 0x3B, 0x82, 0xF6), 0.48));
+				orbGradient.GradientStops.Add(new GradientStop(Color.FromArgb(224, 0x63, 0x66, 0xF1), 1.0));
 
 				var easyTouchBubble = new Border
 				{
-					Width = 56,
-					Height = 56,
-					CornerRadius = new CornerRadius(28),
+					Width = 40,
+					Height = 40,
+					CornerRadius = new CornerRadius(20),
 					Background = orbGradient,
-					BorderBrush = new SolidColorBrush(Color.FromArgb(238, 0xFF, 0xFF, 0xFF)),
-					BorderThickness = new Thickness(2.0),
-					Opacity = 0.88,
+					BorderBrush = new SolidColorBrush(Color.FromArgb(232, 0xFF, 0xFF, 0xFF)),
+					BorderThickness = new Thickness(1.5),
+					Opacity = 0.80,
 					Cursor = Cursors.Hand,
 					ToolTip = "Chạm để mở điều khiển nhanh • Giữ kéo để di chuyển nút tròn",
 					Effect = new System.Windows.Media.Effects.DropShadowEffect
 					{
-						Color = Color.FromRgb(0x25, 0x63, 0xEB),
-						BlurRadius = 15,
-						ShadowDepth = 3,
-						Opacity = 0.34
+						Color = Color.FromRgb(0x1D, 0x4E, 0xD8),
+						BlurRadius = 10,
+						ShadowDepth = 2,
+						Opacity = 0.24
 					}
 				};
 				var etGrid = new Grid();
 				etGrid.Children.Add(new System.Windows.Shapes.Ellipse
 				{
-					Width = 40,
-					Height = 40,
-					Fill = new SolidColorBrush(Color.FromArgb(42, 255, 255, 255)),
-					Stroke = new SolidColorBrush(Color.FromArgb(135, 255, 255, 255)),
-					StrokeThickness = 1.3,
+					Width = 27,
+					Height = 27,
+					Fill = new SolidColorBrush(Color.FromArgb(36, 255, 255, 255)),
+					Stroke = new SolidColorBrush(Color.FromArgb(122, 255, 255, 255)),
+					StrokeThickness = 1.0,
 					HorizontalAlignment = HorizontalAlignment.Center,
 					VerticalAlignment = VerticalAlignment.Center
 				});
 				etGrid.Children.Add(new System.Windows.Shapes.Ellipse
 				{
-					Width = 28,
-					Height = 28,
-					Fill = new SolidColorBrush(Color.FromArgb(72, 255, 255, 255)),
-					Stroke = new SolidColorBrush(Color.FromArgb(190, 255, 255, 255)),
-					StrokeThickness = 1.3,
+					Width = 18,
+					Height = 18,
+					Fill = new SolidColorBrush(Color.FromArgb(64, 255, 255, 255)),
+					Stroke = new SolidColorBrush(Color.FromArgb(180, 255, 255, 255)),
+					StrokeThickness = 1.0,
 					HorizontalAlignment = HorizontalAlignment.Center,
 					VerticalAlignment = VerticalAlignment.Center
 				});
 				etGrid.Children.Add(new System.Windows.Shapes.Ellipse
 				{
-					Width = 15,
-					Height = 15,
-					Fill = new LinearGradientBrush(Colors.White, Color.FromRgb(0xEE, 0xF2, 0xFF), new Point(0, 0), new Point(1, 1)),
+					Width = 9.5,
+					Height = 9.5,
+					Fill = new LinearGradientBrush(Colors.White, Color.FromRgb(0xE0, 0xE7, 0xFF), new Point(0, 0), new Point(1, 1)),
 					HorizontalAlignment = HorizontalAlignment.Center,
 					VerticalAlignment = VerticalAlignment.Center
 				});
 				etGrid.Children.Add(new Border
 				{
-					Width = 14,
-					Height = 14,
-					CornerRadius = new CornerRadius(7),
+					Width = 10,
+					Height = 10,
+					CornerRadius = new CornerRadius(5),
 					Background = Brushes.White,
 					BorderBrush = new SolidColorBrush(Color.FromRgb(0xDB, 0xEA, 0xFE)),
-					BorderThickness = new Thickness(1),
-					Padding = new Thickness(2),
+					BorderThickness = new Thickness(0.8),
+					Padding = new Thickness(1.5),
 					HorizontalAlignment = HorizontalAlignment.Right,
 					VerticalAlignment = VerticalAlignment.Top,
-					Margin = new Thickness(0, 1, 1, 0),
+					Margin = new Thickness(0, 0.5, 0.5, 0),
 					Child = new System.Windows.Shapes.Ellipse
 					{
 						Fill = new SolidColorBrush(Color.FromRgb(0x10, 0xB9, 0x81))
@@ -9797,7 +9797,7 @@ namespace QASmartClass.StudentClient.Views
 				{
 					podAutoHideTimer.Stop();
 					easyTouchPod.Visibility = Visibility.Collapsed;
-					easyTouchBubble.Opacity = 0.84;
+					easyTouchBubble.Opacity = 0.68;
 				};
 				Action positionPodNearBubble = () =>
 				{
@@ -9805,16 +9805,16 @@ namespace QASmartClass.StudentClient.Views
 					double ch = _broadcastOverlay?.ActualHeight > 0 ? _broadcastOverlay.ActualHeight : SystemParameters.PrimaryScreenHeight;
 					double bx = Canvas.GetLeft(easyTouchBubble);
 					double by = Canvas.GetTop(easyTouchBubble);
-					if (double.IsNaN(bx)) bx = cw - 72;
+					if (double.IsNaN(bx)) bx = cw - 54;
 					if (double.IsNaN(by)) by = 72;
 					double podW = 264;
 					double podH = button.Visibility == Visibility.Visible ? 174 : 130;
-					double px = (bx + 28 > cw * 0.5) ? Math.Max(12, bx - podW - 10) : Math.Min(cw - podW - 12, bx + 64);
+					double px = (bx + 20 > cw * 0.5) ? Math.Max(12, bx - podW - 8) : Math.Min(cw - podW - 12, bx + 48);
 					double py = Math.Max(12, Math.Min(by, ch - podH - 12));
 					Canvas.SetLeft(easyTouchPod, px);
 					Canvas.SetTop(easyTouchPod, py);
-					Canvas.SetLeft(quickExitPill, Math.Max(14, (bx + 28 > cw * 0.5) ? bx - 196 : bx + 64));
-					Canvas.SetTop(quickExitPill, Math.Max(14, by + 10));
+					Canvas.SetLeft(quickExitPill, Math.Max(14, (bx + 20 > cw * 0.5) ? bx - 186 : bx + 48));
+					Canvas.SetTop(quickExitPill, Math.Max(14, by + 3));
 				};
 				podAutoHideTimer.Tick += (_, _) => collapseEasyTouch();
 				btnCollapsePod.Click += (_, _) => collapseEasyTouch();
@@ -9822,10 +9822,10 @@ namespace QASmartClass.StudentClient.Views
 				easyTouchCanvas.Loaded += (_, _) =>
 				{
 					double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
-					Canvas.SetLeft(easyTouchBubble, Math.Max(16, cw - 72));
+					Canvas.SetLeft(easyTouchBubble, Math.Max(16, cw - 54));
 					Canvas.SetTop(easyTouchBubble, 72);
-					Canvas.SetLeft(quickExitPill, Math.Max(16, cw - 268));
-					Canvas.SetTop(quickExitPill, 82);
+					Canvas.SetLeft(quickExitPill, Math.Max(16, cw - 240));
+					Canvas.SetTop(quickExitPill, 75);
 				};
 
 				Point etStartPt = default;
@@ -9855,8 +9855,8 @@ namespace QASmartClass.StudentClient.Views
 						if (easyTouchPod.Visibility == Visibility.Visible) easyTouchPod.Visibility = Visibility.Collapsed;
 						double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
 						double ch = _broadcastOverlay?.ActualHeight > 0 ? _broadcastOverlay.ActualHeight : SystemParameters.PrimaryScreenHeight;
-						Canvas.SetLeft(easyTouchBubble, Math.Max(10, Math.Min(cw - 62, etStartLeft + dx)));
-						Canvas.SetTop(easyTouchBubble, Math.Max(10, Math.Min(ch - 62, etStartTop + dy)));
+						Canvas.SetLeft(easyTouchBubble, Math.Max(8, Math.Min(cw - 48, etStartLeft + dx)));
+						Canvas.SetTop(easyTouchBubble, Math.Max(8, Math.Min(ch - 48, etStartTop + dy)));
 					}
 					ev.Handled = true;
 				};
@@ -9886,8 +9886,8 @@ namespace QASmartClass.StudentClient.Views
 					{
 						double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
 						double curLeft = Canvas.GetLeft(easyTouchBubble);
-						Canvas.SetLeft(easyTouchBubble, (curLeft + 26 < cw * 0.5) ? 14 : Math.Max(14, cw - 66));
-						easyTouchBubble.Opacity = 0.72;
+						Canvas.SetLeft(easyTouchBubble, (curLeft + 20 < cw * 0.5) ? 10 : Math.Max(10, cw - 50));
+						easyTouchBubble.Opacity = 0.65;
 					}
 				};
 
@@ -9914,8 +9914,8 @@ namespace QASmartClass.StudentClient.Views
 						if (easyTouchPod.Visibility == Visibility.Visible) easyTouchPod.Visibility = Visibility.Collapsed;
 						double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
 						double ch = _broadcastOverlay?.ActualHeight > 0 ? _broadcastOverlay.ActualHeight : SystemParameters.PrimaryScreenHeight;
-						Canvas.SetLeft(easyTouchBubble, Math.Max(10, Math.Min(cw - 62, etStartLeft + dx)));
-						Canvas.SetTop(easyTouchBubble, Math.Max(10, Math.Min(ch - 62, etStartTop + dy)));
+						Canvas.SetLeft(easyTouchBubble, Math.Max(8, Math.Min(cw - 48, etStartLeft + dx)));
+						Canvas.SetTop(easyTouchBubble, Math.Max(8, Math.Min(ch - 48, etStartTop + dy)));
 					}
 					ev.Handled = true;
 				};
@@ -9945,8 +9945,8 @@ namespace QASmartClass.StudentClient.Views
 					{
 						double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
 						double curLeft = Canvas.GetLeft(easyTouchBubble);
-						Canvas.SetLeft(easyTouchBubble, (curLeft + 26 < cw * 0.5) ? 14 : Math.Max(14, cw - 66));
-						easyTouchBubble.Opacity = 0.72;
+						Canvas.SetLeft(easyTouchBubble, (curLeft + 20 < cw * 0.5) ? 10 : Math.Max(10, cw - 50));
+						easyTouchBubble.Opacity = 0.65;
 					}
 				};
 
