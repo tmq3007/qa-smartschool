@@ -396,6 +396,7 @@ namespace QASmartClass.StudentClient.Views
 		private string _currentBroadcastProtocol = "UDP_MULTICAST";
 
 		private Button? _broadcastCloseButton;
+		private Button? _quickBroadcastExitPill;
 
 		private DateTime _lastBroadcastUpdateTime = DateTime.MinValue;
 
@@ -5049,58 +5050,36 @@ namespace QASmartClass.StudentClient.Views
 					}
 
 					bool isForce = cmd.Contains("FORCE_WATCH");
-
-					if (isForce)
-
+					base.Dispatcher.Invoke(delegate
 					{
-
-						_userDismissedBroadcast = false;
-
-						if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Collapsed;
-
-					}
-
-
-
-					if (!isForce && _userDismissedBroadcast)
-
-					{
-
-						Log.Information("Screen broadcast start ignored because student dismissed it.");
-
-						if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Visible;
-
-					}
-
-					else
-
-					{
-
-						if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Collapsed;
-
-						if (_broadcastOverlay == null)
-
+						if (isForce)
 						{
-
-							ShowScreenBroadcast(imagePath2, isForce, token);
-
+							_userDismissedBroadcast = false;
+							if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Collapsed;
 						}
 
+						if (!isForce && _userDismissedBroadcast)
+						{
+							Log.Information("Screen broadcast start ignored because student dismissed it.");
+							if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Visible;
+						}
 						else
-
 						{
-
-							_currentBroadcastToken = token;
-
-							ApplyKioskMode(isForce);
-
-							UpdateScreenBroadcast(imagePath2);
-
+							if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Collapsed;
+							if (_broadcastOverlay == null)
+							{
+								ShowScreenBroadcast(imagePath2, isForce, token);
+							}
+							else
+							{
+								_currentBroadcastToken = token;
+								ApplyKioskMode(isForce);
+								UpdateScreenBroadcast(imagePath2);
+							}
 						}
 
-					}
-
-					ShowNotification("Màn hình giáo viên", "GV đang chia sẻ màn hình. Hãy theo dõi!", "#7B1FA2");
+						ShowNotification("Màn hình giáo viên", "GV đang chia sẻ màn hình. Hãy theo dõi!", "#2563EB");
+					});
 
 				}
 
@@ -5157,59 +5136,39 @@ namespace QASmartClass.StudentClient.Views
 						break;
 					}
 
-					if (_broadcastOverlay == null)
-
+					base.Dispatcher.Invoke(delegate
 					{
-
-						bool isForceUpdate = cmd.Contains("FORCE_WATCH");
-
-						if (isForceUpdate)
-
+						if (_broadcastOverlay == null)
 						{
+							bool isForceUpdate = cmd.Contains("FORCE_WATCH");
+							if (isForceUpdate)
+							{
+								_userDismissedBroadcast = false;
+								if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Collapsed;
+							}
 
-							_userDismissedBroadcast = false;
-
-							if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Collapsed;
-
+							if (!isForceUpdate && _userDismissedBroadcast)
+							{
+								Log.Information("Screen broadcast update ignored because student dismissed it.");
+								if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Visible;
+							}
+							else
+							{
+								if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Collapsed;
+								ShowScreenBroadcast(imagePath, isForceUpdate, token);
+							}
 						}
-
-
-
-						if (!isForceUpdate && _userDismissedBroadcast)
-
-						{
-
-							Log.Information("Screen broadcast update ignored because student dismissed it.");
-
-							if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Visible;
-
-						}
-
 						else
-
 						{
-
-							if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Collapsed;
-
-							ShowScreenBroadcast(imagePath, isForceUpdate, token);
-
+							bool isForceUpdateSync = cmd.Contains("FORCE_WATCH");
+							if (isForceUpdateSync != _isBroadcastForceWatch)
+							{
+								_isBroadcastForceWatch = isForceUpdateSync;
+								ApplyKioskMode(isForceUpdateSync);
+							}
+							UpdateScreenBroadcast(imagePath);
 						}
-
-					}
-
-					else
-
-					{
-
-						bool isForceUpdateSync = cmd.Contains("FORCE_WATCH");
-						if (isForceUpdateSync != _isBroadcastForceWatch)
-						{
-							ApplyKioskMode(isForceUpdateSync);
-						}
-
-						UpdateScreenBroadcast(imagePath);
-
-					}
+					});
 
 				}
 
@@ -5258,11 +5217,12 @@ namespace QASmartClass.StudentClient.Views
 			case "SCREEN_BROADCAST_STOP":
 
 				_userDismissedBroadcast = false; // PHASE6-GD2
-				StopStudentDemoPresentationLoop();
-
-				CloseScreenBroadcast();
-
-				ShowNotification("\ud83d\udcfa Dừng phát bảng", "GV đã tắt chế độ phát bảng trắng.", "#666");
+				base.Dispatcher.Invoke(delegate
+				{
+					StopStudentDemoPresentationLoop();
+					CloseScreenBroadcast();
+					ShowNotification("\ud83d\udcfa Dừng phát bảng", "GV đã tắt chế độ phát bảng trắng.", "#475569");
+				});
 
 				Log.Information("Screen broadcast STOP received");
 
@@ -9602,14 +9562,15 @@ namespace QASmartClass.StudentClient.Views
 				Button button = new Button
 				{
 					Content = "↙ Ra ngoài / Thu nhỏ",
-					FontSize = 13.0,
+					FontSize = 12.5,
 					FontWeight = FontWeights.Bold,
 					Padding = new Thickness(12.0, 7.0, 12.0, 7.0),
 					Margin = new Thickness(0, 8, 0, 0),
 					HorizontalAlignment = HorizontalAlignment.Stretch,
-					Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x3A, 0x8A)),
-					Foreground = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD)),
-					BorderThickness = new Thickness(0.0),
+					Background = new SolidColorBrush(Color.FromRgb(0xDC, 0xFC, 0xE7)),
+					Foreground = new SolidColorBrush(Color.FromRgb(0x04, 0x78, 0x57)),
+					BorderBrush = new SolidColorBrush(Color.FromRgb(0x34, 0xD3, 0x99)),
+					BorderThickness = new Thickness(1.0),
 					Cursor = Cursors.Hand,
 					FontFamily = _broadcastFont
 				};
@@ -9624,15 +9585,17 @@ namespace QASmartClass.StudentClient.Views
 
 				Button btnAudioMute = new Button
 				{
-					Content = _broadcastAudioPlayer.IsMuted ? "🔇 Tắt loa" : "🔊 Bật loa",
-					FontSize = 12.5,
-					FontWeight = FontWeights.SemiBold,
+					Content = _broadcastAudioPlayer.IsMuted ? "🔇 Tắt loa" : "🔊 Âm thanh",
+					FontSize = 12.0,
+					FontWeight = FontWeights.Bold,
 					Padding = new Thickness(10.0, 7.0, 10.0, 7.0),
 					Margin = new Thickness(0, 0, 4, 0),
 					Background = new SolidColorBrush(_broadcastAudioPlayer.IsMuted
-						? Color.FromRgb(0xEA, 0x43, 0x35)
-						: Color.FromRgb(0x1A, 0x73, 0xE8)),
-					Foreground = Brushes.White,
+						? Color.FromRgb(0xFF, 0xE4, 0xE6)
+						: Color.FromRgb(0x25, 0x63, 0xEB)),
+					Foreground = _broadcastAudioPlayer.IsMuted
+						? new SolidColorBrush(Color.FromRgb(0xBE, 0x12, 0x3C))
+						: Brushes.White,
 					BorderThickness = new Thickness(0.0),
 					Cursor = Cursors.Hand,
 					FontFamily = _broadcastFont,
@@ -9643,55 +9606,60 @@ namespace QASmartClass.StudentClient.Views
 				btnAudioMute.Click += (_, _) =>
 				{
 					_broadcastAudioPlayer.IsMuted = !_broadcastAudioPlayer.IsMuted;
-					btnAudioMute.Content = _broadcastAudioPlayer.IsMuted ? "🔇 Tắt loa" : "🔊 Bật loa";
+					btnAudioMute.Content = _broadcastAudioPlayer.IsMuted ? "🔇 Tắt loa" : "🔊 Âm thanh";
 					btnAudioMute.Background = new SolidColorBrush(_broadcastAudioPlayer.IsMuted
-						? Color.FromRgb(0xEA, 0x43, 0x35)
-						: Color.FromRgb(0x1A, 0x73, 0xE8));
+						? Color.FromRgb(0xFF, 0xE4, 0xE6)
+						: Color.FromRgb(0x25, 0x63, 0xEB));
+					btnAudioMute.Foreground = _broadcastAudioPlayer.IsMuted
+						? new SolidColorBrush(Color.FromRgb(0xBE, 0x12, 0x3C))
+						: Brushes.White;
 				};
 
 				Button btnRaiseHandPod = new Button
 				{
 					Content = "✋ Giơ tay",
-					FontSize = 12.5,
-					FontWeight = FontWeights.SemiBold,
+					FontSize = 12.0,
+					FontWeight = FontWeights.Bold,
 					Padding = new Thickness(10.0, 7.0, 10.0, 7.0),
 					Margin = new Thickness(4, 0, 0, 0),
-					Background = new SolidColorBrush(Color.FromRgb(0x3C, 0x40, 0x43)),
-					Foreground = new SolidColorBrush(Color.FromRgb(0xFD, 0xE6, 0x8A)),
-					BorderThickness = new Thickness(0.0),
+					Background = new SolidColorBrush(Color.FromRgb(0xFE, 0xF3, 0xC7)),
+					Foreground = new SolidColorBrush(Color.FromRgb(0xB4, 0x53, 0x09)),
+					BorderBrush = new SolidColorBrush(Color.FromRgb(0xFD, 0xE6, 0x8A)),
+					BorderThickness = new Thickness(1.0),
 					Cursor = Cursors.Hand,
 					FontFamily = _broadcastFont,
 					ToolTip = "Giơ tay xin phát biểu với Giáo viên"
 				};
 				btnRaiseHandPod.Click += (s, ev) => QuickHandRaise_Click(s, ev);
 
-				// ─── LỚP PHỦ NÚT TRÒN NỔI EASYTOUCH CHO HỌC SINH WINDOWS PC ───
+				// ─── LỚP PHỦ NÚT TRÒN NỔI EASYTOUCH SÁNG SKY-INDIGO CHO HỌC SINH WINDOWS PC ───
 				var easyTouchCanvas = new Canvas
 				{
 					Background = null
 				};
+
+				var orbGradient = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
+				orbGradient.GradientStops.Add(new GradientStop(Color.FromArgb(242, 0x38, 0xBD, 0xF8), 0.0));
+				orbGradient.GradientStops.Add(new GradientStop(Color.FromArgb(242, 0x3B, 0x82, 0xF6), 0.48));
+				orbGradient.GradientStops.Add(new GradientStop(Color.FromArgb(242, 0x63, 0x66, 0xF1), 1.0));
 
 				var easyTouchBubble = new Border
 				{
 					Width = 56,
 					Height = 56,
 					CornerRadius = new CornerRadius(28),
-					Background = new LinearGradientBrush(
-						Color.FromArgb(240, 0x0F, 0x17, 0x2A),
-						Color.FromArgb(240, 0x1E, 0x29, 0x3B),
-						new Point(0, 0),
-						new Point(1, 1)),
-					BorderBrush = new SolidColorBrush(Color.FromArgb(150, 0x93, 0xC5, 0xFD)),
-					BorderThickness = new Thickness(1.8),
-					Opacity = 0.78,
+					Background = orbGradient,
+					BorderBrush = new SolidColorBrush(Color.FromArgb(238, 0xFF, 0xFF, 0xFF)),
+					BorderThickness = new Thickness(2.0),
+					Opacity = 0.88,
 					Cursor = Cursors.Hand,
 					ToolTip = "Chạm để mở điều khiển nhanh • Giữ kéo để di chuyển nút tròn",
 					Effect = new System.Windows.Media.Effects.DropShadowEffect
 					{
-						Color = Colors.Black,
-						BlurRadius = 14,
+						Color = Color.FromRgb(0x25, 0x63, 0xEB),
+						BlurRadius = 15,
 						ShadowDepth = 3,
-						Opacity = 0.45
+						Opacity = 0.34
 					}
 				};
 				var etGrid = new Grid();
@@ -9699,9 +9667,9 @@ namespace QASmartClass.StudentClient.Views
 				{
 					Width = 40,
 					Height = 40,
-					Fill = new SolidColorBrush(Color.FromArgb(32, 255, 255, 255)),
-					Stroke = new SolidColorBrush(Color.FromArgb(85, 255, 255, 255)),
-					StrokeThickness = 1.2,
+					Fill = new SolidColorBrush(Color.FromArgb(42, 255, 255, 255)),
+					Stroke = new SolidColorBrush(Color.FromArgb(135, 255, 255, 255)),
+					StrokeThickness = 1.3,
 					HorizontalAlignment = HorizontalAlignment.Center,
 					VerticalAlignment = VerticalAlignment.Center
 				});
@@ -9709,9 +9677,9 @@ namespace QASmartClass.StudentClient.Views
 				{
 					Width = 28,
 					Height = 28,
-					Fill = new SolidColorBrush(Color.FromArgb(52, 255, 255, 255)),
-					Stroke = new SolidColorBrush(Color.FromArgb(135, 255, 255, 255)),
-					StrokeThickness = 1.2,
+					Fill = new SolidColorBrush(Color.FromArgb(72, 255, 255, 255)),
+					Stroke = new SolidColorBrush(Color.FromArgb(190, 255, 255, 255)),
+					StrokeThickness = 1.3,
 					HorizontalAlignment = HorizontalAlignment.Center,
 					VerticalAlignment = VerticalAlignment.Center
 				});
@@ -9719,7 +9687,7 @@ namespace QASmartClass.StudentClient.Views
 				{
 					Width = 15,
 					Height = 15,
-					Fill = new LinearGradientBrush(Colors.White, Color.FromRgb(0xE0, 0xE7, 0xFF), new Point(0, 0), new Point(1, 1)),
+					Fill = new LinearGradientBrush(Colors.White, Color.FromRgb(0xEE, 0xF2, 0xFF), new Point(0, 0), new Point(1, 1)),
 					HorizontalAlignment = HorizontalAlignment.Center,
 					VerticalAlignment = VerticalAlignment.Center
 				});
@@ -9728,27 +9696,57 @@ namespace QASmartClass.StudentClient.Views
 					Width = 14,
 					Height = 14,
 					CornerRadius = new CornerRadius(7),
-					Background = new SolidColorBrush(Color.FromRgb(0x0F, 0x17, 0x2A)),
+					Background = Brushes.White,
+					BorderBrush = new SolidColorBrush(Color.FromRgb(0xDB, 0xEA, 0xFE)),
+					BorderThickness = new Thickness(1),
 					Padding = new Thickness(2),
 					HorizontalAlignment = HorizontalAlignment.Right,
 					VerticalAlignment = VerticalAlignment.Top,
 					Margin = new Thickness(0, 1, 1, 0),
 					Child = new System.Windows.Shapes.Ellipse
 					{
-						Fill = new SolidColorBrush(Color.FromRgb(0x22, 0xC5, 0x5E))
+						Fill = new SolidColorBrush(Color.FromRgb(0x10, 0xB9, 0x81))
 					}
 				});
 				easyTouchBubble.Child = etGrid;
 
+				var quickExitPill = new Button
+				{
+					Content = "🔓 ↙ Ra ngoài / Thu nhỏ",
+					FontSize = 12.0,
+					FontWeight = FontWeights.Bold,
+					Padding = new Thickness(12, 6, 12, 6),
+					Background = new SolidColorBrush(Color.FromArgb(248, 0xEC, 0xFD, 0xF5)),
+					Foreground = new SolidColorBrush(Color.FromRgb(0x04, 0x78, 0x57)),
+					BorderBrush = new SolidColorBrush(Color.FromRgb(0x10, 0xB9, 0x81)),
+					BorderThickness = new Thickness(1.4),
+					Cursor = Cursors.Hand,
+					FontFamily = _broadcastFont,
+					Visibility = isForce ? Visibility.Collapsed : Visibility.Visible,
+					ToolTip = "Giáo viên đã cho phép ra ngoài — Nhấn để thu nhỏ màn chiếu và thao tác ứng dụng khác"
+				};
+				quickExitPill.Click += (_, _) =>
+				{
+					button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+				};
+				_quickBroadcastExitPill = quickExitPill;
+
 				var easyTouchPod = new Border
 				{
-					Width = 252,
+					Width = 264,
 					CornerRadius = new CornerRadius(18),
-					Background = new SolidColorBrush(Color.FromArgb(242, 0x20, 0x21, 0x24)),
-					BorderBrush = new SolidColorBrush(Color.FromRgb(0x5F, 0x63, 0x68)),
-					BorderThickness = new Thickness(1.2),
-					Padding = new Thickness(12, 10, 12, 10),
-					Visibility = Visibility.Collapsed
+					Background = new SolidColorBrush(Color.FromArgb(250, 0xFF, 0xFF, 0xFF)),
+					BorderBrush = new SolidColorBrush(Color.FromRgb(0xBF, 0xDB, 0xFE)),
+					BorderThickness = new Thickness(1.4),
+					Padding = new Thickness(12, 10, 12, 11),
+					Visibility = Visibility.Collapsed,
+					Effect = new System.Windows.Media.Effects.DropShadowEffect
+					{
+						Color = Color.FromRgb(0x1E, 0x3A, 0x8A),
+						BlurRadius = 20,
+						ShadowDepth = 4,
+						Opacity = 0.22
+					}
 				};
 
 				var podStack = new StackPanel { Orientation = Orientation.Vertical };
@@ -9758,9 +9756,9 @@ namespace QASmartClass.StudentClient.Views
 					Content = "● Thu gọn",
 					FontSize = 11.0,
 					FontWeight = FontWeights.Bold,
-					Padding = new Thickness(8, 3, 8, 3),
-					Background = new SolidColorBrush(Color.FromRgb(0x30, 0x31, 0x34)),
-					Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0xB4, 0xF8)),
+					Padding = new Thickness(9, 3, 9, 3),
+					Background = new SolidColorBrush(Color.FromRgb(0xEF, 0xF6, 0xFF)),
+					Foreground = new SolidColorBrush(Color.FromRgb(0x1D, 0x4E, 0xD8)),
 					BorderThickness = new Thickness(0),
 					Cursor = Cursors.Hand
 				};
@@ -9771,7 +9769,7 @@ namespace QASmartClass.StudentClient.Views
 					Text = "🟢 Màn hình Giáo viên",
 					FontSize = 12.0,
 					FontWeight = FontWeights.Bold,
-					Foreground = Brushes.White,
+					Foreground = new SolidColorBrush(Color.FromRgb(0x0F, 0x17, 0x2A)),
 					VerticalAlignment = VerticalAlignment.Center,
 					TextTrimming = TextTrimming.CharacterEllipsis
 				});
@@ -9780,6 +9778,7 @@ namespace QASmartClass.StudentClient.Views
 				dockPanel.Children.Remove(_broadcastTimeText);
 				_broadcastTimeText.Margin = new Thickness(0, 0, 0, 8);
 				_broadcastTimeText.FontSize = 11.0;
+				_broadcastTimeText.Foreground = new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69));
 				podStack.Children.Add(_broadcastTimeText);
 
 				var podButtonsGrid = new System.Windows.Controls.Primitives.UniformGrid { Columns = 2 };
@@ -9789,6 +9788,7 @@ namespace QASmartClass.StudentClient.Views
 				podStack.Children.Add(button);
 				easyTouchPod.Child = podStack;
 
+				easyTouchCanvas.Children.Add(quickExitPill);
 				easyTouchCanvas.Children.Add(easyTouchPod);
 				easyTouchCanvas.Children.Add(easyTouchBubble);
 
@@ -9797,7 +9797,7 @@ namespace QASmartClass.StudentClient.Views
 				{
 					podAutoHideTimer.Stop();
 					easyTouchPod.Visibility = Visibility.Collapsed;
-					easyTouchBubble.Opacity = 0.72;
+					easyTouchBubble.Opacity = 0.84;
 				};
 				Action positionPodNearBubble = () =>
 				{
@@ -9805,14 +9805,16 @@ namespace QASmartClass.StudentClient.Views
 					double ch = _broadcastOverlay?.ActualHeight > 0 ? _broadcastOverlay.ActualHeight : SystemParameters.PrimaryScreenHeight;
 					double bx = Canvas.GetLeft(easyTouchBubble);
 					double by = Canvas.GetTop(easyTouchBubble);
-					if (double.IsNaN(bx)) bx = cw - 68;
+					if (double.IsNaN(bx)) bx = cw - 72;
 					if (double.IsNaN(by)) by = 72;
-					double podW = 252;
-					double podH = button.Visibility == Visibility.Visible ? 168 : 126;
-					double px = (bx + 26 > cw * 0.5) ? Math.Max(12, bx - podW - 10) : Math.Min(cw - podW - 12, bx + 62);
+					double podW = 264;
+					double podH = button.Visibility == Visibility.Visible ? 174 : 130;
+					double px = (bx + 28 > cw * 0.5) ? Math.Max(12, bx - podW - 10) : Math.Min(cw - podW - 12, bx + 64);
 					double py = Math.Max(12, Math.Min(by, ch - podH - 12));
 					Canvas.SetLeft(easyTouchPod, px);
 					Canvas.SetTop(easyTouchPod, py);
+					Canvas.SetLeft(quickExitPill, Math.Max(14, (bx + 28 > cw * 0.5) ? bx - 196 : bx + 64));
+					Canvas.SetTop(quickExitPill, Math.Max(14, by + 10));
 				};
 				podAutoHideTimer.Tick += (_, _) => collapseEasyTouch();
 				btnCollapsePod.Click += (_, _) => collapseEasyTouch();
@@ -9820,8 +9822,10 @@ namespace QASmartClass.StudentClient.Views
 				easyTouchCanvas.Loaded += (_, _) =>
 				{
 					double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
-					Canvas.SetLeft(easyTouchBubble, Math.Max(16, cw - 68));
+					Canvas.SetLeft(easyTouchBubble, Math.Max(16, cw - 72));
 					Canvas.SetTop(easyTouchBubble, 72);
+					Canvas.SetLeft(quickExitPill, Math.Max(16, cw - 268));
+					Canvas.SetTop(quickExitPill, 82);
 				};
 
 				Point etStartPt = default;
@@ -10549,6 +10553,13 @@ namespace QASmartClass.StudentClient.Views
 
 					_userDismissedBroadcast = true; // PHASE6.1-BUG1: Set AFTER Close
 
+					// [MYTHWARE_LITE] Khi Giáo viên đã cho phép HS bấm ra ngoài và HS nhấn "↙ Ra ngoài / Thu nhỏ",
+					// đưa cửa sổ về chế độ Normal có viền tiêu chuẩn (lộ rõ Desktop & Taskbar Windows) để HS thao tác ứng dụng bên ngoài ngay lập tức.
+					base.Topmost = false;
+					base.WindowStyle = WindowStyle.SingleBorderWindow;
+					base.ResizeMode = ResizeMode.CanResize;
+					base.WindowState = WindowState.Normal;
+
 					try
 
 					{
@@ -10844,6 +10855,7 @@ namespace QASmartClass.StudentClient.Views
 				_turboNeonBorder = null;
 
 				_broadcastCloseButton = null;
+				_quickBroadcastExitPill = null;
 
 				_broadcastWarningTextBlock = null;
 
@@ -11137,6 +11149,10 @@ namespace QASmartClass.StudentClient.Views
 					_broadcastCloseButton.Visibility = Visibility.Collapsed;
 
 				}
+				if (_quickBroadcastExitPill != null)
+				{
+					_quickBroadcastExitPill.Visibility = Visibility.Collapsed;
+				}
 
 			}
 
@@ -11150,9 +11166,16 @@ namespace QASmartClass.StudentClient.Views
 
 				base.Topmost = false;
 
-				base.WindowState = WindowState.Maximized;
-
-				base.WindowStyle = WindowStyle.None;
+				// [MYTHWARE_LITE] Trả lại khung cửa sổ tiêu chuẩn SingleBorderWindow + mở khóa thanh Taskbar Windows
+				// để Học sinh có thể bấm ngay ra ngoài sang ứng dụng khác hoặc thu nhỏ cửa sổ khi Giáo viên cấp quyền.
+				bool wasBorderlessMax = (base.WindowStyle == WindowStyle.None && base.WindowState == WindowState.Maximized);
+				base.WindowStyle = WindowStyle.SingleBorderWindow;
+				base.ResizeMode = ResizeMode.CanResize;
+				if (wasBorderlessMax)
+				{
+					base.WindowState = WindowState.Normal;
+					base.WindowState = WindowState.Maximized;
+				}
 
 				_activeKioskConfig = null;
 
@@ -11164,6 +11187,10 @@ namespace QASmartClass.StudentClient.Views
 
 					_broadcastCloseButton.Visibility = Visibility.Visible;
 
+				}
+				if (_quickBroadcastExitPill != null)
+				{
+					_quickBroadcastExitPill.Visibility = Visibility.Visible;
 				}
 
 			}

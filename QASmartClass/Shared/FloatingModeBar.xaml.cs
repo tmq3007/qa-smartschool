@@ -585,7 +585,7 @@ namespace QASmartClass.Shared
             var inactiveColor = Brushes.Transparent;
             var classColor = new SolidColorBrush(Color.FromRgb(0x25, 0x63, 0xEB));
             var screenColor = new SolidColorBrush(Color.FromRgb(0x4F, 0x46, 0xE5));
-            var desktopColor = new SolidColorBrush(Color.FromRgb(0x0E, 0xA5, 0xE9));
+            var desktopColor = new SolidColorBrush(Color.FromRgb(0x02, 0x84, 0xC7));
 
             btnClass.Background = mode == AppMode.SmartClass ? classColor : inactiveColor;
             btnScreen.Background = mode == AppMode.SmartScreen ? screenColor : inactiveColor;
@@ -603,10 +603,10 @@ namespace QASmartClass.Shared
                     AppMode.SmartScreen => "SMART TOUCH",
                     _ => "DESKTOP"
                 };
-                txtHubStatusTitle.Foreground = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD));
+                txtHubStatusTitle.Foreground = new SolidColorBrush(Color.FromRgb(0x1D, 0x4E, 0xD8));
                 int online = ClassroomAppContext.Network?.ConnectedCount ?? 0;
                 txtHubSubStatus.Text = online > 0 ? $"👥 {online} máy kết nối" : "Sẵn sàng";
-                dotHubLive.Fill = new SolidColorBrush(Color.FromRgb(0x3B, 0x82, 0xF6));
+                dotHubLive.Fill = new SolidColorBrush(Color.FromRgb(0x25, 0x63, 0xEB));
             }
 
             UpdateOrbAppearance();
@@ -617,11 +617,11 @@ namespace QASmartClass.Shared
             if (border.Child is StackPanel sp && sp.Children.Count >= 2)
             {
                 if (sp.Children[0] is TextBlock titleTb)
-                    titleTb.Foreground = isActive ? Brushes.White : new SolidColorBrush(Color.FromRgb(0xE2, 0xE8, 0xF0));
+                    titleTb.Foreground = isActive ? Brushes.White : new SolidColorBrush(Color.FromRgb(0x1E, 0x29, 0x3B));
                 if (sp.Children[1] is TextBlock subTb)
                     subTb.Foreground = isActive
                         ? new SolidColorBrush(Color.FromRgb(0xDB, 0xEA, 0xFE))
-                        : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
+                        : new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B));
             }
         }
 
@@ -634,34 +634,34 @@ namespace QASmartClass.Shared
             {
                 if (_isBroadcastPaused)
                 {
-                    pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B));
+                    pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0xFD, 0xE6, 0x8A));
                     dotOrbStatus.Fill = new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B));
                 }
                 else
                 {
-                    pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0xEF, 0x44, 0x44));
+                    pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0xFE, 0xCA, 0xCA));
                     dotOrbStatus.Fill = new SolidColorBrush(Color.FromRgb(0xEF, 0x44, 0x44));
                 }
             }
             else if (_isClassScreenLocked)
             {
-                pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B));
+                pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0xFD, 0xE6, 0x8A));
                 dotOrbStatus.Fill = new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B));
             }
             else if (micOn)
             {
-                pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0x34, 0xD3, 0x99));
-                dotOrbStatus.Fill = new SolidColorBrush(Color.FromRgb(0x22, 0xC5, 0x5E));
+                pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0xA7, 0xF3, 0xD0));
+                dotOrbStatus.Fill = new SolidColorBrush(Color.FromRgb(0x10, 0xB9, 0x81));
             }
             else
             {
                 Color modeDot = _modeService.CurrentMode switch
                 {
-                    AppMode.SmartClass => Color.FromRgb(0x3B, 0x82, 0xF6),
-                    AppMode.SmartScreen => Color.FromRgb(0x81, 0x8C, 0xF8),
-                    _ => Color.FromRgb(0x38, 0xBD, 0xF8)
+                    AppMode.SmartClass => Color.FromRgb(0x10, 0xB9, 0x81),
+                    AppMode.SmartScreen => Color.FromRgb(0x63, 0x66, 0xF1),
+                    _ => Color.FromRgb(0x0E, 0xA5, 0xE9)
                 };
-                pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromArgb(0x99, 0x93, 0xC5, 0xFD));
+                pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromArgb(0xEE, 0xFF, 0xFF, 0xFF));
                 dotOrbStatus.Fill = new SolidColorBrush(modeDot);
             }
         }
@@ -811,8 +811,10 @@ namespace QASmartClass.Shared
             bdrDevicePopover.Visibility = Visibility.Visible;
             pnlAudioSettings.Visibility = mode == "AUDIO" ? Visibility.Visible : Visibility.Collapsed;
             pnlCameraSettings.Visibility = mode == "CAMERA" ? Visibility.Visible : Visibility.Collapsed;
-            btnTabAudio.Background = new SolidColorBrush(mode == "AUDIO" ? Color.FromRgb(0x25, 0x63, 0xEB) : Color.FromRgb(0x2A, 0x32, 0x41));
-            btnTabCamera.Background = new SolidColorBrush(mode == "CAMERA" ? Color.FromRgb(0x25, 0x63, 0xEB) : Color.FromRgb(0x2A, 0x32, 0x41));
+            btnTabAudio.Background = new SolidColorBrush(mode == "AUDIO" ? Color.FromRgb(0x25, 0x63, 0xEB) : Color.FromRgb(0xEF, 0xF6, 0xFF));
+            btnTabCamera.Background = new SolidColorBrush(mode == "CAMERA" ? Color.FromRgb(0x25, 0x63, 0xEB) : Color.FromRgb(0xEF, 0xF6, 0xFF));
+            if (txtTabAudio != null) txtTabAudio.Foreground = mode == "AUDIO" ? Brushes.White : new SolidColorBrush(Color.FromRgb(0x1E, 0x40, 0xAF));
+            if (txtTabCamera != null) txtTabCamera.Foreground = mode == "CAMERA" ? Brushes.White : new SolidColorBrush(Color.FromRgb(0x1E, 0x40, 0xAF));
             SyncMediaControlsState();
             EnsureWithinScreenBounds();
         }
@@ -920,12 +922,26 @@ namespace QASmartClass.Shared
             {
                 var svc = LiveBroadcastMediaService.Instance;
 
-                // 1. Micro
+                // 1. Micro (Tone Pastel Sáng Hiện Đại)
                 bool micOn = svc.HasMicrophoneHardware && svc.IsMicrophoneEnabled;
                 btnVoice.IsEnabled = svc.HasMicrophoneHardware;
                 bdrMicPill.Background = new SolidColorBrush(!svc.HasMicrophoneHardware
-                    ? Color.FromRgb(0x33, 0x41, 0x55)
-                    : (micOn ? Color.FromRgb(0x05, 0x96, 0x69) : Color.FromRgb(0x7F, 0x1D, 0x1D)));
+                    ? Color.FromRgb(0xE2, 0xE8, 0xF0)
+                    : (micOn ? Color.FromRgb(0x10, 0xB9, 0x81) : Color.FromRgb(0xFF, 0xE4, 0xE6)));
+                bdrMicPill.BorderBrush = new SolidColorBrush(!svc.HasMicrophoneHardware
+                    ? Color.FromRgb(0xCB, 0xD5, 0xE1)
+                    : (micOn ? Color.FromRgb(0x05, 0x96, 0x69) : Color.FromRgb(0xFE, 0xCD, 0xD3)));
+                txtVoice.Foreground = !svc.HasMicrophoneHardware
+                    ? new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B))
+                    : (micOn ? Brushes.White : new SolidColorBrush(Color.FromRgb(0xBE, 0x12, 0x3C)));
+                if (txtMicCaret != null)
+                {
+                    txtMicCaret.Foreground = micOn ? Brushes.White : new SolidColorBrush(Color.FromRgb(0x9F, 0x12, 0x39));
+                }
+                var micWaveBrush = micOn ? Brushes.White : new SolidColorBrush(Color.FromRgb(0xF4, 0x3F, 0x5E));
+                barMic1.Background = micWaveBrush;
+                barMic2.Background = micWaveBrush;
+                barMic3.Background = micWaveBrush;
                 txtVoice.Text = !svc.HasMicrophoneHardware
                     ? "🚫 Không Mic"
                     : (micOn ? "🎙️ Mic: BẬT" : "🔇 Tắt mic");
@@ -934,8 +950,19 @@ namespace QASmartClass.Shared
                 bool sysOn = svc.HasSystemAudioHardware && svc.IsSystemAudioEnabled;
                 bdrSysAudioPill.IsEnabled = svc.HasSystemAudioHardware;
                 bdrSysAudioPill.Background = new SolidColorBrush(!svc.HasSystemAudioHardware
-                    ? Color.FromRgb(0x33, 0x41, 0x55)
-                    : (sysOn ? Color.FromRgb(0x1D, 0x4E, 0xD8) : Color.FromRgb(0x7F, 0x1D, 0x1D)));
+                    ? Color.FromRgb(0xE2, 0xE8, 0xF0)
+                    : (sysOn ? Color.FromRgb(0x25, 0x63, 0xEB) : Color.FromRgb(0xEF, 0xF6, 0xFF)));
+                bdrSysAudioPill.BorderBrush = new SolidColorBrush(!svc.HasSystemAudioHardware
+                    ? Color.FromRgb(0xCB, 0xD5, 0xE1)
+                    : (sysOn ? Color.FromRgb(0x1D, 0x4E, 0xD8) : Color.FromRgb(0xBF, 0xDB, 0xFE)));
+                txtSysAudio.Foreground = !svc.HasSystemAudioHardware
+                    ? new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B))
+                    : (sysOn ? Brushes.White : new SolidColorBrush(Color.FromRgb(0x1E, 0x40, 0xAF)));
+                var sysWaveBrush = sysOn
+                    ? new SolidColorBrush(Color.FromRgb(0xDB, 0xEA, 0xFE))
+                    : new SolidColorBrush(Color.FromRgb(0x60, 0xA5, 0xFA));
+                barSys1.Background = sysWaveBrush;
+                barSys2.Background = sysWaveBrush;
                 txtSysAudio.Text = !svc.HasSystemAudioHardware
                     ? "🔇 Không loa"
                     : (sysOn ? "🔊 Âm thanh" : "🔈 Tắt âm thanh");
@@ -944,8 +971,18 @@ namespace QASmartClass.Shared
                 bool camOn = svc.HasCameraHardware && svc.IsCameraEnabled;
                 btnCamToggle.IsEnabled = svc.HasCameraHardware || svc.IsScanningCameras;
                 bdrCamPill.Background = new SolidColorBrush(!svc.HasCameraHardware && !svc.IsScanningCameras
-                    ? Color.FromRgb(0x33, 0x41, 0x55)
-                    : (camOn ? Color.FromRgb(0x05, 0x96, 0x69) : Color.FromRgb(0x2A, 0x32, 0x41)));
+                    ? Color.FromRgb(0xE2, 0xE8, 0xF0)
+                    : (camOn ? Color.FromRgb(0x10, 0xB9, 0x81) : Color.FromRgb(0xEE, 0xF2, 0xFF)));
+                bdrCamPill.BorderBrush = new SolidColorBrush(!svc.HasCameraHardware && !svc.IsScanningCameras
+                    ? Color.FromRgb(0xCB, 0xD5, 0xE1)
+                    : (camOn ? Color.FromRgb(0x05, 0x96, 0x69) : Color.FromRgb(0xC7, 0xD2, 0xFE)));
+                txtCamState.Foreground = !svc.HasCameraHardware && !svc.IsScanningCameras
+                    ? new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B))
+                    : (camOn ? Brushes.White : new SolidColorBrush(Color.FromRgb(0x37, 0x30, 0xA3)));
+                if (txtCamCaret != null)
+                {
+                    txtCamCaret.Foreground = camOn ? Brushes.White : new SolidColorBrush(Color.FromRgb(0x37, 0x30, 0xA3));
+                }
                 txtCamState.Text = svc.IsScanningCameras && !svc.HasCameraHardware
                     ? "📷 Đang dò..."
                     : (!svc.HasCameraHardware ? "🚫 Không Cam" : (camOn ? "📷 Cam: BẬT" : "📷 Tắt cam"));
@@ -1090,16 +1127,18 @@ namespace QASmartClass.Shared
             {
                 if (isLocked)
                 {
-                    btnClassLockToggle.Background = new SolidColorBrush(Color.FromRgb(0xD9, 0x77, 0x06));
+                    btnClassLockToggle.Background = new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B));
+                    btnClassLockToggle.BorderBrush = new SolidColorBrush(Color.FromRgb(0xD9, 0x77, 0x06));
                     txtClassLockState.Text = "🔓 Mở khóa HS";
                     txtClassLockState.Foreground = Brushes.White;
                     btnClassLockToggle.ToolTip = "Đang KHÓA màn hình máy Học sinh. Nhấn để MỞ KHÓA cho cả lớp.";
                 }
                 else
                 {
-                    btnClassLockToggle.Background = new SolidColorBrush(Color.FromRgb(0x2A, 0x32, 0x41));
+                    btnClassLockToggle.Background = new SolidColorBrush(Color.FromRgb(0xFE, 0xF3, 0xC7));
+                    btnClassLockToggle.BorderBrush = new SolidColorBrush(Color.FromRgb(0xFD, 0xE6, 0x8A));
                     txtClassLockState.Text = "🔒 Khóa máy HS";
-                    txtClassLockState.Foreground = new SolidColorBrush(Color.FromRgb(0xFD, 0xE6, 0x8A));
+                    txtClassLockState.Foreground = new SolidColorBrush(Color.FromRgb(0xB4, 0x53, 0x09));
                     btnClassLockToggle.ToolTip = "Khóa màn hình toàn bộ máy Học sinh để tập trung nghe giảng.";
                 }
             }
@@ -1120,17 +1159,17 @@ namespace QASmartClass.Shared
                 {
                     if (allowExit)
                     {
-                        btnAllowStudentExit.Background = new SolidColorBrush(Color.FromRgb(0x06, 0x5F, 0x46));
-                        btnAllowStudentExit.BorderBrush = new SolidColorBrush(Color.FromRgb(0x10, 0xB9, 0x81));
+                        btnAllowStudentExit.Background = new SolidColorBrush(Color.FromRgb(0xDC, 0xFC, 0xE7));
+                        btnAllowStudentExit.BorderBrush = new SolidColorBrush(Color.FromRgb(0x34, 0xD3, 0x99));
                         txtAllowStudentExit.Text = "🔓 Đang cho phép HS bấm ra ngoài";
-                        txtAllowStudentExit.Foreground = new SolidColorBrush(Color.FromRgb(0xA7, 0xF3, 0xD0));
+                        txtAllowStudentExit.Foreground = new SolidColorBrush(Color.FromRgb(0x04, 0x78, 0x57));
                     }
                     else
                     {
-                        btnAllowStudentExit.Background = new SolidColorBrush(Color.FromRgb(0x3B, 0x1D, 0x24));
-                        btnAllowStudentExit.BorderBrush = new SolidColorBrush(Color.FromRgb(0xEF, 0x44, 0x44));
+                        btnAllowStudentExit.Background = new SolidColorBrush(Color.FromRgb(0xFE, 0xE2, 0xE2));
+                        btnAllowStudentExit.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF8, 0x71, 0x71));
                         txtAllowStudentExit.Text = "🔒 Đang khóa toàn màn hình HS (Chạm để mở)";
-                        txtAllowStudentExit.Foreground = new SolidColorBrush(Color.FromRgb(0xFC, 0xA5, 0xA5));
+                        txtAllowStudentExit.Foreground = new SolidColorBrush(Color.FromRgb(0xB9, 0x1C, 0x1C));
                     }
                 }
             }
@@ -1178,8 +1217,8 @@ namespace QASmartClass.Shared
                     ? "⏸ ĐÓNG BĂNG"
                     : (_isLockedSource ? "📌 GIỮ CỐ ĐỊNH" : "🔴 ĐANG CHIẾU");
                 txtHubStatusTitle.Foreground = new SolidColorBrush(isPaused
-                    ? Color.FromRgb(0xFD, 0xE6, 0x8A)
-                    : Color.FromRgb(0xFC, 0xA5, 0xA5));
+                    ? Color.FromRgb(0xD9, 0x77, 0x06)
+                    : Color.FromRgb(0xDC, 0x26, 0x26));
                 txtHubSubStatus.Text = $"{timerText} • 👥 {recipientCount} • {sourceDescription}";
                 dotHubLive.Fill = new SolidColorBrush(isPaused
                     ? Color.FromRgb(0xF5, 0x9E, 0x0B)
@@ -1189,8 +1228,14 @@ namespace QASmartClass.Shared
             if (btnLivePause != null && txtLivePause != null)
             {
                 btnLivePause.Background = new SolidColorBrush(isPaused
-                    ? Color.FromRgb(0x05, 0x96, 0x69)
-                    : Color.FromRgb(0x2A, 0x32, 0x41));
+                    ? Color.FromRgb(0xFE, 0xF3, 0xC7)
+                    : Color.FromRgb(0xFF, 0xFF, 0xFF));
+                btnLivePause.BorderBrush = new SolidColorBrush(isPaused
+                    ? Color.FromRgb(0xF5, 0x9E, 0x0B)
+                    : Color.FromRgb(0xE2, 0xE8, 0xF0));
+                txtLivePause.Foreground = new SolidColorBrush(isPaused
+                    ? Color.FromRgb(0xB4, 0x53, 0x09)
+                    : Color.FromRgb(0x1E, 0x29, 0x3B));
                 txtLivePause.Text = isPaused ? "▶️ Tiếp tục" : "⏸️ Đóng băng";
             }
 
@@ -1200,8 +1245,8 @@ namespace QASmartClass.Shared
                     ? "⏸️ ĐÃ ĐÓNG BĂNG TRÊN MÁY HS"
                     : (_isLockedSource ? "📌 CỐ ĐỊNH TRÊN MÁY HS" : "🟢 TRỰC TIẾP TRÊN MÁY HS");
                 txtPipBadge.Foreground = new SolidColorBrush(isPaused
-                    ? Color.FromRgb(0xFD, 0xE6, 0x8A)
-                    : Color.FromRgb(0x86, 0xEF, 0xAC));
+                    ? Color.FromRgb(0xD9, 0x77, 0x06)
+                    : Color.FromRgb(0x05, 0x96, 0x69));
             }
 
             UpdateOrbAppearance();
@@ -1241,8 +1286,14 @@ namespace QASmartClass.Shared
             if (btnLivePip != null && txtLivePip != null)
             {
                 btnLivePip.Background = new SolidColorBrush(_isPipVisible
-                    ? Color.FromRgb(0x25, 0x63, 0xEB)
-                    : Color.FromRgb(0x2A, 0x32, 0x41));
+                    ? Color.FromRgb(0xDB, 0xEA, 0xFE)
+                    : Color.FromRgb(0xFF, 0xFF, 0xFF));
+                btnLivePip.BorderBrush = new SolidColorBrush(_isPipVisible
+                    ? Color.FromRgb(0x3B, 0x82, 0xF6)
+                    : Color.FromRgb(0xE2, 0xE8, 0xF0));
+                txtLivePip.Foreground = new SolidColorBrush(_isPipVisible
+                    ? Color.FromRgb(0x1D, 0x4E, 0xD8)
+                    : Color.FromRgb(0x1E, 0x29, 0x3B));
                 txtLivePip.Text = _isPipVisible ? "👁️ Ẩn thử" : "👁️ Xem thử";
             }
         }
@@ -1251,16 +1302,26 @@ namespace QASmartClass.Shared
         {
             e.Handled = true;
             if (!AcquireQuickActionDebounce() || _suppressAllowExitEvent) return;
-            SetAllowStudentExitState(!_allowStudentExit);
-            AllowStudentExitChanged?.Invoke(this, _allowStudentExit);
+            bool nextAllow = !_allowStudentExit;
+            SetAllowStudentExitState(nextAllow);
+#if !SMARTTOUCH_STANDALONE
+            QASmartClass.Classroom.Views.BroadcastPage.ApplyGlobalAllowStudentExit(nextAllow);
+#else
+            AllowStudentExitChanged?.Invoke(this, nextAllow);
+#endif
         }
 
         private void OnAllowStudentExitTouchDown(object? sender, TouchEventArgs e)
         {
             e.Handled = true;
             if (!AcquireQuickActionDebounce() || _suppressAllowExitEvent) return;
-            SetAllowStudentExitState(!_allowStudentExit);
-            AllowStudentExitChanged?.Invoke(this, _allowStudentExit);
+            bool nextAllow = !_allowStudentExit;
+            SetAllowStudentExitState(nextAllow);
+#if !SMARTTOUCH_STANDALONE
+            QASmartClass.Classroom.Views.BroadcastPage.ApplyGlobalAllowStudentExit(nextAllow);
+#else
+            AllowStudentExitChanged?.Invoke(this, nextAllow);
+#endif
         }
 
         private void OnShareCurrentInsteadClick(object sender, MouseButtonEventArgs e)
@@ -1496,10 +1557,16 @@ namespace QASmartClass.Shared
                 if (btnRecord != null && txtRecord != null && txtRecordLabel != null)
                 {
                     btnRecord.Background = active
-                        ? new SolidColorBrush(Color.FromRgb(0xDC, 0x26, 0x26))
-                        : new SolidColorBrush(Color.FromArgb(0x22, 0xFF, 0xFF, 0xFF));
+                        ? new SolidColorBrush(Color.FromRgb(0xFE, 0xE2, 0xE2))
+                        : new SolidColorBrush(Color.FromRgb(0xF1, 0xF5, 0xF9));
+                    btnRecord.BorderBrush = active
+                        ? new SolidColorBrush(Color.FromRgb(0xF8, 0x71, 0x71))
+                        : new SolidColorBrush(Color.FromRgb(0xE2, 0xE8, 0xF0));
                     txtRecord.Text = active ? "🔴" : "⏺";
                     txtRecordLabel.Text = active ? "Đang ghi" : "Ghi hình";
+                    txtRecordLabel.Foreground = active
+                        ? new SolidColorBrush(Color.FromRgb(0xB9, 0x1C, 0x1C))
+                        : new SolidColorBrush(Color.FromRgb(0x1E, 0x29, 0x3B));
                 }
                 UpdateOrbAppearance();
             }

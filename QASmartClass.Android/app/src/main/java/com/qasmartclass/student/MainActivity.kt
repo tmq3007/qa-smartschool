@@ -393,6 +393,7 @@ class MainActivity : AppCompatActivity() {
 
     // Screen Broadcast State
     private var isScreenBroadcastActive = false
+    private var userMinimizedBroadcast = false
     private var currentBroadcastToken: String = ""
     private var currentTeacherWebPort: Int = 8080
     private var broadcastPollJob: Job? = null
@@ -1011,6 +1012,49 @@ class MainActivity : AppCompatActivity() {
             applyDocumentZoom()
         }
 
+        findViewById<View?>(R.id.btnFsZoomOut)?.setOnClickListener {
+            scheduleBroadcastControlsAutoHide()
+            currentZoomPercent = (currentZoomPercent - 15).coerceAtLeast(70)
+            applyDocumentZoom()
+        }
+
+        findViewById<View?>(R.id.btnFsZoomIn)?.setOnClickListener {
+            scheduleBroadcastControlsAutoHide()
+            currentZoomPercent = (currentZoomPercent + 15).coerceAtMost(200)
+            applyDocumentZoom()
+        }
+
+        // Thu nhỏ / Mở rộng cụm Giơ tay trên Header và thanh Thu phóng tại khung Bài giảng Android
+        val layoutHeaderHandExpanded = findViewById<View?>(R.id.layoutHeaderHandExpanded)
+        val btnCollapseHeaderHand = findViewById<View?>(R.id.btnCollapseHeaderHand)
+        val btnExpandHeaderHand = findViewById<View?>(R.id.btnExpandHeaderHand)
+        btnCollapseHeaderHand?.setOnClickListener {
+            layoutHeaderHandExpanded?.visibility = View.GONE
+            btnExpandHeaderHand?.visibility = View.VISIBLE
+        }
+        btnExpandHeaderHand?.setOnClickListener {
+            btnExpandHeaderHand.visibility = View.GONE
+            layoutHeaderHandExpanded?.visibility = View.VISIBLE
+        }
+        btnExpandHeaderHand?.setOnLongClickListener {
+            toggleRaiseHand()
+            true
+        }
+
+        val lectureToolbarFull = findViewById<View?>(R.id.lectureToolbarFull)
+        val btnCollapseLectureToolbar = findViewById<View?>(R.id.btnCollapseLectureToolbar)
+        val btnExpandLectureToolbarOrb = findViewById<View?>(R.id.btnExpandLectureToolbarOrb)
+        btnCollapseLectureToolbar?.setOnClickListener {
+            lectureToolbarFull?.visibility = View.GONE
+            btnExpandLectureToolbarOrb?.visibility = View.VISIBLE
+        }
+        if (btnExpandLectureToolbarOrb != null) {
+            setupHomeLectureOrbDragAndTap(btnExpandLectureToolbarOrb) {
+                btnExpandLectureToolbarOrb.visibility = View.GONE
+                lectureToolbarFull?.visibility = View.VISIBLE
+            }
+        }
+
         imgInlineBroadcast.setOnClickListener {
             openFullscreenBroadcastOverlay()
         }
@@ -1090,6 +1134,9 @@ class MainActivity : AppCompatActivity() {
             openFullscreenBroadcastOverlay()
         }
         btnCloseBroadcast.setOnClickListener {
+            minimizeFullscreenBroadcastOverlay()
+        }
+        findViewById<View?>(R.id.btnQuickExitBroadcastPill)?.setOnClickListener {
             minimizeFullscreenBroadcastOverlay()
         }
         findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.setOnClickListener {
@@ -1196,14 +1243,70 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @android.annotation.SuppressLint("ClickableViewAccessibility")
+    private fun setupHomeLectureOrbDragAndTap(orbView: View, onTap: () -> Unit) {
+        val touchSlop = android.view.ViewConfiguration.get(this).scaledTouchSlop
+        var downRawX = 0f
+        var downRawY = 0f
+        var startViewX = 0f
+        var startViewY = 0f
+        var dragging = false
+
+        orbView.setOnTouchListener { v, event ->
+            val parent = v.parent as? View
+            when (event.actionMasked) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    v.animate().cancel()
+                    v.alpha = 1.0f
+                    downRawX = event.rawX
+                    downRawY = event.rawY
+                    startViewX = v.x
+                    startViewY = v.y
+                    dragging = false
+                    true
+                }
+                android.view.MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX - downRawX
+                    val dy = event.rawY - downRawY
+                    if (!dragging && kotlin.math.hypot(dx.toDouble(), dy.toDouble()) > touchSlop) {
+                        dragging = true
+                    }
+                    if (dragging && parent != null && parent.width > 0 && parent.height > 0) {
+                        val margin = dpPx(8).toFloat()
+                        val maxX = (parent.width.toFloat() - v.width.toFloat() - margin).coerceAtLeast(margin)
+                        val maxY = (parent.height.toFloat() - v.height.toFloat() - margin).coerceAtLeast(margin)
+                        v.x = (startViewX + dx).coerceIn(margin, maxX)
+                        v.y = (startViewY + dy).coerceIn(margin, maxY)
+                    }
+                    true
+                }
+                android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                    if (!dragging) {
+                        onTap()
+                    } else if (parent != null && parent.width > 0) {
+                        val margin = dpPx(10).toFloat()
+                        val snapX = if (v.x + v.width / 2f < parent.width / 2f) {
+                            margin
+                        } else {
+                            (parent.width.toFloat() - v.width.toFloat() - margin).coerceAtLeast(margin)
+                        }
+                        v.animate().x(snapX).alpha(0.84f).setDuration(180).start()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
     private fun positionEasyTouchPodNearBubble() {
         broadcastOverlay.post {
             val parentW = broadcastOverlay.width.toFloat()
             val parentH = broadcastOverlay.height.toFloat()
             if (parentW <= 0f || parentH <= 0f) return@post
 
-            val podW = (if (floatingBroadcastDock.width > 0) floatingBroadcastDock.width else dpPx(256)).toFloat()
-            val podH = (if (floatingBroadcastDock.height > 0) floatingBroadcastDock.height else dpPx(176)).toFloat()
+            val podW = (if (floatingBroadcastDock.width > 0) floatingBroadcastDock.width else dpPx(274)).toFloat()
+            val podH = (if (floatingBroadcastDock.height > 0) floatingBroadcastDock.height else dpPx(218)).toFloat()
             val gap = dpPx(10).toFloat()
             val margin = dpPx(12).toFloat()
 
@@ -1248,8 +1351,11 @@ class MainActivity : AppCompatActivity() {
             topBroadcastBadgeBar.visibility = View.GONE
             findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.GONE
             btnCloseBroadcast.visibility = if (!isForce) View.VISIBLE else View.GONE
+            val quickExitPill = findViewById<View?>(R.id.btnQuickExitBroadcastPill)
+            quickExitPill?.visibility = if (!isForce && broadcastOverlay.visibility == View.VISIBLE) View.VISIBLE else View.GONE
 
             if (isScreenBroadcastActive && isForce) {
+                userMinimizedBroadcast = false
                 if (broadcastOverlay.visibility != View.VISIBLE) {
                     if (imgBroadcastScreen.drawable == null && imgInlineBroadcast.drawable != null) {
                         imgBroadcastScreen.setImageDrawable(imgInlineBroadcast.drawable)
@@ -1258,11 +1364,12 @@ class MainActivity : AppCompatActivity() {
                 }
                 setImmersiveFullscreen(true)
             } else if (!isForce && lockOverlay.visibility != View.VISIBLE) {
+                // Trả lại thanh điều hướng Android ngay lập tức để Học sinh có thể bấm Ra ngoài / Home / Đa nhiệm
                 setImmersiveFullscreen(false)
             }
 
             findViewById<View?>(R.id.dotEasyTouchLive)?.backgroundTintList =
-                android.content.res.ColorStateList.valueOf(if (isForce) 0xFF22C55E.toInt() else 0xFF38BDF8.toInt())
+                android.content.res.ColorStateList.valueOf(if (isForce) 0xFFEF4444.toInt() else 0xFF10B981.toInt())
 
             if (notifyToast && prevForce != isForce) {
                 val msg = if (isForce) {
@@ -1276,20 +1383,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openFullscreenBroadcastOverlay() {
+        userMinimizedBroadcast = false
         if (imgBroadcastScreen.drawable == null && imgInlineBroadcast.drawable != null) {
             imgBroadcastScreen.setImageDrawable(imgInlineBroadcast.drawable)
         }
         topBroadcastBadgeBar.visibility = View.GONE
         findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.GONE
         btnCloseBroadcast.visibility = if (!isForceBroadcastMode) View.VISIBLE else View.GONE
+        findViewById<View?>(R.id.btnQuickExitBroadcastPill)?.visibility =
+            if (!isForceBroadcastMode) View.VISIBLE else View.GONE
         broadcastOverlay.visibility = View.VISIBLE
-        setImmersiveFullscreen(true)
+        setImmersiveFullscreen(isForceBroadcastMode)
         collapseStudentEasyTouch(immediate = true)
     }
 
     private fun minimizeFullscreenBroadcastOverlay() {
         if (isForceBroadcastMode) return
+        userMinimizedBroadcast = true
         collapseStudentEasyTouch(immediate = true)
+        findViewById<View?>(R.id.btnQuickExitBroadcastPill)?.visibility = View.GONE
         setImmersiveFullscreen(false)
         imgBroadcastScreen.drawable?.let { imgInlineBroadcast.setImageDrawable(it) }
         broadcastOverlay.visibility = View.GONE
@@ -1300,14 +1412,17 @@ class MainActivity : AppCompatActivity() {
         broadcastUiHideJob?.cancel()
         floatingBroadcastDock.animate().cancel()
         topBroadcastBadgeBar.visibility = View.GONE
+        if (!isForceBroadcastMode && broadcastOverlay.visibility == View.VISIBLE) {
+            findViewById<View?>(R.id.btnQuickExitBroadcastPill)?.visibility = View.VISIBLE
+        }
         if (immediate) {
             floatingBroadcastDock.visibility = View.GONE
             floatingBroadcastDock.alpha = 0f
-            btnEasyTouchBroadcast.alpha = 0.68f
+            btnEasyTouchBroadcast.alpha = 0.84f
         } else {
             floatingBroadcastDock.animate().alpha(0f).setDuration(160).withEndAction {
                 floatingBroadcastDock.visibility = View.GONE
-                btnEasyTouchBroadcast.animate().alpha(0.68f).setDuration(180).start()
+                btnEasyTouchBroadcast.animate().alpha(0.84f).setDuration(180).start()
             }.start()
         }
     }
@@ -1326,6 +1441,7 @@ class MainActivity : AppCompatActivity() {
         floatingBroadcastDock.animate().cancel()
         topBroadcastBadgeBar.visibility = View.GONE
         findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.GONE
+        findViewById<View?>(R.id.btnQuickExitBroadcastPill)?.visibility = View.GONE
         btnCloseBroadcast.visibility = if (!isForceBroadcastMode) View.VISIBLE else View.GONE
         btnEasyTouchBroadcast.alpha = 1.0f
 
@@ -3149,10 +3265,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun applyDocumentZoom() {
         if (!::txtZoomLevel.isInitialized) return
-        txtZoomLevel.text = "$currentZoomPercent%"
+        val label = "$currentZoomPercent%"
+        txtZoomLevel.text = label
+        findViewById<TextView?>(R.id.txtFsZoomLevel)?.text = label
         val scale = (currentZoomPercent / 100f).coerceIn(0.7f, 2.0f)
         imgInlineBroadcast.scaleX = scale
         imgInlineBroadcast.scaleY = scale
+        if (::imgBroadcastScreen.isInitialized) {
+            imgBroadcastScreen.scaleX = scale
+            imgBroadcastScreen.scaleY = scale
+        }
     }
 
     private suspend fun uploadLocalFileToTeacher(
@@ -5177,9 +5299,18 @@ class MainActivity : AppCompatActivity() {
         topBroadcastBadgeBar.visibility = View.GONE
         findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.GONE
         btnCloseBroadcast.visibility = if (!isForce) View.VISIBLE else View.GONE
-        broadcastOverlay.visibility = View.VISIBLE
-        setImmersiveFullscreen(true)
-        collapseStudentEasyTouch(immediate = true)
+        if (isForce || !alreadyStreamingSameSession) {
+            userMinimizedBroadcast = false
+        }
+        if (isForce || !userMinimizedBroadcast) {
+            broadcastOverlay.visibility = View.VISIBLE
+            findViewById<View?>(R.id.btnQuickExitBroadcastPill)?.visibility =
+                if (!isForce) View.VISIBLE else View.GONE
+            setImmersiveFullscreen(isForce)
+            if (!alreadyStreamingSameSession) {
+                collapseStudentEasyTouch(immediate = true)
+            }
+        }
 
         if (alreadyStreamingSameSession) {
             return
@@ -5412,15 +5543,15 @@ class MainActivity : AppCompatActivity() {
     private fun syncBroadcastAudioMuteUi() {
         runOnUiThread {
             if (isBroadcastAudioMuted) {
-                btnInlineBroadcastAudio.text = "🔇 Tắt tiếng"
+                btnInlineBroadcastAudio.text = "🔇 Đã tắt loa"
                 btnInlineBroadcastAudio.setTextColor(android.graphics.Color.parseColor("#DC2626"))
                 btnFullscreenMuteAudio.text = "🔇 Đã tắt loa"
-                btnFullscreenMuteAudio.setTextColor(android.graphics.Color.parseColor("#FCA5A5"))
+                btnFullscreenMuteAudio.setTextColor(android.graphics.Color.parseColor("#BE123C"))
             } else {
-                btnInlineBroadcastAudio.text = "🔊 Tiếng"
-                btnInlineBroadcastAudio.setTextColor(android.graphics.Color.parseColor("#1A73E8"))
-                btnFullscreenMuteAudio.text = "🔊 Bật tiếng"
-                btnFullscreenMuteAudio.setTextColor(android.graphics.Color.parseColor("#8AB4F8"))
+                btnInlineBroadcastAudio.text = "🔊 Âm thanh"
+                btnInlineBroadcastAudio.setTextColor(android.graphics.Color.parseColor("#1D4ED8"))
+                btnFullscreenMuteAudio.text = "🔊 Âm thanh"
+                btnFullscreenMuteAudio.setTextColor(android.graphics.Color.parseColor("#1D4ED8"))
             }
         }
     }
@@ -5516,6 +5647,7 @@ class MainActivity : AppCompatActivity() {
     private fun stopScreenBroadcast() {
         isScreenBroadcastActive = false
         isForceBroadcastMode = false
+        userMinimizedBroadcast = false
         broadcastUiHideJob?.cancel()
         broadcastUiHideJob = null
         broadcastAudioJob?.cancel()
@@ -5525,6 +5657,7 @@ class MainActivity : AppCompatActivity() {
 
         runOnUiThread {
             collapseStudentEasyTouch(immediate = true)
+            findViewById<View?>(R.id.btnQuickExitBroadcastPill)?.visibility = View.GONE
             setImmersiveFullscreen(false)
             broadcastOverlay.visibility = View.GONE
             layoutLiveBroadcast.visibility = View.GONE

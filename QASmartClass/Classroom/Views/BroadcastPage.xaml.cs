@@ -36,10 +36,21 @@ namespace QASmartClass.Classroom.Views
         private System.Collections.Generic.HashSet<string> _dynamicWhitelist = new System.Collections.Generic.HashSet<string>();
         private System.IO.FileSystemWatcher? _configWatcher;
         private static ImageSource? _cachedPlaceholder;
+        internal static BroadcastPage? ActiveInstance { get; private set; }
+        private static readonly System.Collections.Generic.List<WeakReference<BroadcastPage>> _allInstances = new();
+        private static bool _lastGlobalAllowStudentExit = false;
 
         public BroadcastPage()
         {
+            ActiveInstance ??= this;
+            lock (_allInstances)
+            {
+                _allInstances.RemoveAll(r => !r.TryGetTarget(out _));
+                _allInstances.Add(new WeakReference<BroadcastPage>(this));
+            }
             InitializeComponent();
+            if (chkAllowStudentExit != null) chkAllowStudentExit.IsChecked = _lastGlobalAllowStudentExit;
+            if (chkForceWatch != null) chkForceWatch.IsChecked = !_lastGlobalAllowStudentExit;
             InitializeHighFpsOptions();
             LoadDynamicWhitelist();
             SetupConfigWatcher();
@@ -318,6 +329,7 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
+                ActiveInstance = this;
                 // [MYTHWARE_LITE] Hợp nhất toàn bộ điều khiển trình chiếu, âm thanh, camera & khóa HS vào 1 Cục Tròn EasyTouch duy nhất (FloatingModeBar)
                 var orb = GetUnifiedEasyTouchOrb();
                 if (orb != null)
@@ -327,29 +339,35 @@ namespace QASmartClass.Classroom.Views
                         orb.IsBroadcastBridgeBound = true;
                         orb.ShareCurrentInsteadRequested += (_, _) =>
                         {
-                            Dispatcher.Invoke(SwitchBroadcastToActiveScreenInstead);
+                            var active = ActiveInstance ?? this;
+                            active.Dispatcher.Invoke(active.SwitchBroadcastToActiveScreenInstead);
                         };
                         orb.ChangeSourceRequested += (_, _) =>
                         {
-                            Dispatcher.Invoke(() => OpenSourcePicker(ScreenSourceKind.Screen, out _));
+                            var active = ActiveInstance ?? this;
+                            active.Dispatcher.Invoke(() => active.OpenSourcePicker(ScreenSourceKind.Screen, out _));
                         };
                         orb.SelectRegionRequested += (_, _) =>
                         {
-                            Dispatcher.Invoke(() => PickRegion_Click(this, new RoutedEventArgs()));
+                            var active = ActiveInstance ?? this;
+                            active.Dispatcher.Invoke(() => active.PickRegion_Click(active, new RoutedEventArgs()));
                         };
                         orb.TogglePauseRequested += (_, _) =>
                         {
-                            Dispatcher.Invoke(() => Pause_Click(this, new RoutedEventArgs()));
+                            var active = ActiveInstance ?? this;
+                            active.Dispatcher.Invoke(() => active.Pause_Click(active, new RoutedEventArgs()));
                         };
                         orb.StopRequested += (_, _) =>
                         {
-                            Dispatcher.Invoke(StopAllBroadcasting);
+                            var active = ActiveInstance ?? this;
+                            active.Dispatcher.Invoke(active.StopAllBroadcasting);
                         };
                         orb.RestoreShellRequested += (_, _) =>
                         {
-                            Dispatcher.Invoke(() =>
+                            var active = ActiveInstance ?? this;
+                            active.Dispatcher.Invoke(() =>
                             {
-                                var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                                var shell = (Window.GetWindow(active) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
                                 if (shell != null)
                                 {
                                     if (shell.WindowState == WindowState.Minimized)
@@ -361,18 +379,19 @@ namespace QASmartClass.Classroom.Views
                         };
                         orb.HideClassroomShellChanged += (_, hideShell) =>
                         {
-                            Dispatcher.Invoke(() =>
+                            var active = ActiveInstance ?? this;
+                            active.Dispatcher.Invoke(() =>
                             {
-                                _hideClassroomShellFromStudents = hideShell;
+                                active._hideClassroomShellFromStudents = hideShell;
                                 ScreenSourceInfo? curPicked;
-                                lock (_srcLock) curPicked = _picked;
-                                bool shouldExclude = _hideClassroomShellFromStudents && (curPicked == null || curPicked.Kind == ScreenSourceKind.Screen);
-                                ApplyScreenCaptureExclusion(shouldExclude);
+                                lock (active._srcLock) curPicked = active._picked;
+                                bool shouldExclude = active._hideClassroomShellFromStudents && (curPicked == null || curPicked.Kind == ScreenSourceKind.Screen);
+                                active.ApplyScreenCaptureExclusion(shouldExclude);
                             });
                         };
                         orb.AllowStudentExitChanged += (_, allowExit) =>
                         {
-                            Dispatcher.Invoke(() => SetAllowStudentExitLive(allowExit));
+                            ApplyGlobalAllowStudentExit(allowExit);
                         };
                     }
 
@@ -1240,7 +1259,65 @@ namespace QASmartClass.Classroom.Views
             SetAllowStudentExitLive(chkAllowStudentExit?.IsChecked == true);
         }
 
-        private void SetAllowStudentExitLive(bool allowExit)
+        public static void ApplyGlobalAllowStudentExit(bool allowExit)
+        {
+            _lastGlobalAllowStudentExit = allowExit;
+            System.Collections.Generic.List<BroadcastPage> livePages = new();
+            lock (_allInstances)
+            {
+                for (int i = _allInstances.Count - 1; i >= 0; i--)
+                {
+                    if (_allInstances[i].TryGetTarget(out var bp))
+                        livePages.Add(bp);
+                    else
+                        _allInstances.RemoveAt(i);
+                }
+            }
+
+            System.Collections.Generic.List<string>? activeTargets = null;
+            bool anyActive = ScreenShareController.Instance.IsLive
+                || QASmartClass.Services.VncBroadcastService.Instance.IsVncBroadcasting;
+
+            foreach (var bp in livePages)
+            {
+                bp.Dispatcher.Invoke(() =>
+                {
+                    bp.SyncAllowStudentExitCheckboxOnly(allowExit);
+                    if (bp._isBroadcasting || bp._isVncBroadcasting)
+                    {
+                        anyActive = true;
+                        ActiveInstance = bp;
+                        activeTargets = bp.GetTargetStudentCodes();
+                    }
+                });
+            }
+
+            (Application.Current as QASmartTouch.App)?._floatingModeBar?.Dispatcher.Invoke(() =>
+            {
+                (Application.Current as QASmartTouch.App)?._floatingModeBar?.SetAllowStudentExitState(allowExit);
+            });
+
+            if (anyActive)
+            {
+                string cmd = $"CMD|BROADCAST_ALLOW_EXIT|{(allowExit ? "1" : "0")}";
+                ClassroomAppContext.DispatchCommand(cmd);
+                var net = ClassroomAppContext.Network ?? (Application.Current as QASmartTouch.App)?.NetworkService;
+                if (net != null && net.IsBroadcasting)
+                {
+                    if (activeTargets == null)
+                    {
+                        _ = net.SendCommandAsync(cmd);
+                    }
+                    else
+                    {
+                        _ = net.SendToStudentsAsync(activeTargets, cmd);
+                    }
+                }
+                Log.Information("[BroadcastPage] Global AllowStudentExit applied: {AllowExit} ({Cmd})", allowExit, cmd);
+            }
+        }
+
+        private void SyncAllowStudentExitCheckboxOnly(bool allowExit)
         {
             _suppressAllowExitSync = true;
             try
@@ -1255,31 +1332,17 @@ namespace QASmartClass.Classroom.Views
                 }
                 _cachedIsForceWatch = !allowExit;
                 _floatingBroadcastBar?.SetAllowStudentExitState(allowExit);
-                (Application.Current as QASmartTouch.App)?._floatingModeBar?.SetAllowStudentExitState(allowExit);
                 _lastTcpBroadcastCmdUtc = DateTime.MinValue;
-
-                if ((_isBroadcasting || _isVncBroadcasting) && ClassroomAppContext.Network?.IsBroadcasting == true)
-                {
-                    string cmd = $"CMD|BROADCAST_ALLOW_EXIT|{(allowExit ? "1" : "0")}";
-                    var targetCodes = GetTargetStudentCodes();
-                    if (targetCodes == null)
-                    {
-                        _ = ClassroomAppContext.Network.SendCommandAsync(cmd);
-                    }
-                    else
-                    {
-                        _ = ClassroomAppContext.Network.SendToStudentsAsync(targetCodes, cmd);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Debug("[BroadcastPage] SetAllowStudentExitLive error: {Err}", ex.Message);
             }
             finally
             {
                 _suppressAllowExitSync = false;
             }
+        }
+
+        private void SetAllowStudentExitLive(bool allowExit)
+        {
+            ApplyGlobalAllowStudentExit(allowExit);
         }
 
         private void CursorOption_Changed(object sender, RoutedEventArgs e)
@@ -4558,6 +4621,7 @@ namespace QASmartClass.Classroom.Views
 
             if (started)
             {
+                EnsureFloatingBroadcastBarShown("Toàn màn hình (VNC)", "1920×1080", "30 fps");
                 SaveEvent("VNC_BROADCAST", "GV", $"Bắt đầu phát VNC: {QASmartClass.Services.VncBroadcastService.Instance.VncPort} | {QASmartClass.Services.VncBroadcastService.Instance.VncSessionCode}");
             }
             else

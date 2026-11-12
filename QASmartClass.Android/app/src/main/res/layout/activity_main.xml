@@ -512,7 +512,7 @@
                     android:ellipsize="end" />
             </LinearLayout>
 
-            <!-- Cụm Nút Giơ Tay 1 Chạm Chuẩn Google Meet / NetSupport (Luôn bấm được từ mọi tab) -->
+            <!-- Cụm Nút Giơ Tay 1 Chạm (Hỗ trợ thu nhỏ gọn lại thành viên tròn mini) -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
@@ -520,32 +520,68 @@
                 android:gravity="center_vertical"
                 android:layout_marginEnd="8dp">
 
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btnRaiseHand"
+                <LinearLayout
+                    android:id="@+id/layoutHeaderHandExpanded"
                     android:layout_width="wrap_content"
                     android:layout_height="38dp"
-                    android:background="@drawable/bg_m3_outlined_pill"
-                    android:paddingHorizontal="14dp"
-                    android:text="✋ Giơ tay"
-                    android:textAllCaps="false"
-                    android:textSize="13.5sp"
-                    android:textStyle="bold"
-                    android:textColor="#B45309"
-                    android:stateListAnimator="@null" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnRaiseHand"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_m3_outlined_pill"
+                        android:paddingHorizontal="14dp"
+                        android:text="✋ Giơ tay"
+                        android:textAllCaps="false"
+                        android:textSize="13.5sp"
+                        android:textStyle="bold"
+                        android:textColor="#B45309"
+                        android:stateListAnimator="@null" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnTopHandReason"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_m3_tonal_card"
+                        android:paddingHorizontal="10dp"
+                        android:minWidth="0dp"
+                        android:text="Phát biểu ▾"
+                        android:textAllCaps="false"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="#475569"
+                        android:stateListAnimator="@null" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnCollapseHeaderHand"
+                        android:layout_width="30dp"
+                        android:layout_height="34dp"
+                        android:layout_marginStart="4dp"
+                        android:minWidth="0dp"
+                        android:padding="0dp"
+                        android:background="@drawable/bg_easytouch_light_pill"
+                        android:text="‹"
+                        android:textAllCaps="false"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#1D4ED8"
+                        android:stateListAnimator="@null" />
+                </LinearLayout>
 
                 <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btnTopHandReason"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/btnExpandHeaderHand"
+                    android:layout_width="38dp"
                     android:layout_height="38dp"
-                    android:layout_marginStart="4dp"
-                    android:background="@drawable/bg_m3_tonal_card"
-                    android:paddingHorizontal="10dp"
                     android:minWidth="0dp"
-                    android:text="Phát biểu ▾"
+                    android:padding="0dp"
+                    android:background="@drawable/bg_easytouch_orb"
+                    android:text="✋"
                     android:textAllCaps="false"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#475569"
+                    android:textSize="15sp"
+                    android:visibility="gone"
                     android:stateListAnimator="@null" />
             </LinearLayout>
 
@@ -892,8 +928,9 @@
                             android:background="@drawable/bg_m3_surface_card"
                             android:padding="12dp">
 
-                            <!-- Thanh công cụ mỏng của Khung Bài Giảng -->
+                            <!-- Thanh công cụ mỏng của Khung Bài Giảng (Có thể thu bé thành nút tròn nổi) -->
                             <LinearLayout
+                                android:id="@+id/lectureToolbarFull"
                                 android:layout_width="match_parent"
                                 android:layout_height="38dp"
                                 android:orientation="horizontal"
@@ -956,7 +993,7 @@
                                     android:layout_marginStart="8dp"
                                     android:paddingHorizontal="10dp"
                                     android:background="@drawable/bg_m3_chip_selected"
-                                    android:text="🔊 Tiếng"
+                                    android:text="🔊 Âm thanh"
                                     android:textAllCaps="false"
                                     android:textSize="12sp"
                                     android:textStyle="bold"
@@ -968,7 +1005,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="32dp"
                                     android:minWidth="0dp"
-                                    android:layout_marginStart="8dp"
+                                    android:layout_marginStart="6dp"
                                     android:paddingHorizontal="10dp"
                                     android:background="@drawable/bg_m3_outlined_pill"
                                     android:text="📸 Chụp lưu"
@@ -984,13 +1021,28 @@
                                     android:layout_height="32dp"
                                     android:minWidth="0dp"
                                     android:layout_marginStart="6dp"
-                                    android:paddingHorizontal="12dp"
+                                    android:paddingHorizontal="10dp"
                                     android:background="@drawable/bg_m3_chip_selected"
                                     android:text="⛶ Toàn màn hình"
                                     android:textAllCaps="false"
                                     android:textSize="12sp"
                                     android:textStyle="bold"
                                     android:textColor="#1A73E8"
+                                    android:stateListAnimator="@null" />
+
+                                <androidx.appcompat.widget.AppCompatButton
+                                    android:id="@+id/btnCollapseLectureToolbar"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="32dp"
+                                    android:minWidth="0dp"
+                                    android:layout_marginStart="6dp"
+                                    android:paddingHorizontal="10dp"
+                                    android:background="@drawable/bg_easytouch_light_pill"
+                                    android:text="● Thu gọn"
+                                    android:textAllCaps="false"
+                                    android:textSize="11.5sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#1D4ED8"
                                     android:stateListAnimator="@null" />
 
                                 <!-- [MYTHWARE_LITE] Đã ẩn nút Ẩn/Mở nháp theo yêu cầu bỏ phần nháp -->
@@ -1160,6 +1212,20 @@
                                         android:scaleType="fitCenter"
                                         android:contentDescription="Màn hình bài giảng trực tiếp" />
                                 </LinearLayout>
+
+                                <!-- Cục tròn EasyTouch nổi thu gọn cho Thanh Thu Phóng / Bài giảng tại trang chủ -->
+                                <FrameLayout
+                                    android:id="@+id/btnExpandLectureToolbarOrb"
+                                    android:layout_width="46dp"
+                                    android:layout_height="46dp"
+                                    android:layout_gravity="top|end"
+                                    android:layout_margin="10dp"
+                                    android:background="@drawable/bg_easytouch_orb"
+                                    android:elevation="10dp"
+                                    android:alpha="0.88"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:visibility="gone" />
                             </FrameLayout>
                         </LinearLayout>
 
@@ -2059,7 +2125,7 @@
             android:layout_marginTop="72dp"
             android:layout_marginEnd="14dp"
             android:background="@drawable/bg_easytouch_orb"
-            android:alpha="0.80"
+            android:alpha="0.88"
             android:elevation="16dp">
 
             <FrameLayout
@@ -2069,7 +2135,7 @@
                 android:layout_marginTop="2dp"
                 android:layout_marginEnd="2dp"
                 android:background="@drawable/bg_meet_circle_btn"
-                android:backgroundTint="#0F172A"
+                android:backgroundTint="#FFFFFF"
                 android:padding="2dp">
 
                 <View
@@ -2077,20 +2143,41 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/bg_meet_circle_btn"
-                    android:backgroundTint="#22C55E" />
+                    android:backgroundTint="#10B981" />
             </FrameLayout>
         </FrameLayout>
 
-        <!-- HỘP ĐIỀU KHIỂN EASYTOUCH BUNG GỌN (Không trải dài, tự thu về nút tròn) -->
+        <!-- NÚT NHANH RA NGOÀI NỔI TRỰC QUAN NGAY KHI GIÁO VIÊN CẤP QUYỀN -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnQuickExitBroadcastPill"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="81dp"
+            android:layout_marginEnd="78dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="14dp"
+            android:background="@drawable/bg_easytouch_light_pod"
+            android:backgroundTint="#ECFDF5"
+            android:text="🔓 ↙ Ra ngoài / Thu nhỏ"
+            android:textAllCaps="false"
+            android:textColor="#047857"
+            android:textSize="12.5sp"
+            android:textStyle="bold"
+            android:elevation="17dp"
+            android:visibility="gone"
+            android:stateListAnimator="@null" />
+
+        <!-- HỘP ĐIỀU KHIỂN EASYTOUCH SÁNG NGỌC TRAI (Tích hợp Thu phóng + Giơ tay + Âm thanh + Ra ngoài) -->
         <LinearLayout
             android:id="@+id/floatingBroadcastDock"
-            android:layout_width="256dp"
+            android:layout_width="274dp"
             android:layout_height="wrap_content"
             android:layout_gravity="top|end"
             android:layout_marginTop="72dp"
             android:layout_marginEnd="74dp"
             android:orientation="vertical"
-            android:background="@drawable/bg_meet_bottom_bar"
+            android:background="@drawable/bg_easytouch_light_pod"
             android:padding="12dp"
             android:visibility="gone"
             android:elevation="18dp">
@@ -2108,8 +2195,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="🟢 Màn hình Giáo viên"
-                    android:textColor="#F8FAFC"
-                    android:textSize="12sp"
+                    android:textColor="#0F172A"
+                    android:textSize="12.5sp"
                     android:textStyle="bold"
                     android:singleLine="true"
                     android:ellipsize="end" />
@@ -2120,11 +2207,67 @@
                     android:layout_height="28dp"
                     android:minWidth="0dp"
                     android:paddingHorizontal="10dp"
-                    android:background="@drawable/bg_meet_circle_btn"
+                    android:background="@drawable/bg_easytouch_light_pill"
                     android:text="● Thu gọn"
                     android:textAllCaps="false"
-                    android:textColor="#93C5FD"
+                    android:textColor="#1D4ED8"
                     android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <!-- HÀNG THU PHÓNG MÀN HÌNH CHIẾU TRỰC TIẾP TRONG CỤC TRÒN EASYTOUCH -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_easytouch_light_pill"
+                android:paddingHorizontal="8dp"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🔍 Thu phóng"
+                    android:textColor="#334155"
+                    android:textSize="11.5sp"
+                    android:textStyle="bold" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnFsZoomOut"
+                    android:layout_width="34dp"
+                    android:layout_height="28dp"
+                    android:minWidth="0dp"
+                    android:padding="0dp"
+                    android:background="@drawable/bg_m3_surface_card"
+                    android:text="−"
+                    android:textColor="#1E293B"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:stateListAnimator="@null" />
+
+                <TextView
+                    android:id="@+id/txtFsZoomLevel"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="100%"
+                    android:textColor="#1D4ED8"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnFsZoomIn"
+                    android:layout_width="34dp"
+                    android:layout_height="28dp"
+                    android:minWidth="0dp"
+                    android:padding="0dp"
+                    android:background="@drawable/bg_m3_surface_card"
+                    android:text="+"
+                    android:textColor="#1E293B"
+                    android:textSize="15sp"
                     android:textStyle="bold"
                     android:stateListAnimator="@null" />
             </LinearLayout>
@@ -2143,10 +2286,10 @@
                     android:minWidth="0dp"
                     android:layout_marginEnd="4dp"
                     android:paddingHorizontal="8dp"
-                    android:background="@drawable/bg_meet_circle_btn"
-                    android:text="🔊 Bật tiếng"
+                    android:background="@drawable/bg_easytouch_light_pill"
+                    android:text="🔊 Âm thanh"
                     android:textAllCaps="false"
-                    android:textColor="#8AB4F8"
+                    android:textColor="#1D4ED8"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:stateListAnimator="@null" />
@@ -2159,10 +2302,10 @@
                     android:minWidth="0dp"
                     android:layout_marginStart="4dp"
                     android:paddingHorizontal="8dp"
-                    android:background="@drawable/bg_meet_circle_btn"
+                    android:background="@drawable/bg_easytouch_light_pill"
                     android:text="🔉 Âm lượng"
                     android:textAllCaps="false"
-                    android:textColor="#F8FAFC"
+                    android:textColor="#334155"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:stateListAnimator="@null" />
@@ -2181,10 +2324,11 @@
                     android:minWidth="0dp"
                     android:layout_marginEnd="4dp"
                     android:paddingHorizontal="8dp"
-                    android:background="@drawable/bg_meet_circle_btn"
+                    android:background="@drawable/bg_easytouch_light_pill"
+                    android:backgroundTint="#FEF3C7"
                     android:text="✋ Giơ tay"
                     android:textAllCaps="false"
-                    android:textColor="#FDE68A"
+                    android:textColor="#B45309"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:stateListAnimator="@null" />
@@ -2197,10 +2341,10 @@
                     android:minWidth="0dp"
                     android:layout_marginStart="4dp"
                     android:paddingHorizontal="8dp"
-                    android:background="@drawable/bg_meet_circle_btn"
+                    android:background="@drawable/bg_easytouch_light_pill"
                     android:text="📸 Chụp lưu"
                     android:textAllCaps="false"
-                    android:textColor="#F8FAFC"
+                    android:textColor="#334155"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:stateListAnimator="@null" />
@@ -2214,10 +2358,11 @@
                 android:minWidth="0dp"
                 android:layout_marginTop="8dp"
                 android:paddingHorizontal="12dp"
-                android:background="@drawable/bg_meet_circle_btn"
+                android:background="@drawable/bg_easytouch_light_pill"
+                android:backgroundTint="#DCFCE7"
                 android:text="↙ Ra ngoài / Thu nhỏ"
                 android:textAllCaps="false"
-                android:textColor="#86EFAC"
+                android:textColor="#047857"
                 android:textSize="12.5sp"
                 android:textStyle="bold"
                 android:visibility="gone"

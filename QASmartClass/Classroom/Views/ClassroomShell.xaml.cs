@@ -1637,6 +1637,11 @@ namespace QASmartClass.Classroom.Views
 
 			if (page != null)
 			{
+				if (page is ClassControlHub sharedHub && (formId == "FHUB" || formId == "F_HUB" || formId == "F4" || formId == "F5" || formId == "F11" || formId == "F12" || formId == "F13" || formId == "F16" || formId == "F30"))
+				{
+					sharedHub.SelectTabByFormId(formId);
+				}
+
 				// 1. Hiển thị trang tức thì (< 16ms / 60 FPS)
 				contentFrame.Content = page;
 
@@ -1751,6 +1756,21 @@ namespace QASmartClass.Classroom.Views
 			await tcs.Task;
 		}
 
+		private ClassControlHub GetOrCreateSharedControlHub(string initialTab = "Monitor")
+		{
+			foreach (var kv in _pageCache)
+			{
+				if (kv.Value is ClassControlHub cachedHub)
+				{
+					_pageCache["FHUB"] = cachedHub;
+					return cachedHub;
+				}
+			}
+			var created = new ClassControlHub(initialTab);
+			_pageCache["FHUB"] = created;
+			return created;
+		}
+
 		/// <summary>
 		/// Khởi tạo phiên bản Page tương ứng với formId
 		/// </summary>
@@ -1758,26 +1778,27 @@ namespace QASmartClass.Classroom.Views
 		{
 			return formId switch
 			{
-				"FHUB"  => new ClassControlHub(),
-				"F_HUB" => new ClassControlHub(),
+				// [MYTHWARE_LITE] Dùng chung 1 thực thể ClassControlHub duy nhất cho mọi tab điều khiển lớp để không nhân bản nhiều BroadcastPage gây lệch trạng thái trình chiếu / mở khóa HS
+				"FHUB"  => GetOrCreateSharedControlHub("Monitor"),
+				"F_HUB" => GetOrCreateSharedControlHub("Monitor"),
 				"F1"  => new DashboardPage(),
 				"F2"  => new LessonListPage(),
 				"F3"  => new LessonEditorPage(),
-				"F4"  => new ClassControlHub("Classroom"),
-				"F5"  => new ClassControlHub("Monitor"),
+				"F4"  => GetOrCreateSharedControlHub("Classroom"),
+				"F5"  => GetOrCreateSharedControlHub("Monitor"),
 				"F6"  => new QuizPage(),
 				"F7"  => new ReportPage(),
 				"F8"  => new SettingsPage(),
 				"F9"  => new LibraryPage(),
 				"F10" => new GroupPage(),
-				"F11" => new ClassControlHub("Files"),
-				"F12" => new ClassControlHub("Monitor"),  // Remote merged into Monitor
+				"F11" => GetOrCreateSharedControlHub("Files"),
+				"F12" => GetOrCreateSharedControlHub("Monitor"),  // Remote merged into Monitor
 				// [MYTHWARE_LITE] "F13" => new MessagingPage(),
-				"F13" => _pageCache.TryGetValue("FHUB", out var existingHub) && existingHub is ClassControlHub ch ? ch : new ClassControlHub("Messaging"),
+				"F13" => GetOrCreateSharedControlHub("Messaging"),
 				"F14" => new QuestionBankPage(),
 				"F15" => new StudentPage(showRosterFirst: true),
 				"F15S" => new StudentPage(showRosterFirst: false),
-				"F16" => new ClassControlHub("Broadcast"),
+				"F16" => GetOrCreateSharedControlHub("Broadcast"),
 				"F17" => new PolicyPage(),
 				"F18" => new SurveyPage(),
 				"F19" => new EventLogPage(),
@@ -1789,7 +1810,7 @@ namespace QASmartClass.Classroom.Views
 				"F25" => new LessonHistoryPage(),
 				"F27" => new AttendancePage(),
 				"F26" => new TimetablePage(),
-				"F30" => new ClassControlHub("Web"),
+				"F30" => GetOrCreateSharedControlHub("Web"),
 				"F28" => new HomeworkPage(),
 				"F29" => _aiAssistantPage ??= new AIAssistantPage(),
 				"F31" => new StemToolsPage(),
