@@ -188,11 +188,13 @@ namespace QASmartClass.StudentClient.Views
 
 
 
-		private int _currentTeacherWebPort = 80;
-
-
+		private int _currentTeacherWebPort = 8080;
 
 		private string _currentBroadcastToken = "";
+
+		public int ActiveTeacherWebPort => _currentTeacherWebPort <= 80 ? 8080 : _currentTeacherWebPort;
+
+		public string ActiveBroadcastToken => _currentBroadcastToken;
 
 
 
@@ -4537,23 +4539,41 @@ namespace QASmartClass.StudentClient.Views
 				break;
 
 			case "LOCK":
-
-				if (Application.Current is App)
-
+			case "LOCK_SCREEN":
 				{
+					string lockArg = (parts.Length >= 3 && !parts[2].StartsWith("id=", StringComparison.OrdinalIgnoreCase))
+						? parts[2].Trim()
+						: "1";
+					bool shouldLock = lockArg != "0" && !string.Equals(lockArg, "false", StringComparison.OrdinalIgnoreCase);
+					if (!shouldLock)
+					{
+						if (Application.Current is App)
+						{
+							App.ClassControl.IsScreenLocked = false;
+							App.ClassControl.ScreenLockType = "";
+						}
+						base.Dispatcher.Invoke(delegate
+						{
+							CloseScreenLockOverlay();
+							ShowNotification("🔓 Đã mở khóa", "Giáo viên đã mở khóa màn hình.", "#15803D");
+						});
+						break;
+					}
 
-					App.ClassControl.IsScreenLocked = true;
+					if (Application.Current is App)
+					{
+						App.ClassControl.IsScreenLocked = true;
+						App.ClassControl.ScreenLockType = "LOCK";
+					}
 
-					App.ClassControl.ScreenLockType = "LOCK";
+					base.Dispatcher.Invoke(delegate
+					{
+						ShowScreenLockOverlay("Màn hình đã bị khóa", "Giáo viên đã khóa màn hình để cả lớp tập trung nghe giảng.", "#C62828");
+						ShowNotification("🔒 Khóa màn hình", "Giáo viên đã khóa màn hình của em", "#C62828");
+					});
 
+					Log.Information("Screen locked by teacher ({Cmd})", parts[1]);
 				}
-
-				ShowScreenLockOverlay("Màn hình đã bị khóa", "GV đã khóa màn hình. Vui lòng chờ.", "#C62828");
-
-				ShowNotification("Khóa màn hình", "GV đã khóa màn hình của em", "#C62828");
-
-				Log.Information("Screen locked by teacher (LOCK)");
-
 				break;
 
 			case "HAND_LOWER":
@@ -4571,6 +4591,7 @@ namespace QASmartClass.StudentClient.Views
 				break;
 
 			case "UNLOCK":
+			case "UNLOCK_SCREEN":
 
 				if (Application.Current is App)
 
@@ -5180,12 +5201,58 @@ namespace QASmartClass.StudentClient.Views
 
 					{
 
+						bool isForceUpdateSync = cmd.Contains("FORCE_WATCH");
+						if (isForceUpdateSync != _isBroadcastForceWatch)
+						{
+							ApplyKioskMode(isForceUpdateSync);
+						}
+
 						UpdateScreenBroadcast(imagePath);
 
 					}
 
 				}
 
+				break;
+
+			case "BROADCAST_ALLOW_EXIT":
+				{
+					string rawFlag = "0";
+					if (parts.Length >= 3 && !parts[2].StartsWith("id=", StringComparison.OrdinalIgnoreCase))
+					{
+						rawFlag = parts[2].Trim();
+					}
+					bool allowExit = rawFlag == "1" || string.Equals(rawFlag, "true", StringComparison.OrdinalIgnoreCase);
+					bool forceLock = !allowExit;
+					_isBroadcastForceWatch = forceLock;
+
+					base.Dispatcher.Invoke(delegate
+					{
+						if (forceLock)
+						{
+							_userDismissedBroadcast = false;
+							if (btnShowBroadcast != null) btnShowBroadcast.Visibility = Visibility.Collapsed;
+							if (_broadcastOverlay != null)
+							{
+								ApplyKioskMode(true);
+							}
+							else
+							{
+								ShowBroadcast_Click(this, new RoutedEventArgs());
+								ApplyKioskMode(true);
+							}
+							ShowNotification("🔒 Khóa màn hình chiếu", "Giáo viên đã khóa chế độ xem toàn màn hình.", "#1E40AF");
+						}
+						else
+						{
+							if (_broadcastOverlay != null)
+							{
+								ApplyKioskMode(false);
+							}
+							ShowNotification("🔓 Cho phép ra ngoài", "Giáo viên cho phép thu nhỏ / bấm ra ngoài màn chiếu.", "#15803D");
+						}
+					});
+				}
 				break;
 
 			case "SCREEN_BROADCAST_STOP":
@@ -5705,6 +5772,29 @@ namespace QASmartClass.StudentClient.Views
 
 			}
 
+			case "FILE_OFFER":
+			{
+				// Format: CMD|FILE_OFFER|<fileId>|<fileName>|<fileSize>|<autoOpen:0|1>|<webPort>|<token>|<downloadUrl>
+				if (parts.Length >= 8)
+				{
+					string offerFileId = parts[2];
+					string offerFileName = parts[3];
+					bool offerAutoOpen = parts[5] == "1" || string.Equals(parts[5], "true", StringComparison.OrdinalIgnoreCase);
+					if (int.TryParse(parts[6], out int offerPort) && offerPort > 0)
+					{
+						_currentTeacherWebPort = offerPort;
+					}
+					string offerToken = parts[7];
+					if (!string.IsNullOrEmpty(offerToken))
+					{
+						_currentBroadcastToken = offerToken;
+					}
+
+					_ = HandleIncomingFileOfferAsync(offerFileId, offerFileName, offerAutoOpen, ActiveTeacherWebPort, _currentBroadcastToken);
+				}
+				break;
+			}
+
 			case "FILE_BROADCAST":
 
 				if (parts.Length >= 3)
@@ -6047,100 +6137,46 @@ namespace QASmartClass.StudentClient.Views
 
 				break;
 
+			/* // [MYTHWARE_LITE] Đã hợp nhất xử lý LOCK_SCREEN & UNLOCK_SCREEN (bọc an toàn luồng UI Dispatcher.Invoke) vào nhánh LOCK / UNLOCK phía trên
 			case "LOCK_SCREEN":
-
-				if (Application.Current is App)
-
-				{
-
-					App.ClassControl.IsScreenLocked = true;
-
-					App.ClassControl.ScreenLockType = "LOCK";
-
-				}
-
-				ShowScreenLockOverlay("\ud83d\udd12 Màn hình đã bị khóa", "GV đã khóa màn hình. Vui lòng chờ.", "#C62828");
-
-				ShowNotification("\ud83d\udd12 Khóa màn hình", "GV đã khóa màn hình của em", "#C62828");
-
-				Log.Information("Screen locked by teacher");
-
-				break;
-
 			case "UNLOCK_SCREEN":
-
-				if (Application.Current is App)
-
-				{
-
-					App.ClassControl.IsScreenLocked = false;
-
-					App.ClassControl.ScreenLockType = "";
-
-					App.ClassControl.IsSilenceActive = false;
-
-				}
-
-				base.Dispatcher.Invoke(delegate
-
-				{
-
-					CloseScreenLockOverlay();
-
-					CloseTeacherWarning();
-
-					if (_silenceOverlay != null)
-
-					{
-
-						try
-
-						{
-
-							Grid grid = (Grid)base.Content;
-
-							grid.Children.Remove(_silenceOverlay);
-
-						}
-
-						catch (Exception ex6)
-
-						{
-
-							Log.Warning("UNLOCK remove silence: {Err}", ex6.Message);
-
-						}
-
-						_silenceOverlay = null;
-
-					}
-
-					ShowNotification("\ud83d\udd13 Đã mở khóa", "GV đã mở khóa màn hình", "#2E7D32");
-
-				});
-
-				Log.Information("Screen unlocked by teacher — all overlays cleared");
-
 				break;
+			*/
 
 			case "BLACK_SCREEN":
-
-				if (Application.Current is App)
-
 				{
+					string blackArg = (parts.Length >= 3 && !parts[2].StartsWith("id=", StringComparison.OrdinalIgnoreCase))
+						? parts[2].Trim()
+						: "1";
+					bool enableBlack = blackArg != "0" && !string.Equals(blackArg, "false", StringComparison.OrdinalIgnoreCase);
+					if (!enableBlack)
+					{
+						if (Application.Current is App)
+						{
+							App.ClassControl.IsScreenLocked = false;
+							App.ClassControl.ScreenLockType = "";
+						}
+						base.Dispatcher.Invoke(delegate
+						{
+							CloseScreenLockOverlay();
+						});
+						break;
+					}
 
-					App.ClassControl.IsScreenLocked = true;
+					if (Application.Current is App)
+					{
+						App.ClassControl.IsScreenLocked = true;
+						App.ClassControl.ScreenLockType = "BLACK";
+					}
 
-					App.ClassControl.ScreenLockType = "BLACK";
+					base.Dispatcher.Invoke(delegate
+					{
+						ShowScreenLockOverlay("\ud83d\udcf4 Tắt màn hình", "GV đã tắt màn hình. Hãy chú ý lên bảng.", "#000000");
+						ShowNotification("\ud83d\udcf4 Tắt màn hình", "GV đã tắt màn hình của em", "#424242");
+					});
 
+					Log.Information("Black screen by teacher");
 				}
-
-				ShowScreenLockOverlay("\ud83d\udcf4 Tắt màn hình", "GV đã tắt màn hình. Hãy chú ý lên bảng.", "#000000");
-
-				ShowNotification("\ud83d\udcf4 Tắt màn hình", "GV đã tắt màn hình của em", "#424242");
-
-				Log.Information("Black screen by teacher");
-
 				break;
 
 			case "BROADCAST_START":
@@ -6333,6 +6369,28 @@ namespace QASmartClass.StudentClient.Views
 				UpdateDynamicBadges();
 
 				break;
+
+			case "COLLECT_WORK":
+			{
+				string collectDesc = parts.Length >= 3 ? string.Join("|", parts.Skip(2)) : "Giáo viên yêu cầu nộp bài làm.";
+				if (Application.Current is App && !string.IsNullOrWhiteSpace(collectDesc) && string.IsNullOrWhiteSpace(App.AssessmentState.AssignmentDescription))
+				{
+					App.AssessmentState.AssignmentDescription = collectDesc;
+					App.AssessmentState.AssignmentSentTime = DateTime.Now;
+				}
+				NavigateTo("S4");
+				ShowNotification("🔔 Yêu cầu nộp bài!", collectDesc.Length > 70 ? collectDesc.Substring(0, 70) + "..." : collectDesc, "#E65100");
+				UpdateDynamicBadges();
+				break;
+			}
+
+			case "FILE_SUBMIT_ACK":
+			{
+				string ackName = parts.Length >= 3 ? parts[2] : "bài làm";
+				ShowNotification("✅ Giáo viên đã nhận bài", $"Đã lưu trên máy Giáo viên: {ackName}", "#2E7D32");
+				UpdateDynamicBadges();
+				break;
+			}
 
 			case "SILENCE":
 
@@ -9538,67 +9596,45 @@ namespace QASmartClass.StudentClient.Views
 
 				dockPanel.Children.Add(_broadcastTimeText);
 
-				// V22-26: Nút lớn hơn cho tablet
+				// [MYTHWARE_LITE] Ẩn thanh tím ngang trải dài 48px cũ; thay bằng nút tròn nổi EasyTouch thu phóng gọn nhẹ
+				border.Visibility = Visibility.Collapsed;
 
 				Button button = new Button
-
 				{
-
-					Content = "✕ Đóng",
-
-					FontSize = 15.0,
-
-					Padding = new Thickness(18.0, 8.0, 18.0, 8.0),
-
-					Background = new SolidColorBrush(Color.FromArgb(200, 229, 57, 53)),
-
-					Foreground = Brushes.White,
-
+					Content = "↙ Ra ngoài / Thu nhỏ",
+					FontSize = 13.0,
+					FontWeight = FontWeights.Bold,
+					Padding = new Thickness(12.0, 7.0, 12.0, 7.0),
+					Margin = new Thickness(0, 8, 0, 0),
+					HorizontalAlignment = HorizontalAlignment.Stretch,
+					Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x3A, 0x8A)),
+					Foreground = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD)),
 					BorderThickness = new Thickness(0.0),
-
 					Cursor = Cursors.Hand,
-
-					VerticalAlignment = VerticalAlignment.Center,
-
 					FontFamily = _broadcastFont
-
 				};
 
 				_broadcastCloseButton = button;
-
 				_isBroadcastForceWatch = isForce;
-
 				base.Topmost = isForce;
-
-				DockPanel.SetDock(button, Dock.Right);
-
-				if (isForce)
-
-				{
-
-					button.Visibility = Visibility.Collapsed;
-
-				}
-
-				dockPanel.Children.Insert(0, button);
+				button.Visibility = isForce ? Visibility.Collapsed : Visibility.Visible;
 
 				string? audioTeacherIp = (((App)Application.Current)?.StudentNetwork)?.ServerIP;
 				_broadcastAudioPlayer.Start(audioTeacherIp, _currentTeacherWebPort, _currentBroadcastToken);
 
 				Button btnAudioMute = new Button
 				{
-					Content = _broadcastAudioPlayer.IsMuted ? "🔇 Đã tắt loa" : "🔊 Đang bật loa",
-					FontSize = 13.5,
+					Content = _broadcastAudioPlayer.IsMuted ? "🔇 Tắt loa" : "🔊 Bật loa",
+					FontSize = 12.5,
 					FontWeight = FontWeights.SemiBold,
-					Padding = new Thickness(14.0, 8.0, 14.0, 8.0),
-					Margin = new Thickness(0.0, 0.0, 10.0, 0.0),
+					Padding = new Thickness(10.0, 7.0, 10.0, 7.0),
+					Margin = new Thickness(0, 0, 4, 0),
 					Background = new SolidColorBrush(_broadcastAudioPlayer.IsMuted
 						? Color.FromRgb(0xEA, 0x43, 0x35)
 						: Color.FromRgb(0x1A, 0x73, 0xE8)),
 					Foreground = Brushes.White,
 					BorderThickness = new Thickness(0.0),
 					Cursor = Cursors.Hand,
-					VerticalAlignment = VerticalAlignment.Center,
 					FontFamily = _broadcastFont,
 					ToolTip = _broadcastAudioPlayer.IsSameMachineDefaultMuted
 						? "Đang chạy cùng máy Giáo viên — mặc định tắt loa HS để chống vọng âm (Bấm để bật/tắt)"
@@ -9607,13 +9643,308 @@ namespace QASmartClass.StudentClient.Views
 				btnAudioMute.Click += (_, _) =>
 				{
 					_broadcastAudioPlayer.IsMuted = !_broadcastAudioPlayer.IsMuted;
-					btnAudioMute.Content = _broadcastAudioPlayer.IsMuted ? "🔇 Đã tắt loa" : "🔊 Đang bật loa";
+					btnAudioMute.Content = _broadcastAudioPlayer.IsMuted ? "🔇 Tắt loa" : "🔊 Bật loa";
 					btnAudioMute.Background = new SolidColorBrush(_broadcastAudioPlayer.IsMuted
 						? Color.FromRgb(0xEA, 0x43, 0x35)
 						: Color.FromRgb(0x1A, 0x73, 0xE8));
 				};
-				DockPanel.SetDock(btnAudioMute, Dock.Right);
-				dockPanel.Children.Insert(1, btnAudioMute);
+
+				Button btnRaiseHandPod = new Button
+				{
+					Content = "✋ Giơ tay",
+					FontSize = 12.5,
+					FontWeight = FontWeights.SemiBold,
+					Padding = new Thickness(10.0, 7.0, 10.0, 7.0),
+					Margin = new Thickness(4, 0, 0, 0),
+					Background = new SolidColorBrush(Color.FromRgb(0x3C, 0x40, 0x43)),
+					Foreground = new SolidColorBrush(Color.FromRgb(0xFD, 0xE6, 0x8A)),
+					BorderThickness = new Thickness(0.0),
+					Cursor = Cursors.Hand,
+					FontFamily = _broadcastFont,
+					ToolTip = "Giơ tay xin phát biểu với Giáo viên"
+				};
+				btnRaiseHandPod.Click += (s, ev) => QuickHandRaise_Click(s, ev);
+
+				// ─── LỚP PHỦ NÚT TRÒN NỔI EASYTOUCH CHO HỌC SINH WINDOWS PC ───
+				var easyTouchCanvas = new Canvas
+				{
+					Background = null
+				};
+
+				var easyTouchBubble = new Border
+				{
+					Width = 56,
+					Height = 56,
+					CornerRadius = new CornerRadius(28),
+					Background = new LinearGradientBrush(
+						Color.FromArgb(240, 0x0F, 0x17, 0x2A),
+						Color.FromArgb(240, 0x1E, 0x29, 0x3B),
+						new Point(0, 0),
+						new Point(1, 1)),
+					BorderBrush = new SolidColorBrush(Color.FromArgb(150, 0x93, 0xC5, 0xFD)),
+					BorderThickness = new Thickness(1.8),
+					Opacity = 0.78,
+					Cursor = Cursors.Hand,
+					ToolTip = "Chạm để mở điều khiển nhanh • Giữ kéo để di chuyển nút tròn",
+					Effect = new System.Windows.Media.Effects.DropShadowEffect
+					{
+						Color = Colors.Black,
+						BlurRadius = 14,
+						ShadowDepth = 3,
+						Opacity = 0.45
+					}
+				};
+				var etGrid = new Grid();
+				etGrid.Children.Add(new System.Windows.Shapes.Ellipse
+				{
+					Width = 40,
+					Height = 40,
+					Fill = new SolidColorBrush(Color.FromArgb(32, 255, 255, 255)),
+					Stroke = new SolidColorBrush(Color.FromArgb(85, 255, 255, 255)),
+					StrokeThickness = 1.2,
+					HorizontalAlignment = HorizontalAlignment.Center,
+					VerticalAlignment = VerticalAlignment.Center
+				});
+				etGrid.Children.Add(new System.Windows.Shapes.Ellipse
+				{
+					Width = 28,
+					Height = 28,
+					Fill = new SolidColorBrush(Color.FromArgb(52, 255, 255, 255)),
+					Stroke = new SolidColorBrush(Color.FromArgb(135, 255, 255, 255)),
+					StrokeThickness = 1.2,
+					HorizontalAlignment = HorizontalAlignment.Center,
+					VerticalAlignment = VerticalAlignment.Center
+				});
+				etGrid.Children.Add(new System.Windows.Shapes.Ellipse
+				{
+					Width = 15,
+					Height = 15,
+					Fill = new LinearGradientBrush(Colors.White, Color.FromRgb(0xE0, 0xE7, 0xFF), new Point(0, 0), new Point(1, 1)),
+					HorizontalAlignment = HorizontalAlignment.Center,
+					VerticalAlignment = VerticalAlignment.Center
+				});
+				etGrid.Children.Add(new Border
+				{
+					Width = 14,
+					Height = 14,
+					CornerRadius = new CornerRadius(7),
+					Background = new SolidColorBrush(Color.FromRgb(0x0F, 0x17, 0x2A)),
+					Padding = new Thickness(2),
+					HorizontalAlignment = HorizontalAlignment.Right,
+					VerticalAlignment = VerticalAlignment.Top,
+					Margin = new Thickness(0, 1, 1, 0),
+					Child = new System.Windows.Shapes.Ellipse
+					{
+						Fill = new SolidColorBrush(Color.FromRgb(0x22, 0xC5, 0x5E))
+					}
+				});
+				easyTouchBubble.Child = etGrid;
+
+				var easyTouchPod = new Border
+				{
+					Width = 252,
+					CornerRadius = new CornerRadius(18),
+					Background = new SolidColorBrush(Color.FromArgb(242, 0x20, 0x21, 0x24)),
+					BorderBrush = new SolidColorBrush(Color.FromRgb(0x5F, 0x63, 0x68)),
+					BorderThickness = new Thickness(1.2),
+					Padding = new Thickness(12, 10, 12, 10),
+					Visibility = Visibility.Collapsed
+				};
+
+				var podStack = new StackPanel { Orientation = Orientation.Vertical };
+				var podHeader = new DockPanel { LastChildFill = true, Margin = new Thickness(0, 0, 0, 6) };
+				var btnCollapsePod = new Button
+				{
+					Content = "● Thu gọn",
+					FontSize = 11.0,
+					FontWeight = FontWeights.Bold,
+					Padding = new Thickness(8, 3, 8, 3),
+					Background = new SolidColorBrush(Color.FromRgb(0x30, 0x31, 0x34)),
+					Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0xB4, 0xF8)),
+					BorderThickness = new Thickness(0),
+					Cursor = Cursors.Hand
+				};
+				DockPanel.SetDock(btnCollapsePod, Dock.Right);
+				podHeader.Children.Add(btnCollapsePod);
+				podHeader.Children.Add(new TextBlock
+				{
+					Text = "🟢 Màn hình Giáo viên",
+					FontSize = 12.0,
+					FontWeight = FontWeights.Bold,
+					Foreground = Brushes.White,
+					VerticalAlignment = VerticalAlignment.Center,
+					TextTrimming = TextTrimming.CharacterEllipsis
+				});
+				podStack.Children.Add(podHeader);
+
+				dockPanel.Children.Remove(_broadcastTimeText);
+				_broadcastTimeText.Margin = new Thickness(0, 0, 0, 8);
+				_broadcastTimeText.FontSize = 11.0;
+				podStack.Children.Add(_broadcastTimeText);
+
+				var podButtonsGrid = new System.Windows.Controls.Primitives.UniformGrid { Columns = 2 };
+				podButtonsGrid.Children.Add(btnAudioMute);
+				podButtonsGrid.Children.Add(btnRaiseHandPod);
+				podStack.Children.Add(podButtonsGrid);
+				podStack.Children.Add(button);
+				easyTouchPod.Child = podStack;
+
+				easyTouchCanvas.Children.Add(easyTouchPod);
+				easyTouchCanvas.Children.Add(easyTouchBubble);
+
+				DispatcherTimer podAutoHideTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(4500) };
+				Action collapseEasyTouch = () =>
+				{
+					podAutoHideTimer.Stop();
+					easyTouchPod.Visibility = Visibility.Collapsed;
+					easyTouchBubble.Opacity = 0.72;
+				};
+				Action positionPodNearBubble = () =>
+				{
+					double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
+					double ch = _broadcastOverlay?.ActualHeight > 0 ? _broadcastOverlay.ActualHeight : SystemParameters.PrimaryScreenHeight;
+					double bx = Canvas.GetLeft(easyTouchBubble);
+					double by = Canvas.GetTop(easyTouchBubble);
+					if (double.IsNaN(bx)) bx = cw - 68;
+					if (double.IsNaN(by)) by = 72;
+					double podW = 252;
+					double podH = button.Visibility == Visibility.Visible ? 168 : 126;
+					double px = (bx + 26 > cw * 0.5) ? Math.Max(12, bx - podW - 10) : Math.Min(cw - podW - 12, bx + 62);
+					double py = Math.Max(12, Math.Min(by, ch - podH - 12));
+					Canvas.SetLeft(easyTouchPod, px);
+					Canvas.SetTop(easyTouchPod, py);
+				};
+				podAutoHideTimer.Tick += (_, _) => collapseEasyTouch();
+				btnCollapsePod.Click += (_, _) => collapseEasyTouch();
+
+				easyTouchCanvas.Loaded += (_, _) =>
+				{
+					double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
+					Canvas.SetLeft(easyTouchBubble, Math.Max(16, cw - 68));
+					Canvas.SetTop(easyTouchBubble, 72);
+				};
+
+				Point etStartPt = default;
+				double etStartLeft = 0, etStartTop = 0;
+				bool etDragging = false, etMoved = false;
+				easyTouchBubble.MouseLeftButtonDown += (_, ev) =>
+				{
+					if (ev.StylusDevice != null) return;
+					etStartPt = ev.GetPosition(easyTouchCanvas);
+					etStartLeft = double.IsNaN(Canvas.GetLeft(easyTouchBubble)) ? 0 : Canvas.GetLeft(easyTouchBubble);
+					etStartTop = double.IsNaN(Canvas.GetTop(easyTouchBubble)) ? 72 : Canvas.GetTop(easyTouchBubble);
+					etDragging = true;
+					etMoved = false;
+					easyTouchBubble.Opacity = 1.0;
+					easyTouchBubble.CaptureMouse();
+					ev.Handled = true;
+				};
+				easyTouchBubble.MouseMove += (_, ev) =>
+				{
+					if (!etDragging) return;
+					Point cur = ev.GetPosition(easyTouchCanvas);
+					double dx = cur.X - etStartPt.X;
+					double dy = cur.Y - etStartPt.Y;
+					if (Math.Sqrt(dx * dx + dy * dy) >= 6.0)
+					{
+						etMoved = true;
+						if (easyTouchPod.Visibility == Visibility.Visible) easyTouchPod.Visibility = Visibility.Collapsed;
+						double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
+						double ch = _broadcastOverlay?.ActualHeight > 0 ? _broadcastOverlay.ActualHeight : SystemParameters.PrimaryScreenHeight;
+						Canvas.SetLeft(easyTouchBubble, Math.Max(10, Math.Min(cw - 62, etStartLeft + dx)));
+						Canvas.SetTop(easyTouchBubble, Math.Max(10, Math.Min(ch - 62, etStartTop + dy)));
+					}
+					ev.Handled = true;
+				};
+				easyTouchBubble.MouseLeftButtonUp += (_, ev) =>
+				{
+					if (!etDragging) return;
+					bool moved = etMoved;
+					etDragging = false;
+					easyTouchBubble.ReleaseMouseCapture();
+					ev.Handled = true;
+					if (!moved)
+					{
+						if (easyTouchPod.Visibility == Visibility.Visible)
+						{
+							collapseEasyTouch();
+						}
+						else
+						{
+							positionPodNearBubble();
+							easyTouchPod.Visibility = Visibility.Visible;
+							easyTouchBubble.Opacity = 1.0;
+							podAutoHideTimer.Stop();
+							podAutoHideTimer.Start();
+						}
+					}
+					else
+					{
+						double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
+						double curLeft = Canvas.GetLeft(easyTouchBubble);
+						Canvas.SetLeft(easyTouchBubble, (curLeft + 26 < cw * 0.5) ? 14 : Math.Max(14, cw - 66));
+						easyTouchBubble.Opacity = 0.72;
+					}
+				};
+
+				easyTouchBubble.TouchDown += (_, ev) =>
+				{
+					etStartPt = ev.GetTouchPoint(easyTouchCanvas).Position;
+					etStartLeft = double.IsNaN(Canvas.GetLeft(easyTouchBubble)) ? 0 : Canvas.GetLeft(easyTouchBubble);
+					etStartTop = double.IsNaN(Canvas.GetTop(easyTouchBubble)) ? 72 : Canvas.GetTop(easyTouchBubble);
+					etDragging = true;
+					etMoved = false;
+					easyTouchBubble.Opacity = 1.0;
+					easyTouchBubble.CaptureTouch(ev.TouchDevice);
+					ev.Handled = true;
+				};
+				easyTouchBubble.TouchMove += (_, ev) =>
+				{
+					if (!etDragging) return;
+					Point cur = ev.GetTouchPoint(easyTouchCanvas).Position;
+					double dx = cur.X - etStartPt.X;
+					double dy = cur.Y - etStartPt.Y;
+					if (Math.Sqrt(dx * dx + dy * dy) >= 8.0)
+					{
+						etMoved = true;
+						if (easyTouchPod.Visibility == Visibility.Visible) easyTouchPod.Visibility = Visibility.Collapsed;
+						double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
+						double ch = _broadcastOverlay?.ActualHeight > 0 ? _broadcastOverlay.ActualHeight : SystemParameters.PrimaryScreenHeight;
+						Canvas.SetLeft(easyTouchBubble, Math.Max(10, Math.Min(cw - 62, etStartLeft + dx)));
+						Canvas.SetTop(easyTouchBubble, Math.Max(10, Math.Min(ch - 62, etStartTop + dy)));
+					}
+					ev.Handled = true;
+				};
+				easyTouchBubble.TouchUp += (_, ev) =>
+				{
+					if (!etDragging) return;
+					bool moved = etMoved;
+					etDragging = false;
+					easyTouchBubble.ReleaseTouchCapture(ev.TouchDevice);
+					ev.Handled = true;
+					if (!moved)
+					{
+						if (easyTouchPod.Visibility == Visibility.Visible)
+						{
+							collapseEasyTouch();
+						}
+						else
+						{
+							positionPodNearBubble();
+							easyTouchPod.Visibility = Visibility.Visible;
+							easyTouchBubble.Opacity = 1.0;
+							podAutoHideTimer.Stop();
+							podAutoHideTimer.Start();
+						}
+					}
+					else
+					{
+						double cw = _broadcastOverlay?.ActualWidth > 0 ? _broadcastOverlay.ActualWidth : SystemParameters.PrimaryScreenWidth;
+						double curLeft = Canvas.GetLeft(easyTouchBubble);
+						Canvas.SetLeft(easyTouchBubble, (curLeft + 26 < cw * 0.5) ? 14 : Math.Max(14, cw - 66));
+						easyTouchBubble.Opacity = 0.72;
+					}
+				};
 
 				border.Child = dockPanel;
 
@@ -9625,7 +9956,7 @@ namespace QASmartClass.StudentClient.Views
 
 					Stretch = Stretch.Uniform,
 
-					Margin = new Thickness(20.0, 58.0, 20.0, 20.0),
+					Margin = new Thickness(0.0),
 
 					HorizontalAlignment = HorizontalAlignment.Center,
 
@@ -9635,6 +9966,10 @@ namespace QASmartClass.StudentClient.Views
 
 					SnapsToDevicePixels = true
 
+				};
+				_broadcastImage.MouseLeftButtonDown += (_, _) =>
+				{
+					if (easyTouchPod.Visibility == Visibility.Visible) collapseEasyTouch();
 				};
 				RenderOptions.SetBitmapScalingMode(_broadcastImage, BitmapScalingMode.HighQuality);
 
@@ -9648,7 +9983,7 @@ namespace QASmartClass.StudentClient.Views
 
 					IsHitTestVisible = false,
 
-					Margin = new Thickness(20.0, 58.0, 20.0, 20.0),
+					Margin = new Thickness(0.0),
 
 					HorizontalAlignment = HorizontalAlignment.Center,
 
@@ -9680,7 +10015,7 @@ namespace QASmartClass.StudentClient.Views
 				{
 					Background = Brushes.Transparent,
 					IsHitTestVisible = false,
-					Margin = new Thickness(20.0, 58.0, 20.0, 20.0),
+					Margin = new Thickness(0.0),
 					HorizontalAlignment = HorizontalAlignment.Center,
 					VerticalAlignment = VerticalAlignment.Center
 				};
@@ -9693,6 +10028,8 @@ namespace QASmartClass.StudentClient.Views
 				_broadcastOverlay.Children.Add(_broadcastInkCanvas);
 				_broadcastOverlay.Children.Add(_broadcastShapeCanvas);
 				_broadcastOverlay.Children.Add(border);
+				Panel.SetZIndex(easyTouchCanvas, 50);
+				_broadcastOverlay.Children.Add(easyTouchCanvas);
 
 
 
@@ -11179,6 +11516,127 @@ namespace QASmartClass.StudentClient.Views
 		}
 
 
+
+		private async Task HandleIncomingFileOfferAsync(string fileId, string fileName, bool autoOpen, int webPort, string token)
+		{
+			try
+			{
+				var app = Application.Current as App;
+				var net = app?.StudentNetwork;
+				var sft = app?.StudentFileTransfer;
+				if (sft == null) return;
+
+				string teacherIP = !string.IsNullOrWhiteSpace(net?.ConnectedIP)
+					? net.ConnectedIP
+					: (!string.IsNullOrWhiteSpace(net?.ServerIP) ? net.ServerIP : "127.0.0.1");
+
+				// Jitter ngẫu nhiên 30–320ms chống nghẽn Wi-Fi khi 40 máy tải đồng thời
+				await Task.Delay(Random.Shared.Next(30, 320));
+
+				int port = webPort <= 0 ? 8080 : webPort;
+				string downloadUrl = $"http://{teacherIP}:{port}/api/files/download?id={Uri.EscapeDataString(fileId)}&token={Uri.EscapeDataString(token ?? string.Empty)}";
+
+				var res = await sft.DownloadOfferedFileAsync(downloadUrl, fileName, async pct =>
+				{
+					if (net?.IsConnected == true)
+					{
+						try { await net.SendAsync($"FILE_PROGRESS|{fileId}|{pct}|DOWNLOADING"); } catch { }
+					}
+				});
+
+				if (!res.Success)
+				{
+					if (net?.IsConnected == true)
+					{
+						try { await net.SendAsync($"FILE_PROGRESS|{fileId}|0|ERR|{res.Message.Replace('|', ' ')}"); } catch { }
+					}
+					await Dispatcher.InvokeAsync(() =>
+					{
+						ShowNotification("⚠️ Lỗi nhận tài liệu", $"{fileName}: {res.Message}", "#C62828");
+					});
+					return;
+				}
+
+				if (net?.IsConnected == true)
+				{
+					try { await net.SendAsync($"FILE_PROGRESS|{fileId}|100|DONE"); } catch { }
+				}
+
+				// Lưu lịch sử nhận file vào SQLite trên luồng nền
+				_ = Task.Run(async () =>
+				{
+					await QASmartClass.Data.AppDbContext.BackgroundDbSemaphore.WaitAsync();
+					try
+					{
+						var fiSaved = new FileInfo(res.SavePath);
+						using var db = new QASmartClass.Data.AppDbContext();
+						var identityService = new QASmartClass.StudentClient.Services.StudentIdentityService(db);
+						var (stuId, stuCode, _) = identityService.GetCurrentStudent();
+						db.FileTransfers.Add(new QASmartClass.Data.FileTransferRecord
+						{
+							FileName = fiSaved.Name,
+							FileSizeBytes = fiSaved.Exists ? fiSaved.Length : 0,
+							Direction = "TeacherToStudent",
+							StudentId = stuId,
+							Status = "Completed",
+							ProgressPercent = 100,
+							CreatedAt = DateTime.Now
+						});
+						db.EventLogs.Add(new QASmartClass.Data.EventLog
+						{
+							EventType = "FILE_RECEIVED",
+							Actor = stuCode,
+							Details = $"Nhận từ GV: {fiSaved.Name}",
+							Timestamp = DateTime.Now
+						});
+						await db.SaveChangesAsync();
+					}
+					catch (Exception exDb)
+					{
+						Log.Warning("HandleIncomingFileOfferAsync DB log error: {Err}", exDb.Message);
+					}
+					finally
+					{
+						QASmartClass.Data.AppDbContext.BackgroundDbSemaphore.Release();
+					}
+				});
+
+				await Dispatcher.InvokeAsync(() =>
+				{
+					string savedName = Path.GetFileName(res.SavePath);
+					ShowNotification("📥 Đã nhận tài liệu từ Giáo viên", savedName, "#1565C0");
+					UpdateDynamicBadges();
+
+					if (autoOpen && File.Exists(res.SavePath))
+					{
+						string ext = Path.GetExtension(res.SavePath).ToLowerInvariant();
+						string[] blockedAutoExec = { ".exe", ".bat", ".cmd", ".ps1", ".vbs", ".js", ".msi", ".scr", ".com", ".pif", ".lnk", ".reg" };
+						if (!blockedAutoExec.Contains(ext))
+						{
+							Task.Run(() =>
+							{
+								try
+								{
+									Process.Start(new ProcessStartInfo
+									{
+										FileName = res.SavePath,
+										UseShellExecute = true
+									});
+								}
+								catch (Exception exOpen)
+								{
+									Log.Warning("Auto-open received file failed ({Path}): {Err}", res.SavePath, exOpen.Message);
+								}
+							});
+						}
+					}
+				});
+			}
+			catch (Exception ex)
+			{
+				Log.Warning("HandleIncomingFileOfferAsync error: {Err}", ex.Message);
+			}
+		}
 
 		private void ShowFileBroadcast(string fileType, string filePath)
 

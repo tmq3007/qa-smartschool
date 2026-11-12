@@ -98,16 +98,18 @@
                 </Grid>
             </Border>
 
-            <!-- File List -->
-            <Border Grid.Row="2" Background="White" CornerRadius="10" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,10">
+            <!-- File List (Hỗ trợ Kéo & Thả tệp trực tiếp) -->
+            <Border x:Name="bdFileDropZone" Grid.Row="2" Background="White" CornerRadius="10" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,10"
+                    AllowDrop="True" PreviewDragOver="FileDropZone_PreviewDragOver" Drop="FileDropZone_Drop">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Border Padding="14,8" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
                         <DockPanel>
-                            <TextBlock DockPanel.Dock="Left" Text="📋 File đính kèm" FontSize="13" FontWeight="SemiBold" Foreground="#212121" VerticalAlignment="Center"/>
+                            <TextBlock DockPanel.Dock="Left" Text="📋 File đính kèm (Kéo &amp; thả tệp vào đây hoặc nhấn Thêm file)" FontSize="13" FontWeight="SemiBold" Foreground="#212121" VerticalAlignment="Center"/>
                             <TextBlock x:Name="txtFileCount" DockPanel.Dock="Right" Text="0 file"
                                        FontSize="13" Foreground="#9C27B0" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </DockPanel>
@@ -149,6 +151,9 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
+                    <Border x:Name="bdDeliverySummary" Grid.Row="2" Visibility="Collapsed" Background="#F1F8E9" BorderBrush="#C5E1A5" BorderThickness="0,1,0,0" Padding="12,6">
+                        <TextBlock x:Name="txtDeliverySummary" Text="📡 Tiến độ nhận tệp: Đang chờ phản hồi từ máy Học sinh..." FontSize="12" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                    </Border>
                 </Grid>
             </Border>
 
@@ -157,24 +162,31 @@
                 <StackPanel>
                     <ProgressBar x:Name="progressBar" Height="6" Value="0"
                                  Background="#F5F5F5" Foreground="#4CAF50" Margin="0,0,0,6"/>
-                    <TextBlock x:Name="txtStatus" Text="📂 Chọn file → Nhập yêu cầu → Nhấn Phát bài"
-                               FontSize="14" FontWeight="SemiBold" Foreground="#424242" Margin="0,0,0,10"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock x:Name="txtStatus" Text="📂 Chọn hoặc kéo thả file → Nhập yêu cầu → Nhấn Phát bài"
+                               FontSize="14" FontWeight="SemiBold" Foreground="#424242" Margin="0,0,0,8"/>
+                    <CheckBox x:Name="chkAutoOpenOnStudent" Content="⚡ Tự động mở tài liệu trên màn hình Học sinh ngay sau khi tải xong"
+                              IsChecked="True" FontSize="12.5" Foreground="#1565C0" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <WrapPanel HorizontalAlignment="Center">
                         <Button x:Name="btnSend" Content="📤 Phát bài cho HS"
                                 Style="{StaticResource ActionBtn}"
-                                Padding="20,10" FontSize="13"
+                                Padding="18,10" FontSize="13"
                                 Background="#1976D2" Foreground="White"
-                                Margin="0,0,10,0" Click="Send_Click"/>
-                        <Button Content="📥 Thu bài từ HS"
+                                Margin="0,0,8,4" Click="Send_Click"/>
+                        <Button Content="🔔 Nhắc nộp bài ngay"
                                 Style="{StaticResource ActionBtn}"
-                                Padding="20,10" FontSize="13"
+                                Padding="16,10" FontSize="13"
+                                Background="#FFF3E0" Foreground="#E65100"
+                                Margin="0,0,8,4" Click="PromptCollectWork_Click"/>
+                        <Button Content="📥 Mở thư mục bài thu"
+                                Style="{StaticResource ActionBtn}"
+                                Padding="16,10" FontSize="13"
                                 Background="#E8F5E9" Foreground="#2E7D32"
-                                Click="Collect_Click"/>
+                                Margin="0,0,8,4" Click="Collect_Click"/>
                         <CheckBox x:Name="chkLockSubmission" Content="🔒 Khóa nhận bài nộp" 
                                   FontSize="13" FontWeight="Bold" Foreground="#C62828"
-                                  Margin="12,0,0,0" VerticalAlignment="Center"
+                                  Margin="8,0,0,4" VerticalAlignment="Center"
                                   Checked="LockSubmission_Checked" Unchecked="LockSubmission_Unchecked"/>
-                    </StackPanel>
+                    </WrapPanel>
                 </StackPanel>
             </Border>
         </Grid>

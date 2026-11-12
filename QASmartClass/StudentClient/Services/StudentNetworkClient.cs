@@ -54,6 +54,7 @@ namespace QASmartClass.StudentClient.Services
         private UdpClient?   _udpListener;
         private TcpClient?   _tcpClient;
         private NetworkStream? _stream;
+        private readonly System.Threading.SemaphoreSlim _writeLock = new(1, 1);
         private CancellationTokenSource? _cts;
         private readonly System.Collections.Generic.List<DateTime> _errorReportTimes = new();
         private readonly object _errorLock = new object();
@@ -986,11 +987,11 @@ namespace QASmartClass.StudentClient.Services
                         if (_stream != null && _tcpClient?.Connected == true)
                         {
                             var hb = $"HB|{StudentCode}|online\n";
-                            await _stream.WriteAsync(Encoding.UTF8.GetBytes(hb), ct);
+                            await WriteStreamSafeAsync(Encoding.UTF8.GetBytes(hb), ct);
                             bool hpOk = CheckHeadphonesConnected();
                             bool micOk = CheckMicConnected();
                             var periMsg = $"PERIPHERAL_STATUS|Headphones={(hpOk ? "OK" : "Error")}|Mic={(micOk ? "OK" : "Error")}\n";
-                            await _stream.WriteAsync(Encoding.UTF8.GetBytes(periMsg), ct);
+                            await WriteStreamSafeAsync(Encoding.UTF8.GetBytes(periMsg), ct);
                         }
                         secondsPassed = 0;
                     }
@@ -1006,6 +1007,23 @@ namespace QASmartClass.StudentClient.Services
                     DisconnectAndCleanup();
                     break;
                 }
+            }
+        }
+
+        private async Task WriteStreamSafeAsync(byte[] bytes, CancellationToken ct = default)
+        {
+            await _writeLock.WaitAsync(ct);
+            try
+            {
+                var activeStream = _stream;
+                if (activeStream != null && _tcpClient?.Connected == true)
+                {
+                    await activeStream.WriteAsync(bytes, 0, bytes.Length, ct);
+                }
+            }
+            finally
+            {
+                _writeLock.Release();
             }
         }
 
@@ -1026,7 +1044,7 @@ namespace QASmartClass.StudentClient.Services
                     encryptedMessage = CryptoHelper.Encrypt(cleanMessage, SessionKey);
                 }
                 var messageWithNewLine = encryptedMessage.EndsWith("\n") ? encryptedMessage : encryptedMessage + "\n";
-                await _stream.WriteAsync(Encoding.UTF8.GetBytes(messageWithNewLine));
+                await WriteStreamSafeAsync(Encoding.UTF8.GetBytes(messageWithNewLine));
                 Log.Debug("Sent (encrypted): {Msg}", cleanMessage);
             }
             catch (Exception ex)

@@ -191,7 +191,7 @@ namespace QASmartClass.Services
             set { lock (_lock) _broadcastToken = value; }
         }
 
-        // File broadcast
+        // File broadcast & HTTP Pull distribution registry
         private string _fileBroadcastPath = string.Empty;
         public string FileBroadcastPath
         {
@@ -200,6 +200,88 @@ namespace QASmartClass.Services
         }
 
         public System.Collections.Generic.Dictionary<string, string> ActiveBroadcastFiles { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public System.Collections.Concurrent.ConcurrentDictionary<string, SharedFileDescriptor> SharedFilesById { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public string EnsureBroadcastToken()
+        {
+            lock (_lock)
+            {
+                if (string.IsNullOrEmpty(_broadcastToken))
+                {
+                    _broadcastToken = "TK_" + Guid.NewGuid().ToString("N").Substring(0, 16);
+                }
+                return _broadcastToken;
+            }
+        }
+
+        public SharedFileDescriptor RegisterSharedFile(string filePath, bool autoOpen = false)
+        {
+            var fullPath = System.IO.Path.GetFullPath(filePath);
+            var fi = new System.IO.FileInfo(fullPath);
+            var fileName = fi.Name;
+            var fileId = "F_" + Guid.NewGuid().ToString("N").Substring(0, 12);
+            var desc = new SharedFileDescriptor
+            {
+                FileId = fileId,
+                FilePath = fullPath,
+                FileName = fileName,
+                FileSize = fi.Exists ? fi.Length : 0,
+                AutoOpen = autoOpen,
+                CreatedUtc = DateTime.UtcNow
+            };
+
+            SharedFilesById[fileId] = desc;
+            lock (_lock)
+            {
+                _fileBroadcastPath = fullPath;
+                ActiveBroadcastFiles[fileName] = fullPath;
+            }
+            EnsureBroadcastToken();
+            return desc;
+        }
+
+        public bool TryResolveSharedFile(string? fileId, string? fileName, out SharedFileDescriptor? descriptor)
+        {
+            descriptor = null;
+            if (!string.IsNullOrWhiteSpace(fileId) && SharedFilesById.TryGetValue(fileId, out var byId))
+            {
+                if (System.IO.File.Exists(byId.FilePath))
+                {
+                    descriptor = byId;
+                    return true;
+                }
+            }
+
+            string resolvedPath = string.Empty;
+            lock (_lock)
+            {
+                if (!string.IsNullOrWhiteSpace(fileName) && ActiveBroadcastFiles.TryGetValue(fileName, out var matched))
+                {
+                    resolvedPath = matched;
+                }
+                else if (!string.IsNullOrWhiteSpace(_fileBroadcastPath))
+                {
+                    resolvedPath = _fileBroadcastPath;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(resolvedPath) && System.IO.File.Exists(resolvedPath))
+            {
+                var fi = new System.IO.FileInfo(resolvedPath);
+                descriptor = new SharedFileDescriptor
+                {
+                    FileId = string.IsNullOrWhiteSpace(fileId) ? "LEGACY" : fileId,
+                    FilePath = resolvedPath,
+                    FileName = fi.Name,
+                    FileSize = fi.Length,
+                    AutoOpen = false,
+                    CreatedUtc = DateTime.UtcNow
+                };
+                return true;
+            }
+            return false;
+        }
 
         public void AddBroadcastFile(string filePath)
         {
@@ -234,6 +316,7 @@ namespace QASmartClass.Services
                 _broadcastToken = string.Empty;
                 _fileBroadcastPath = string.Empty;
                 ActiveBroadcastFiles.Clear();
+                SharedFilesById.Clear();
                 _isBroadcastCasting = false;
                 _targetSelectionMode = "ALL";
                 TargetSelectedGroups.Clear();
@@ -244,5 +327,15 @@ namespace QASmartClass.Services
         }
 
         public void NotifyChanged() => StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public sealed class SharedFileDescriptor
+    {
+        public string FileId { get; init; } = string.Empty;
+        public string FilePath { get; init; } = string.Empty;
+        public string FileName { get; init; } = string.Empty;
+        public long FileSize { get; init; }
+        public bool AutoOpen { get; init; }
+        public DateTime CreatedUtc { get; init; }
     }
 }

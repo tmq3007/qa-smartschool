@@ -304,70 +304,92 @@ namespace QASmartClass.Classroom.Views
             ShowFloatingBar_Click(this, new RoutedEventArgs());
         }
 
+        private QASmartClass.Shared.FloatingModeBar? GetUnifiedEasyTouchOrb()
+        {
+            if (Application.Current is QASmartTouch.App app)
+            {
+                app.EnsureFloatingModeBar();
+                return app._floatingModeBar;
+            }
+            return null;
+        }
+
         private void EnsureFloatingBroadcastBarShown(string sourceDescription, string resolution, string fps)
         {
             try
             {
+                // [MYTHWARE_LITE] Hợp nhất toàn bộ điều khiển trình chiếu, âm thanh, camera & khóa HS vào 1 Cục Tròn EasyTouch duy nhất (FloatingModeBar)
+                var orb = GetUnifiedEasyTouchOrb();
+                if (orb != null)
+                {
+                    if (!orb.IsBroadcastBridgeBound)
+                    {
+                        orb.IsBroadcastBridgeBound = true;
+                        orb.ShareCurrentInsteadRequested += (_, _) =>
+                        {
+                            Dispatcher.Invoke(SwitchBroadcastToActiveScreenInstead);
+                        };
+                        orb.ChangeSourceRequested += (_, _) =>
+                        {
+                            Dispatcher.Invoke(() => OpenSourcePicker(ScreenSourceKind.Screen, out _));
+                        };
+                        orb.SelectRegionRequested += (_, _) =>
+                        {
+                            Dispatcher.Invoke(() => PickRegion_Click(this, new RoutedEventArgs()));
+                        };
+                        orb.TogglePauseRequested += (_, _) =>
+                        {
+                            Dispatcher.Invoke(() => Pause_Click(this, new RoutedEventArgs()));
+                        };
+                        orb.StopRequested += (_, _) =>
+                        {
+                            Dispatcher.Invoke(StopAllBroadcasting);
+                        };
+                        orb.RestoreShellRequested += (_, _) =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                                if (shell != null)
+                                {
+                                    if (shell.WindowState == WindowState.Minimized)
+                                        shell.WindowState = WindowState.Maximized;
+                                    shell.Show();
+                                    shell.Activate();
+                                }
+                            });
+                        };
+                        orb.HideClassroomShellChanged += (_, hideShell) =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                _hideClassroomShellFromStudents = hideShell;
+                                ScreenSourceInfo? curPicked;
+                                lock (_srcLock) curPicked = _picked;
+                                bool shouldExclude = _hideClassroomShellFromStudents && (curPicked == null || curPicked.Kind == ScreenSourceKind.Screen);
+                                ApplyScreenCaptureExclusion(shouldExclude);
+                            });
+                        };
+                        orb.AllowStudentExitChanged += (_, allowExit) =>
+                        {
+                            Dispatcher.Invoke(() => SetAllowStudentExitLive(allowExit));
+                        };
+                    }
+
+                    orb.SetHideClassroomShellCheck(_hideClassroomShellFromStudents);
+                    orb.SetAllowStudentExitState(chkAllowStudentExit?.IsChecked == true);
+                    int recipientCount = ClassroomAppContext.Network?.ConnectedCount ?? 0;
+                    orb.UpdateStatus(_isPaused || _isBroadcastPausedDueToPrivacy, "00:00", recipientCount, sourceDescription);
+                    UpdateGoogleMeetSourceLockState();
+                }
+
+                /* // [MYTHWARE_LITE] Đã hợp nhất vào cục tròn FloatingModeBar ở trên — không mở thêm cửa sổ thanh nổi thứ 2
                 if (_floatingBroadcastBar == null || !_floatingBroadcastBar.IsLoaded)
                 {
                     _floatingBroadcastBar = new FloatingBroadcastBarWindow(_hideClassroomShellFromStudents);
-                    _floatingBroadcastBar.ShareCurrentInsteadRequested += (_, _) =>
-                    {
-                        Dispatcher.Invoke(SwitchBroadcastToActiveScreenInstead);
-                    };
-                    _floatingBroadcastBar.ChangeSourceRequested += (_, _) =>
-                    {
-                        Dispatcher.Invoke(() => OpenSourcePicker(ScreenSourceKind.Screen, out _));
-                    };
-                    _floatingBroadcastBar.SelectRegionRequested += (_, _) =>
-                    {
-                        Dispatcher.Invoke(() => PickRegion_Click(this, new RoutedEventArgs()));
-                    };
-                    _floatingBroadcastBar.TogglePauseRequested += (_, _) =>
-                    {
-                        Dispatcher.Invoke(() => Pause_Click(this, new RoutedEventArgs()));
-                    };
-                    _floatingBroadcastBar.StopRequested += (_, _) =>
-                    {
-                        Dispatcher.Invoke(StopAllBroadcasting);
-                    };
-                    _floatingBroadcastBar.RestoreShellRequested += (_, _) =>
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
-                            if (shell != null)
-                            {
-                                if (shell.WindowState == WindowState.Minimized)
-                                    shell.WindowState = WindowState.Maximized;
-                                shell.Show();
-                                shell.Activate();
-                            }
-                        });
-                    };
-                    _floatingBroadcastBar.HideClassroomShellChanged += (_, hideShell) =>
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            _hideClassroomShellFromStudents = hideShell;
-                            ScreenSourceInfo? curPicked;
-                            lock (_srcLock) curPicked = _picked;
-                            bool shouldExclude = _hideClassroomShellFromStudents && (curPicked == null || curPicked.Kind == ScreenSourceKind.Screen);
-                            ApplyScreenCaptureExclusion(shouldExclude);
-                        });
-                    };
                     _floatingBroadcastBar.Show();
                 }
-                else
-                {
-                    _floatingBroadcastBar.SetHideClassroomShellCheck(_hideClassroomShellFromStudents);
-                    if (_floatingBroadcastBar.Visibility != Visibility.Visible)
-                        _floatingBroadcastBar.Show();
-                }
-
-                int recipientCount = ClassroomAppContext.Network?.ConnectedCount ?? 0;
-                _floatingBroadcastBar.UpdateStatus(_isPaused || _isBroadcastPausedDueToPrivacy, "00:00", recipientCount, sourceDescription);
-                UpdateGoogleMeetSourceLockState();
+                */
             }
             catch (Exception ex)
             {
@@ -832,6 +854,11 @@ namespace QASmartClass.Classroom.Views
                 Log.Debug("[BroadcastPage][ZeroHS] Check error: {Err}", ex.Message);
             }
 
+            // [MYTHWARE_LITE] Mặc định khóa cứng toàn màn hình Học sinh khi Giáo viên bấm Share (chỉ mở khóa khi tích chkAllowStudentExit).
+            // Bỏ hộp thoại hỏi xác nhận rườm rà để Giáo viên bấm Share là phát ngay lập tức.
+            bool allowExit = chkAllowStudentExit?.IsChecked == true;
+            chkForceWatch.IsChecked = !allowExit;
+            /* [MYTHWARE_LITE] Đã ẩn hộp thoại xác nhận cũ
             // Xác nhận lại số lượng học sinh nhận trình chiếu khi không bật Force Watch
             if (chkForceWatch.IsChecked == false && !_skipConfirmForQuickBroadcast)
             {
@@ -913,6 +940,7 @@ namespace QASmartClass.Classroom.Views
                     return;
                 }
             }
+            */
 
             _isBroadcasting = true;
             if (QASmartTouch.Services.AppSettings.Broadcast_TurboMode)
@@ -1067,6 +1095,7 @@ namespace QASmartClass.Classroom.Views
                 txtBroadcastInfo.Text = $"{resolution} | {fps} | {txtRecipientCount.Text.Replace("→ ", "")}{otpInfo}";
                 int recipientCnt = ClassroomAppContext.Network?.ConnectedCount ?? 0;
                 _floatingBroadcastBar?.UpdateStatus(_isPaused || _isBroadcastPausedDueToPrivacy, timerStr, recipientCnt, latestSource);
+                (Application.Current as QASmartTouch.App)?._floatingModeBar?.UpdateStatus(_isPaused || _isBroadcastPausedDueToPrivacy, timerStr, recipientCnt, latestSource);
                 UpdateGoogleMeetSourceLockState();
                 RefreshCachedBroadcastParams();
             };
@@ -1200,6 +1229,56 @@ namespace QASmartClass.Classroom.Views
             if (sender is Button btn && btn.Tag is string presetTag)
             {
                 ApplyQualityPreset(presetTag);
+            }
+        }
+
+        private bool _suppressAllowExitSync;
+
+        private void AllowStudentExit_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_suppressAllowExitSync) return;
+            SetAllowStudentExitLive(chkAllowStudentExit?.IsChecked == true);
+        }
+
+        private void SetAllowStudentExitLive(bool allowExit)
+        {
+            _suppressAllowExitSync = true;
+            try
+            {
+                if (chkAllowStudentExit != null && chkAllowStudentExit.IsChecked != allowExit)
+                {
+                    chkAllowStudentExit.IsChecked = allowExit;
+                }
+                if (chkForceWatch != null)
+                {
+                    chkForceWatch.IsChecked = !allowExit;
+                }
+                _cachedIsForceWatch = !allowExit;
+                _floatingBroadcastBar?.SetAllowStudentExitState(allowExit);
+                (Application.Current as QASmartTouch.App)?._floatingModeBar?.SetAllowStudentExitState(allowExit);
+                _lastTcpBroadcastCmdUtc = DateTime.MinValue;
+
+                if ((_isBroadcasting || _isVncBroadcasting) && ClassroomAppContext.Network?.IsBroadcasting == true)
+                {
+                    string cmd = $"CMD|BROADCAST_ALLOW_EXIT|{(allowExit ? "1" : "0")}";
+                    var targetCodes = GetTargetStudentCodes();
+                    if (targetCodes == null)
+                    {
+                        _ = ClassroomAppContext.Network.SendCommandAsync(cmd);
+                    }
+                    else
+                    {
+                        _ = ClassroomAppContext.Network.SendToStudentsAsync(targetCodes, cmd);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("[BroadcastPage] SetAllowStudentExitLive error: {Err}", ex.Message);
+            }
+            finally
+            {
+                _suppressAllowExitSync = false;
             }
         }
 
@@ -1419,7 +1498,7 @@ namespace QASmartClass.Classroom.Views
                     catch { }
                 }
                 _cachedQualityLevel = qLevel;
-                _cachedIsForceWatch = chkForceWatch.IsChecked == true;
+                _cachedIsForceWatch = chkAllowStudentExit?.IsChecked != true;
                 _cachedShowTeacherCursor = chkShowTeacherCursor?.IsChecked != false;
                 if (ClassroomAppContext.Network?.WebBridge != null)
                 {
@@ -1965,6 +2044,7 @@ namespace QASmartClass.Classroom.Views
                                     string lbl = "Đang chiếu: " + srcDesc;
                                     if (txtPreviewLabel.Text != lbl) txtPreviewLabel.Text = lbl;
                                     _floatingBroadcastBar?.UpdateLiveFrame(bmpSource, srcDesc, txtRes.Text);
+                                    (Application.Current as QASmartTouch.App)?._floatingModeBar?.UpdateLiveFrame(bmpSource, srcDesc, txtRes.Text);
                                 }
                                 if (shouldSendTcpCmd)
                                 {
@@ -2278,6 +2358,7 @@ namespace QASmartClass.Classroom.Views
             string curDesc = curSrc != null ? DescribeSource(curSrc) : "Toàn màn hình";
             int recipientCnt = ClassroomAppContext.Network?.ConnectedCount ?? 0;
             _floatingBroadcastBar?.UpdateStatus(_isPaused || _isBroadcastPausedDueToPrivacy, txtTimer.Text, recipientCnt, curDesc);
+            (Application.Current as QASmartTouch.App)?._floatingModeBar?.UpdateStatus(_isPaused || _isBroadcastPausedDueToPrivacy, txtTimer.Text, recipientCnt, curDesc);
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -2364,6 +2445,7 @@ namespace QASmartClass.Classroom.Views
                 var resolution = (cmbResolution.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "1920×1080";
                 var fps = (cmbFPS.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "30 fps";
                 EnsureFloatingBroadcastBarShown(srcDesc, resolution, fps);
+                GetUnifiedEasyTouchOrb()?.ShowLivePipMonitor();
                 _floatingBroadcastBar?.Activate();
             }
         }
@@ -2444,6 +2526,7 @@ namespace QASmartClass.Classroom.Views
             autoMinimizeClassroomShell = dlg.AutoMinimizeClassroomShell;
             _hideClassroomShellFromStudents = dlg.HideClassroomShellFromStudents;
             _floatingBroadcastBar?.SetHideClassroomShellCheck(_hideClassroomShellFromStudents);
+            (Application.Current as QASmartTouch.App)?._floatingModeBar?.SetHideClassroomShellCheck(_hideClassroomShellFromStudents);
             ApplyPickedSource(dlg.Selected);
             if (_isBroadcasting)
             {
@@ -2965,7 +3048,14 @@ namespace QASmartClass.Classroom.Views
         /// </summary>
         private void UpdateGoogleMeetSourceLockState()
         {
-            if (_floatingBroadcastBar == null || !_isBroadcasting) return;
+            var unifiedOrb = (Application.Current as QASmartTouch.App)?._floatingModeBar;
+            if ((_floatingBroadcastBar == null && unifiedOrb == null) || !_isBroadcasting) return;
+
+            void ApplyLockIndicator(bool locked, bool canSwitch, string label)
+            {
+                _floatingBroadcastBar?.UpdateSourceLockIndicator(locked, canSwitch, label);
+                unifiedOrb?.UpdateSourceLockIndicator(locked, canSwitch, label);
+            }
 
             ScreenSourceInfo? curPicked;
             lock (_srcLock) curPicked = _picked;
@@ -2977,7 +3067,7 @@ namespace QASmartClass.Classroom.Views
             {
                 _pendingSwitchCandidate = null;
                 _pendingSwitchLabel = "";
-                _floatingBroadcastBar.UpdateSourceLockIndicator(false, false, "");
+                ApplyLockIndicator(false, false, "");
                 return;
             }
 
@@ -2986,7 +3076,7 @@ namespace QASmartClass.Classroom.Views
                 IntPtr fgHwnd = NativeMethods.GetForegroundWindow();
                 if (fgHwnd == IntPtr.Zero)
                 {
-                    _floatingBroadcastBar.UpdateSourceLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
+                    ApplyLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
                     return;
                 }
 
@@ -3003,7 +3093,7 @@ namespace QASmartClass.Classroom.Views
                                 || w is BroadcastPrivacyBorder
                                 || w is ScreenSourcePickerWindow)
                             {
-                                _floatingBroadcastBar.UpdateSourceLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
+                                ApplyLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
                                 return;
                             }
 
@@ -3033,7 +3123,7 @@ namespace QASmartClass.Classroom.Views
                                     };
                                     _pendingSwitchLabel = "Bảng SMART TOUCH";
                                 }
-                                _floatingBroadcastBar.UpdateSourceLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
+                                ApplyLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
                                 return;
                             }
 
@@ -3059,7 +3149,7 @@ namespace QASmartClass.Classroom.Views
                                     _pendingSwitchCandidate = null;
                                     _pendingSwitchLabel = "";
                                 }
-                                _floatingBroadcastBar.UpdateSourceLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
+                                ApplyLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
                                 return;
                             }
                         }
@@ -3106,7 +3196,7 @@ namespace QASmartClass.Classroom.Views
                     }
                 }
 
-                _floatingBroadcastBar.UpdateSourceLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
+                ApplyLockIndicator(true, _pendingSwitchCandidate != null, _pendingSwitchLabel);
             }
             catch
             {
@@ -3882,7 +3972,19 @@ namespace QASmartClass.Classroom.Views
             {
                 // app → ClassroomAppContext (refactored)
                 ClassroomAppContext.BroadcastState.AddBroadcastFile(_selectedFilePath);
-                
+
+                var ft = ClassroomAppContext.FileTransfer;
+                if (ft != null)
+                {
+                    var desc = QASmartClass.Services.BroadcastStateService.Instance.RegisterSharedFile(_selectedFilePath, autoOpen: true);
+                    int webPort = ClassroomAppContext.Network?.WebBridge?.WebPort ?? 8080;
+                    string serverIp = ClassroomAppContext.Network?.ServerIP ?? "127.0.0.1";
+                    string token = QASmartClass.Services.BroadcastStateService.Instance.EnsureBroadcastToken();
+                    string dlUrl = $"http://{serverIp}:{webPort}/api/files/download?id={Uri.EscapeDataString(desc.FileId)}&token={Uri.EscapeDataString(token)}";
+                    string offerCmd = $"CMD|FILE_OFFER|{desc.FileId}|{desc.FileName.Replace('|', '_')}|{desc.FileSize}|1|{webPort}|{token}|{dlUrl}";
+                    await SendCommandToTargetsAsync(offerCmd);
+                }
+                /* // [MYTHWARE_LITE] Gửi đường dẫn cục bộ qua CMD|FILE_BROADCAST:
                 int webPort = 8080;
                 if (ClassroomAppContext.Network?.WebBridge != null)
                 {
@@ -3895,8 +3997,9 @@ namespace QASmartClass.Classroom.Views
                 var token = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
                 var cmd = $"CMD|FILE_BROADCAST|{_selectedFilePath}|{webPort}|{token}";
 
-                // G\u1EEDi theo \u0111\u1ED1i t\u01B0\u1EE3ng \u0111\u00E3 ch\u1ECDn
+                // Gửi theo đối tượng đã chọn
                 await SendCommandToTargetsAsync(cmd);
+                */
 
                 var targetDesc = GetTargetDescription();
                 SaveEvent("FILE_BROADCAST", "GV", $"G\u1EEDi file: {System.IO.Path.GetFileName(_selectedFilePath)} [{targetDesc}]");
@@ -4432,6 +4535,10 @@ namespace QASmartClass.Classroom.Views
             }
             catch (Exception ex) { Log.Debug("[VncBroadcast] Warn check error: {Err}", ex.Message); }
 
+            // [MYTHWARE_LITE] Mặc định khóa toàn màn hình HS (chỉ mở khóa khi tích chkAllowStudentExit)
+            bool allowExitVnc = chkAllowStudentExit?.IsChecked == true;
+            chkForceWatch.IsChecked = !allowExitVnc;
+            /* [MYTHWARE_LITE] Đã ẩn hộp thoại xác nhận cũ
             // Xác nhận trước khi bật FORCE_WATCH
             if (chkForceWatch.IsChecked == true)
             {
@@ -4441,9 +4548,10 @@ namespace QASmartClass.Classroom.Views
                     Window.GetWindow(this));
                 if (!confirmResult) return;
             }
+            */
 
             // Bắt đầu phát sóng thông qua Singleton Service
-            bool isForceWatch = chkForceWatch.IsChecked == true;
+            bool isForceWatch = !allowExitVnc;
             var selectedTargets = GetTargetStudentCodes();
 
             bool started = await QASmartClass.Services.VncBroadcastService.Instance.StartBroadcastAsync(isForceWatch, selectedTargets);
@@ -4585,7 +4693,7 @@ namespace QASmartClass.Classroom.Views
                 btnMeetPageSysAudio.IsEnabled = svc.HasSystemAudioHardware;
                 btnMeetPageSysAudio.Content = !svc.HasSystemAudioHardware
                     ? "🔇 Không có loa"
-                    : (sysOn ? "🔊 Tiếng máy: BẬT" : "🔈 Tiếng máy: TẮT");
+                    : (sysOn ? "🔊 Âm thanh: BẬT" : "🔈 Âm thanh: TẮT");
                 btnMeetPageSysAudio.Background = new SolidColorBrush(!svc.HasSystemAudioHardware
                     ? Color.FromRgb(0x30, 0x31, 0x34)
                     : (sysOn ? Color.FromRgb(0x1A, 0x73, 0xE8) : Color.FromRgb(0xEA, 0x43, 0x35)));

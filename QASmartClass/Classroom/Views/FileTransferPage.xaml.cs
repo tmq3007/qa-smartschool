@@ -144,6 +144,13 @@ namespace QASmartClass.Classroom.Views
                 {
                     window.PreviewKeyDown -= Window_PreviewKeyDown;
                 }
+                var ft = ClassroomAppContext.FileTransfer;
+                if (ft != null)
+                {
+                    ft.FileReceived -= OnFileReceived;
+                    ft.TransferProgress -= OnTransferProgress;
+                    ft.DeliveryStatusChanged -= OnDeliveryStatusChanged;
+                }
             };
         }
 
@@ -188,6 +195,10 @@ namespace QASmartClass.Classroom.Views
                     ft.TransferProgress -= OnTransferProgress;
                     ft.TransferProgress += OnTransferProgress;
 
+                    ft.DeliveryStatusChanged -= OnDeliveryStatusChanged;
+                    ft.DeliveryStatusChanged += OnDeliveryStatusChanged;
+
+                    int webPort = ClassroomAppContext.Network?.WebBridge?.WebPort ?? 8080;
                     if (!ft.IsListening)
                     {
                         _ = Task.Run(async () =>
@@ -197,7 +208,7 @@ namespace QASmartClass.Classroom.Views
                                 await ft.StartListeningAsync();
                                 Dispatcher.Invoke(() =>
                                 {
-                                    txtStatus.Text = $"📡 Sẵn sàng — Lắng nghe trên port {FileTransferService.FILE_PORT}";
+                                    txtStatus.Text = $"📡 Sẵn sàng — HTTP Stream :{webPort} & TCP :{FileTransferService.FILE_PORT}";
                                     txtStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(117, 117, 117));
                                 });
                             }
@@ -205,8 +216,8 @@ namespace QASmartClass.Classroom.Views
                             {
                                 Dispatcher.Invoke(() =>
                                 {
-                                    txtStatus.Text = $"❌ Lỗi: Cổng kết nối {FileTransferService.FILE_PORT} bị chiếm dụng. Vui lòng tắt ứng dụng chạy ẩn.";
-                                    txtStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+                                    txtStatus.Text = $"📡 Sẵn sàng — Nhận/Phát tệp qua HTTP Stream :{webPort}";
+                                    txtStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(46, 125, 50));
                                 });
                             }
                             catch (Exception ex)
@@ -217,7 +228,7 @@ namespace QASmartClass.Classroom.Views
                     }
                     else
                     {
-                        txtStatus.Text = $"📡 Sẵn sàng — Lắng nghe trên port {FileTransferService.FILE_PORT}";
+                        txtStatus.Text = $"📡 Sẵn sàng — HTTP Stream :{webPort} & TCP :{FileTransferService.FILE_PORT}";
                         txtStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(117, 117, 117));
                     }
                 }
@@ -288,6 +299,40 @@ namespace QASmartClass.Classroom.Views
             });
         }
 
+        private readonly HashSet<string> _currentBatchFileIds = new(StringComparer.OrdinalIgnoreCase);
+
+        private void OnDeliveryStatusChanged(object? sender, StudentDeliveryRecord rec)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                try
+                {
+                    var ft = ClassroomAppContext.FileTransfer;
+                    if (ft == null) return;
+
+                    var relevant = _currentBatchFileIds.Count > 0
+                        ? ft.ActiveDeliveries.Values.Where(r => _currentBatchFileIds.Contains(r.FileId)).ToList()
+                        : ft.ActiveDeliveries.Values.ToList();
+
+                    if (relevant.Count == 0) return;
+
+                    int completed = relevant.Count(r => r.Status == "Completed");
+                    int downloading = relevant.Count(r => r.Status == "Downloading" || r.Status == "Pending");
+                    int failed = relevant.Count(r => r.Status == "Failed");
+
+                    if (bdDeliverySummary != null && txtDeliverySummary != null)
+                    {
+                        bdDeliverySummary.Visibility = Visibility.Visible;
+                        txtDeliverySummary.Text =
+                            $"📡 Trạng thái nhận tệp trực tiếp: ✅ Đã lưu {completed}/{relevant.Count} lượt · ⏳ Đang tải {downloading} · ❌ Lỗi {failed}";
+                        txtDeliverySummary.Foreground = new SolidColorBrush(
+                            failed > 0 ? Color.FromRgb(198, 40, 40) : Color.FromRgb(46, 125, 50));
+                    }
+                }
+                catch { }
+            });
+        }
+
         private void RefreshFileList()
         {
             fileListBox.ItemsSource = null;
@@ -296,33 +341,109 @@ namespace QASmartClass.Classroom.Views
             btnSend.IsEnabled = _files.Any();
         }
 
+        private void AddFilePathsToQueue(IEnumerable<string> filePaths)
+        {
+            int added = 0;
+            foreach (var path in filePaths)
+            {
+                if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) continue;
+                if (_files.All(f => !string.Equals(f.Path, path, StringComparison.OrdinalIgnoreCase)))
+                {
+                    var info = new FileInfo(path);
+                    _files.Add(new FileItem
+                    {
+                        Name = info.Name,
+                        Path = path,
+                        SizeText = FormatSize(info.Length),
+                        TypeIcon = GetIcon(info.Extension)
+                    });
+                    added++;
+                }
+            }
+            if (added > 0)
+            {
+                RefreshFileList();
+                Log.Information("Files added to queue: +{Added} (Total={Count})", added, _files.Count);
+            }
+        }
+
+        private void FileDropZone_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+            e.Handled = true;
+        }
+
+        private void FileDropZone_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) &&
+                e.Data.GetData(DataFormats.FileDrop) is string[] droppedPaths)
+            {
+                AddFilePathsToQueue(droppedPaths);
+            }
+        }
+
         private void AddFiles_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new Microsoft.Win32.OpenFileDialog
             {
                 Title = "Chọn bài tập / tài liệu để phát",
                 Multiselect = true,
-                Filter = "Tất cả|*.pdf;*.docx;*.xlsx;*.pptx;*.jpg;*.png;*.mp4;*.zip|" +
-                         "PDF|*.pdf|Word|*.docx|Excel|*.xlsx|PowerPoint|*.pptx|Ảnh|*.jpg;*.png|Video|*.mp4|ZIP|*.zip"
+                Filter = "Tất cả tệp (*.*)|*.*|" +
+                         "Tài liệu phổ biến|*.pdf;*.docx;*.doc;*.xlsx;*.xls;*.pptx;*.ppt;*.jpg;*.jpeg;*.png;*.mp4;*.zip;*.txt|" +
+                         "PDF|*.pdf|Word|*.docx;*.doc|Excel|*.xlsx;*.xls|PowerPoint|*.pptx;*.ppt|Ảnh|*.jpg;*.jpeg;*.png|Video|*.mp4|ZIP|*.zip"
             };
             if (dlg.ShowDialog() == true)
             {
-                foreach (var path in dlg.FileNames)
+                AddFilePathsToQueue(dlg.FileNames);
+            }
+        }
+
+        private void PromptCollectWork_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (QASmartTouch.App.AssessmentState.IsLocked)
                 {
-                    if (_files.All(f => f.Path != path))
+                    QASmartTouch.App.AssessmentState.IsLocked = false;
+                    chkLockSubmission.IsChecked = false;
+                }
+
+                var desc = _isDescPlaceholderActive ? "" : (txtAssignmentDesc.Text?.Trim() ?? "");
+                if (string.IsNullOrWhiteSpace(desc))
+                {
+                    desc = "Giáo viên yêu cầu nộp bài làm ngay bây giờ.";
+                }
+                string safeDesc = desc.Replace('|', ' ');
+                string cmd = $"CMD|COLLECT_WORK|{safeDesc}";
+
+                var targetCodes = GetTargetStudentCodes();
+                var net = ClassroomAppContext.Network;
+                int sentTargets = 0;
+                if (net?.IsBroadcasting == true)
+                {
+                    if (targetCodes == null)
                     {
-                        var info = new FileInfo(path);
-                        _files.Add(new FileItem
-                        {
-                            Name = info.Name,
-                            Path = path,
-                            SizeText = FormatSize(info.Length),
-                            TypeIcon = GetIcon(info.Extension)
-                        });
+                        sentTargets = net.GetConnectedStudents().Count;
+                        _ = net.SendCommandAsync(cmd);
+                    }
+                    else
+                    {
+                        var list = targetCodes.ToList();
+                        sentTargets = list.Count;
+                        _ = net.SendToStudentsAsync(list, cmd);
                     }
                 }
-                RefreshFileList();
-                Log.Information("Files added to queue: {Count}", _files.Count);
+                else
+                {
+                    ClassroomAppContext.DispatchCommand(cmd);
+                }
+
+                txtStatus.Text = $"🔔 Đã gửi yêu cầu nộp bài trực tiếp tới {(sentTargets > 0 ? sentTargets + " máy HS" : "toàn lớp")}!";
+                WriteLogBackground("FILE", "GV", $"Gửi nhắc nộp bài (COLLECT_WORK): {safeDesc}");
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("PromptCollectWork_Click error: {Err}", ex.Message);
             }
         }
 
@@ -443,45 +564,58 @@ namespace QASmartClass.Classroom.Views
                     }
                 }
 
+                bool autoOpenOnStudent = chkAutoOpenOnStudent?.IsChecked == true;
+                _currentBatchFileIds.Clear();
+
                 for (int i = 0; i < _files.Count; i++)
                 {
                     var file = _files[i];
                     txtStatus.Text = $"📤 Phát file {i + 1}/{_files.Count}: {file.Name}";
 
-                    // Try TCP distribute to remote students
-                    var sent = await ft.DistributeFileToTargetsAsync(file.Path, targetCodes);
+                    // Phát tệp qua Server-Centric HTTP Stream + TCP 29877 Control (xuyên Firewall cho cả Windows PC & Android)
+                    int sent = 0;
+                    if (ft != null)
+                    {
+                        var offerRes = await ft.OfferFileViaHttpPullAsync(file.Path, targetCodes, autoOpenOnStudent);
+                        sent = offerRes.TargetCount;
+                        if (!string.IsNullOrEmpty(offerRes.FileId))
+                        {
+                            _currentBatchFileIds.Add(offerRes.FileId);
+                        }
+                    }
                     totalSent += sent;
 
-                    // ═══ LOCAL COPY FALLBACK — Khi cùng 1 máy ═══
-                    // Copy file trực tiếp vào thư mục nhận của HS
-                    try
+                    // ═══ LOCAL COPY FALLBACK — Chỉ khi không có HS online kết nối mạng (test offline 1 mình) ═══
+                    if (onlineStudents.Count == 0)
                     {
-                        var studentReceiveFolder = System.IO.Path.Combine(
-                            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                            "QA SmartClass", "ReceivedFiles");
-                        Directory.CreateDirectory(studentReceiveFolder);
-
-                        var destPath = System.IO.Path.Combine(studentReceiveFolder, file.Name);
-                        // Avoid overwrite
-                        int counter = 1;
-                        while (File.Exists(destPath))
+                        try
                         {
-                            var ext2 = System.IO.Path.GetExtension(file.Name);
-                            var name2 = System.IO.Path.GetFileNameWithoutExtension(file.Name);
-                            destPath = System.IO.Path.Combine(studentReceiveFolder, $"{name2}_{counter++}{ext2}");
+                            var studentReceiveFolder = System.IO.Path.Combine(
+                                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                                "QA SmartClass", "ReceivedFiles");
+                            Directory.CreateDirectory(studentReceiveFolder);
+
+                            var destPath = System.IO.Path.Combine(studentReceiveFolder, file.Name);
+                            int counter = 1;
+                            while (File.Exists(destPath))
+                            {
+                                var ext2 = System.IO.Path.GetExtension(file.Name);
+                                var name2 = System.IO.Path.GetFileNameWithoutExtension(file.Name);
+                                destPath = System.IO.Path.Combine(studentReceiveFolder, $"{name2}_{counter++}{ext2}");
+                            }
+                            File.Copy(file.Path, destPath);
+                            localCopyDone = true;
+                            Log.Information("Local copy: {Src} → {Dst}", file.Path, destPath);
                         }
-                        File.Copy(file.Path, destPath);
-                        localCopyDone = true;
-                        Log.Information("Local copy: {Src} → {Dst}", file.Path, destPath);
-                    }
-                    catch (Exception exCopy)
-                    {
-                        Log.Warning("Local copy failed: {Err}", exCopy.Message);
+                        catch (Exception exCopy)
+                        {
+                            Log.Warning("Local copy failed: {Err}", exCopy.Message);
+                        }
                     }
 
                     progressBar.Value = (i + 1) * 100.0 / _files.Count;
 
-                    // ═══ Gửi CMD|FILE_BROADCAST cho HS hiển thị nội dung file ═══
+                    /* // [MYTHWARE_LITE] Cơ chế cũ gửi đường dẫn cục bộ qua CMD|FILE_BROADCAST (nay đã hợp nhất vào CMD|FILE_OFFER):
                     QASmartClass.Services.BroadcastStateService.Instance.AddBroadcastFile(file.Path);
                     int webPort = 8080;
                     if (ClassroomAppContext.Network?.WebBridge != null)
@@ -494,27 +628,14 @@ namespace QASmartClass.Classroom.Views
                     }
                     var token = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
                     var cmd = $"CMD|FILE_BROADCAST|{file.Path}|{webPort}|{token}";
-                    ClassroomAppContext.LessonState.LastTeacherCommand = cmd;
-                    ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
-
-                    net = ClassroomAppContext.Network;
-                    if (net?.IsBroadcasting == true)
-                    {
-                        if (targetCodes == null)
-                            _ = net.SendCommandAsync(cmd);
-                        else
-                            _ = net.SendToStudentsAsync(targetCodes, cmd);
-                    }
-                    else
-                    {
-                        ClassroomAppContext.DispatchCommand(cmd);
-                    }
+                    ...
+                    */
                 }
 
                 progressBar.Value = 100;
-                int displayCount = totalSent > 0 ? totalSent : (localCopyDone ? 1 : 0);
-                string mode = totalSent > 0 ? "TCP" : (localCopyDone ? "cùng máy" : "");
-                txtStatus.Text = $"✅ Phát thành công {_files.Count} file → {displayCount} HS ({mode})!";
+                int displayCount = onlineStudents.Count > 0 ? onlineStudents.Count : (localCopyDone ? 1 : 0);
+                string mode = onlineStudents.Count > 0 ? "HTTP Stream" : (localCopyDone ? "cùng máy" : "");
+                txtStatus.Text = $"✅ Đã phát {_files.Count} file → {displayCount} HS ({mode})!";
 
                 if (_notifyWin != null && _notifyWin.IsLoaded)
                 {

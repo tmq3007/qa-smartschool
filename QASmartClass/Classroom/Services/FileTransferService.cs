@@ -42,16 +42,19 @@ namespace QASmartClass.Classroom.Services
         // ─── Events ──────────────────────────────────────────
         public event EventHandler<FileTransferProgressEventArgs>? TransferProgress;
         public event EventHandler<FileReceivedEventArgs>? FileReceived;
+        public event EventHandler<StudentDeliveryRecord>? DeliveryStatusChanged;
         public event EventHandler<string>? Error;
 
         // ─── Connected students (from NetworkDiscoveryService) ──
         private readonly NetworkDiscoveryService _networkService;
         private readonly SemaphoreSlim _sendSemaphore = new SemaphoreSlim(5);
         public List<string> LastFailedStudentCodes { get; } = new List<string>();
+        public ConcurrentDictionary<string, StudentDeliveryRecord> ActiveDeliveries { get; } = new(StringComparer.OrdinalIgnoreCase);
 
         public FileTransferService(NetworkDiscoveryService networkService)
         {
             _networkService = networkService;
+            _networkService.MessageReceived += OnStudentControlMessage;
 
             var baseDir = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -62,6 +65,96 @@ namespace QASmartClass.Classroom.Services
 
             Directory.CreateDirectory(_receiveFolder);
             Directory.CreateDirectory(_distributeFolder);
+        }
+
+        private void OnStudentControlMessage(object? sender, StudentMessageEventArgs e)
+        {
+            if (string.IsNullOrEmpty(e?.Message)) return;
+            // Format: FILE_PROGRESS|<fileId>|<pct>|<status>|<detail>
+            // hoặc:   CMD|FILE_PROGRESS|<fileId>|<pct>|<status>|<detail>
+            string raw = e.Message.StartsWith("CMD|", StringComparison.OrdinalIgnoreCase)
+                ? e.Message.Substring(4)
+                : e.Message;
+
+            if (!raw.StartsWith("FILE_PROGRESS|", StringComparison.OrdinalIgnoreCase)) return;
+
+            var parts = raw.Split('|');
+            if (parts.Length < 4) return;
+
+            string fileId = parts[1];
+            int pct = int.TryParse(parts[2], out var p) ? Math.Clamp(p, 0, 100) : 0;
+            string statusToken = parts[3].Trim().ToUpperInvariant();
+            string detail = parts.Length >= 5 ? parts[4] : string.Empty;
+            string code = e.StudentCode ?? "UNKNOWN";
+
+            string key = $"{fileId}_{code}";
+            var studentObj = _networkService.GetConnectedStudents()
+                .FirstOrDefault(s => string.Equals(s.Code, code, StringComparison.OrdinalIgnoreCase));
+            string studentName = studentObj?.Name ?? code;
+
+            string mappedStatus = statusToken switch
+            {
+                "DONE" or "OK" or "COMPLETED" => "Completed",
+                "ERR" or "ERROR" or "FAILED" => "Failed",
+                _ => "Downloading"
+            };
+
+            string fileName = fileId;
+            if (QASmartClass.Services.BroadcastStateService.Instance.SharedFilesById.TryGetValue(fileId, out var desc))
+            {
+                fileName = desc.FileName;
+            }
+
+            var rec = ActiveDeliveries.AddOrUpdate(
+                key,
+                _ => new StudentDeliveryRecord
+                {
+                    StudentCode = code,
+                    StudentName = studentName,
+                    FileId = fileId,
+                    FileName = fileName,
+                    ProgressPercent = mappedStatus == "Completed" ? 100 : pct,
+                    Status = mappedStatus,
+                    ErrorDetail = detail,
+                    UpdatedAt = DateTime.Now
+                },
+                (_, existing) =>
+                {
+                    existing.StudentName = studentName;
+                    existing.FileName = fileName;
+                    existing.ProgressPercent = mappedStatus == "Completed" ? 100 : pct;
+                    existing.Status = mappedStatus;
+                    existing.ErrorDetail = detail;
+                    existing.UpdatedAt = DateTime.Now;
+                    return existing;
+                });
+
+            if (mappedStatus == "Failed")
+            {
+                lock (LastFailedStudentCodes)
+                {
+                    if (!LastFailedStudentCodes.Contains(code))
+                        LastFailedStudentCodes.Add(code);
+                }
+            }
+            else if (mappedStatus == "Completed")
+            {
+                lock (LastFailedStudentCodes)
+                {
+                    LastFailedStudentCodes.Remove(code);
+                }
+            }
+
+            TransferProgress?.Invoke(this, new FileTransferProgressEventArgs
+            {
+                StudentCode = code,
+                FileName = fileName,
+                BytesTransferred = rec.ProgressPercent,
+                TotalBytes = 100,
+                Direction = TransferDirection.Send,
+                ProgressPercent = rec.ProgressPercent
+            });
+            DeliveryStatusChanged?.Invoke(this, rec);
         }
 
         // ═══════════════════════════════════════════════════════
@@ -230,15 +323,22 @@ namespace QASmartClass.Classroom.Services
 
         // ═══════════════════════════════════════════════════════
         //  DISTRIBUTE FILE TO STUDENTS (GV → HS)
+        //  Server-Centric HTTP Pull + TCP 29877 Control (Firewall-Proof cho Windows PC & Android)
         // ═══════════════════════════════════════════════════════
 
-        /// <summary>Phát file cho tất cả HS đang online</summary>
-        public async Task<int> DistributeFileAsync(string filePath)
+        /// <summary>
+        /// Đăng ký file lên HTTP Chunked Stream của Giáo viên và đẩy lệnh CMD|FILE_OFFER qua TCP 29877
+        /// để cả Học sinh Windows PC &amp; Android chủ động tải ngầm về thư mục cục bộ (xuyên 100% Firewall).
+        /// </summary>
+        public async Task<(int TargetCount, string FileId)> OfferFileViaHttpPullAsync(
+            string filePath,
+            IEnumerable<string>? targetCodes = null,
+            bool autoOpenOnStudent = false)
         {
             if (!File.Exists(filePath))
             {
                 Error?.Invoke(this, $"File not found: {filePath}");
-                return 0;
+                return (0, string.Empty);
             }
 
             lock (LastFailedStudentCodes)
@@ -246,196 +346,238 @@ namespace QASmartClass.Classroom.Services
                 LastFailedStudentCodes.Clear();
             }
 
-            var fi = new FileInfo(filePath);
-            var filename = fi.Name;
-            var fileSize = fi.Length;
+            var bState = QASmartClass.Services.BroadcastStateService.Instance;
+            var desc = bState.RegisterSharedFile(filePath, autoOpenOnStudent);
+            string token = bState.EnsureBroadcastToken();
+            int webPort = _networkService.WebBridge?.WebPort ?? 8080;
+            string serverIp = !string.IsNullOrWhiteSpace(_networkService.ServerIP) ? _networkService.ServerIP : "127.0.0.1";
+            string downloadUrl = $"http://{serverIp}:{webPort}/api/files/download?id={Uri.EscapeDataString(desc.FileId)}&token={Uri.EscapeDataString(token)}";
 
-            var students = _networkService.GetConnectedStudents();
-            if (!students.Any())
+            // Sanitize pipe delimiter in filename just in case
+            string safeFileName = desc.FileName.Replace('|', '_');
+            string autoOpenFlag = autoOpenOnStudent ? "1" : "0";
+            string offerCmd = $"CMD|FILE_OFFER|{desc.FileId}|{safeFileName}|{desc.FileSize}|{autoOpenFlag}|{webPort}|{token}|{downloadUrl}";
+
+            var allOnline = _networkService.GetConnectedStudents();
+            HashSet<string>? targetSet = targetCodes != null
+                ? new HashSet<string>(targetCodes, StringComparer.OrdinalIgnoreCase)
+                : null;
+
+            var matchedStudents = targetSet == null
+                ? allOnline.ToList()
+                : allOnline.Where(s => targetSet.Contains(s.Code)).ToList();
+
+            foreach (var st in matchedStudents)
             {
-                Log.Warning("DistributeFile: No connected students");
-                return 0;
+                string key = $"{desc.FileId}_{st.Code}";
+                var rec = new StudentDeliveryRecord
+                {
+                    StudentCode = st.Code,
+                    StudentName = st.Name,
+                    FileId = desc.FileId,
+                    FileName = desc.FileName,
+                    ProgressPercent = 0,
+                    Status = "Pending",
+                    UpdatedAt = DateTime.Now
+                };
+                ActiveDeliveries[key] = rec;
+                DeliveryStatusChanged?.Invoke(this, rec);
             }
 
-            int successCount = 0;
-            var tasks = new List<Task>();
-
-            foreach (var student in students)
+            if (_networkService.IsBroadcasting)
             {
-                tasks.Add(Task.Run(async () =>
+                if (targetSet == null)
                 {
-                    await _sendSemaphore.WaitAsync();
-                    try
+                    await _networkService.SendCommandAsync(offerCmd);
+                }
+                else if (matchedStudents.Count > 0)
+                {
+                    await _networkService.SendToStudentsAsync(matchedStudents.Select(s => s.Code), offerCmd);
+                }
+            }
+
+            Log.Information("Offered file via HTTP Pull: {File} ({Size:N0} bytes, Id={Id}, AutoOpen={AutoOpen}) → {Count} online students",
+                desc.FileName, desc.FileSize, desc.FileId, autoOpenOnStudent, matchedStudents.Count);
+
+            return (matchedStudents.Count, desc.FileId);
+        }
+
+        /// <summary>
+        /// Nhận tệp nộp bài từ Học sinh (Windows PC &amp; Android) qua HTTP POST /api/files/upload theo luồng 64KB chunked trực tiếp xuống ổ đĩa (~0 MB RAM).
+        /// </summary>
+        public async Task<(bool Success, int StatusCode, string Message, string SavedFileName)> SaveIncomingHttpUploadAsync(
+            Stream bodyStream,
+            byte[] initialBuffer,
+            int initialOffset,
+            int initialCount,
+            long contentLength,
+            string studentCode,
+            string studentName,
+            string originalFilename,
+            CancellationToken ct)
+        {
+            if (QASmartTouch.App.AssessmentState.IsLocked)
+            {
+                return (false, 403, "Bài tập đã bị khóa bởi giáo viên. Không thể nộp bài.", string.Empty);
+            }
+
+            if (contentLength <= 0)
+            {
+                return (false, 400, "Tệp nộp bài trống (0 byte) hoặc thiếu Content-Length.", string.Empty);
+            }
+
+            const long MAX_UPLOAD_BYTES = 500L * 1024 * 1024; // 500 MB max
+            if (contentLength > MAX_UPLOAD_BYTES)
+            {
+                return (false, 413, "Tệp nộp bài vượt quá giới hạn tối đa 500 MB.", string.Empty);
+            }
+
+            try
+            {
+                var drive = new DriveInfo(Path.GetPathRoot(Path.GetFullPath(_receiveFolder)) ?? "C");
+                long requiredFree = Math.Max(50L * 1024 * 1024, contentLength + 10L * 1024 * 1024);
+                if (drive.AvailableFreeSpace < requiredFree)
+                {
+                    return (false, 507, "Dung lượng bộ nhớ lưu trữ trên máy giáo viên đã đầy.", string.Empty);
+                }
+            }
+            catch (Exception exDrive)
+            {
+                Log.Warning("Không kiểm tra được dung lượng đĩa khi upload HTTP: {Err}", exDrive.Message);
+            }
+
+            string cleanCode = string.IsNullOrWhiteSpace(studentCode) ? "HS00001" : Path.GetFileName(studentCode.Trim());
+            string cleanName = string.IsNullOrWhiteSpace(studentName) ? "Hoc_sinh" : studentName.Trim();
+            string safeOrigName = Path.GetFileName(string.IsNullOrWhiteSpace(originalFilename) ? "BaiLam.dat" : originalFilename.Trim());
+            if (string.IsNullOrWhiteSpace(safeOrigName)) safeOrigName = "BaiLam.dat";
+
+            Directory.CreateDirectory(_receiveFolder);
+            string normalizedName = NormalizeFilename(cleanCode, cleanName, safeOrigName);
+            string savePath = Path.Combine(_receiveFolder, normalizedName);
+            int dupCounter = 1;
+            while (File.Exists(savePath))
+            {
+                string ext = Path.GetExtension(normalizedName);
+                string baseNoExt = Path.GetFileNameWithoutExtension(normalizedName);
+                normalizedName = $"{baseNoExt}_{dupCounter++}{ext}";
+                savePath = Path.Combine(_receiveFolder, normalizedName);
+            }
+
+            string tempPartPath = savePath + ".part_" + Guid.NewGuid().ToString("N").Substring(0, 6);
+            long received = 0;
+
+            try
+            {
+                using (var fs = new FileStream(tempPartPath, FileMode.Create, FileAccess.Write, FileShare.None, BUFFER_SIZE, useAsync: true))
+                {
+                    if (initialCount > 0)
                     {
-                        using var tcp = new TcpClient();
-                        var connectTask = tcp.ConnectAsync(IPAddress.Parse(student.IPAddress), FILE_PORT);
-                        if (await Task.WhenAny(connectTask, Task.Delay(5000)) != connectTask)
+                        int firstWrite = (int)Math.Min(initialCount, contentLength);
+                        await fs.WriteAsync(initialBuffer.AsMemory(initialOffset, firstWrite), ct);
+                        received += firstWrite;
+                    }
+
+                    var buffer = new byte[BUFFER_SIZE];
+                    int lastReportedPct = -1;
+
+                    while (received < contentLength && !ct.IsCancellationRequested)
+                    {
+                        int toRead = (int)Math.Min(BUFFER_SIZE, contentLength - received);
+                        int bytesRead = await bodyStream.ReadAsync(buffer.AsMemory(0, toRead), ct);
+                        if (bytesRead <= 0) break;
+
+                        await fs.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
+                        received += bytesRead;
+
+                        int pct = contentLength > 0 ? (int)(received * 100 / contentLength) : 100;
+                        if (pct != lastReportedPct && (pct == 100 || pct - lastReportedPct >= 5))
                         {
-                            throw new TimeoutException("Connection to student timed out (5s)");
-                        }
-
-                        using var stream = tcp.GetStream();
-                        stream.WriteTimeout = 30000;
-
-                        // Send header
-                        var header = $"FILE_SEND|{filename}|{fileSize}\n";
-                        await stream.WriteAsync(Encoding.UTF8.GetBytes(header));
-
-                        // Stream file data from disk in chunks
-                        using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        long sent = 0;
-                        var buffer = new byte[BUFFER_SIZE];
-                        int read;
-
-                        while ((read = await fs.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                        {
-                            await stream.WriteAsync(buffer, 0, read);
-                            sent += read;
-
+                            lastReportedPct = pct;
                             TransferProgress?.Invoke(this, new FileTransferProgressEventArgs
                             {
-                                StudentCode = student.Code,
-                                FileName = filename,
-                                BytesTransferred = sent,
-                                TotalBytes = fileSize,
-                                Direction = TransferDirection.Send,
-                                ProgressPercent = fileSize > 0 ? (int)(sent * 100 / fileSize) : 0
+                                StudentCode = cleanCode,
+                                FileName = safeOrigName,
+                                BytesTransferred = received,
+                                TotalBytes = contentLength,
+                                Direction = TransferDirection.Receive,
+                                ProgressPercent = pct
                             });
                         }
+                    }
 
-                        Interlocked.Increment(ref successCount);
-                        Log.Information("File distributed to {Code} ({Name}): {File}",
-                            student.Code, student.Name, filename);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Warning("Distribute to {Code} failed: {Err}", student.Code, ex.Message);
-                        lock (LastFailedStudentCodes)
-                        {
-                            LastFailedStudentCodes.Add(student.Code);
-                        }
-                    }
-                    finally
-                    {
-                        _sendSemaphore.Release();
-                    }
-                }));
+                    await fs.FlushAsync(ct);
+                }
+
+                if (received < contentLength)
+                {
+                    try { if (File.Exists(tempPartPath)) File.Delete(tempPartPath); } catch { }
+                    return (false, 400, $"Luồng tải lên bị ngắt giữa chừng ({received}/{contentLength} bytes).", string.Empty);
+                }
+
+                File.Move(tempPartPath, savePath, overwrite: true);
+
+                if (Path.GetExtension(savePath).Equals(".zip", StringComparison.OrdinalIgnoreCase) && IsZipContentDangerous(savePath))
+                {
+                    Log.Warning("Cảnh báo: File ZIP nộp bài {File} từ {Code} có chứa tệp thực thi bên trong.", normalizedName, cleanCode);
+                }
+
+                Log.Information("HTTP Upload file received: {File} ({Size:N0} bytes) from {Code} ({Name})",
+                    normalizedName, received, cleanCode, cleanName);
+
+                FileReceived?.Invoke(this, new FileReceivedEventArgs
+                {
+                    StudentCode = cleanCode,
+                    StudentName = cleanName,
+                    OriginalFilename = safeOrigName,
+                    NormalizedFilename = normalizedName,
+                    SavePath = savePath,
+                    FileSize = received
+                });
+
+                if (_networkService.IsBroadcasting)
+                {
+                    _ = _networkService.SendToStudentAsync(cleanCode, $"CMD|FILE_SUBMIT_ACK|{normalizedName}|{received}");
+                }
+
+                return (true, 200, "Nộp bài thành công!", normalizedName);
             }
+            catch (Exception ex)
+            {
+                try { if (File.Exists(tempPartPath)) File.Delete(tempPartPath); } catch { }
+                Log.Warning("SaveIncomingHttpUploadAsync failed for {Code}: {Err}", cleanCode, ex.Message);
+                return (false, 500, $"Lỗi lưu tệp trên máy Giáo viên: {ex.Message}", string.Empty);
+            }
+        }
 
-            await Task.WhenAll(tasks);
-            Log.Information("File distributed: {File} → {Success}/{Total} students",
-                filename, successCount, students.Count);
+        /// <summary>Phát file cho tất cả HS đang online</summary>
+        public async Task<int> DistributeFileAsync(string filePath, bool autoOpenOnStudent = false)
+        {
+            var res = await OfferFileViaHttpPullAsync(filePath, null, autoOpenOnStudent);
+            return res.TargetCount;
 
-            return successCount;
+            /* // [MYTHWARE_LITE] Cơ chế cũ GV kết nối ngược TCP 29879 vào IP máy HS (dễ bị chặn bởi Windows Public Firewall & không tương thích Android):
+            if (!File.Exists(filePath))
+            {
+                Error?.Invoke(this, $"File not found: {filePath}");
+                return 0;
+            }
+            ...
+            */
         }
 
         /// <summary>Phát file cho danh sách HS được chọn</summary>
-        public async Task<int> DistributeFileToTargetsAsync(string filePath, IEnumerable<string> targetCodes)
+        public async Task<int> DistributeFileToTargetsAsync(string filePath, IEnumerable<string>? targetCodes, bool autoOpenOnStudent = false)
         {
+            var res = await OfferFileViaHttpPullAsync(filePath, targetCodes, autoOpenOnStudent);
+            return res.TargetCount;
+
+            /* // [MYTHWARE_LITE] Cơ chế cũ GV kết nối ngược TCP 29879 vào IP máy HS:
             if (targetCodes == null)
             {
                 return await DistributeFileAsync(filePath);
             }
-
-            if (!File.Exists(filePath))
-            {
-                Error?.Invoke(this, $"File not found: {filePath}");
-                return 0;
-            }
-
-            lock (LastFailedStudentCodes)
-            {
-                LastFailedStudentCodes.Clear();
-            }
-
-            var fi = new FileInfo(filePath);
-            var filename = fi.Name;
-            var fileSize = fi.Length;
-
-            var targetSet = new HashSet<string>(targetCodes, StringComparer.OrdinalIgnoreCase);
-            var students = _networkService.GetConnectedStudents()
-                .Where(s => targetSet.Contains(s.Code))
-                .ToList();
-
-            if (!students.Any())
-            {
-                Log.Warning("DistributeFileToTargets: No matching connected students found");
-                return 0;
-            }
-
-            int successCount = 0;
-            var tasks = new List<Task>();
-
-            foreach (var student in students)
-            {
-                tasks.Add(Task.Run(async () =>
-                {
-                    await _sendSemaphore.WaitAsync();
-                    try
-                    {
-                        student.LatencyMs = new Random().Next(80, 150);
-
-                        using var tcp = new TcpClient();
-                        var connectTask = tcp.ConnectAsync(IPAddress.Parse(student.IPAddress), FILE_PORT);
-                        if (await Task.WhenAny(connectTask, Task.Delay(5000)) != connectTask)
-                        {
-                            throw new TimeoutException("Connection to student timed out (5s)");
-                        }
-
-                        using var stream = tcp.GetStream();
-                        stream.WriteTimeout = 30000;
-
-                        // Send header
-                        var header = $"FILE_SEND|{filename}|{fileSize}\n";
-                        await stream.WriteAsync(Encoding.UTF8.GetBytes(header));
-
-                        // Stream file data from disk in chunks
-                        using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        long sent = 0;
-                        var buffer = new byte[BUFFER_SIZE];
-                        int read;
-
-                        while ((read = await fs.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                        {
-                            await stream.WriteAsync(buffer, 0, read);
-                            sent += read;
-
-                            TransferProgress?.Invoke(this, new FileTransferProgressEventArgs
-                            {
-                                StudentCode = student.Code,
-                                FileName = filename,
-                                BytesTransferred = sent,
-                                TotalBytes = fileSize,
-                                Direction = TransferDirection.Send,
-                                ProgressPercent = fileSize > 0 ? (int)(sent * 100 / fileSize) : 0
-                            });
-                        }
-
-                        Interlocked.Increment(ref successCount);
-                        Log.Information("File distributed to {Code} ({Name}): {File}",
-                            student.Code, student.Name, filename);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Warning("Distribute to {Code} failed: {Err}", student.Code, ex.Message);
-                        lock (LastFailedStudentCodes)
-                        {
-                            LastFailedStudentCodes.Add(student.Code);
-                        }
-                    }
-                    finally
-                    {
-                        student.LatencyMs = -1;
-                        _sendSemaphore.Release();
-                    }
-                }));
-            }
-
-            await Task.WhenAll(tasks);
-            Log.Information("File distributed to targets: {File} → {Success}/{Total} students",
-                filename, successCount, students.Count);
-
-            return successCount;
+            ...
+            */
         }
 
         // ═══════════════════════════════════════════════════════
@@ -519,53 +661,22 @@ namespace QASmartClass.Classroom.Services
         public string DistributeFolder => _distributeFolder;
         public bool IsListening => _isListening;
 
-        public async Task<bool> SendFileToStudentAsync(string filePath, string studentCode)
+        public async Task<bool> SendFileToStudentAsync(string filePath, string studentCode, bool autoOpenOnStudent = false)
         {
             if (!File.Exists(filePath)) return false;
+            var res = await OfferFileViaHttpPullAsync(filePath, new[] { studentCode }, autoOpenOnStudent);
+            return res.TargetCount > 0;
 
+            /* // [MYTHWARE_LITE] Cơ chế cũ GV kết nối ngược TCP 29879 vào IP máy HS:
             var student = _networkService.GetConnectedStudents().FirstOrDefault(s => s.Code == studentCode);
             if (student == null) return false;
-
-            var fi = new FileInfo(filePath);
-            var filename = fi.Name;
-            var fileSize = fi.Length;
-
-            try
-            {
-                using var tcp = new TcpClient();
-                var connectTask = tcp.ConnectAsync(IPAddress.Parse(student.IPAddress), FILE_PORT);
-                if (await Task.WhenAny(connectTask, Task.Delay(5000)) != connectTask)
-                {
-                    throw new TimeoutException("Connection to student timed out (5s)");
-                }
-
-                using var stream = tcp.GetStream();
-                stream.WriteTimeout = 30000;
-
-                var header = $"FILE_SEND|{filename}|{fileSize}\n";
-                await stream.WriteAsync(Encoding.UTF8.GetBytes(header));
-
-                using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                long sent = 0;
-                var buffer = new byte[BUFFER_SIZE];
-                int read;
-
-                while ((read = await fs.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                {
-                    await stream.WriteAsync(buffer, 0, read);
-                    sent += read;
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning("SendFileToStudent to {Code} failed: {Err}", studentCode, ex.Message);
-                return false;
-            }
+            ...
+            */
         }
 
         public void Dispose()
         {
+            _networkService.MessageReceived -= OnStudentControlMessage;
             StopListening();
             _cts?.Dispose();
             GC.SuppressFinalize(this);
@@ -602,6 +713,18 @@ namespace QASmartClass.Classroom.Services
     }
 
     // ─── Event Args ────────────────────────────────────────
+    public class StudentDeliveryRecord
+    {
+        public string StudentCode { get; set; } = string.Empty;
+        public string StudentName { get; set; } = string.Empty;
+        public string FileId { get; set; } = string.Empty;
+        public string FileName { get; set; } = string.Empty;
+        public int ProgressPercent { get; set; }
+        public string Status { get; set; } = "Pending"; // Pending | Downloading | Completed | Failed
+        public string ErrorDetail { get; set; } = string.Empty;
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    }
+
     public class FileTransferProgressEventArgs : EventArgs
     {
         public string StudentCode { get; set; } = string.Empty;

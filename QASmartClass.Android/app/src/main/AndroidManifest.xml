@@ -23,10 +23,11 @@
         android:theme="@style/Theme.QASmartClass"
         android:usesCleartextTraffic="true">
 
-        <!-- Main Launcher Activity -->
+        <!-- Main Launcher Activity (singleTask: chống tạo nhân bản Activity gây đá kết nối TCP khi quay lại từ trình xem file/trình duyệt) -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:screenOrientation="fullSensor"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
             android:windowSoftInputMode="adjustResize">
@@ -41,6 +42,17 @@
             android:name=".services.ScreenCaptureService"
             android:exported="false"
             android:foregroundServiceType="mediaProjection" />
+
+        <!-- FileProvider mở tài liệu PDF / Word / Excel / Ảnh / Video do Giáo viên gửi về cục bộ -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <!-- Device Administrator Receiver for Kiosk Mode -->
         <receiver

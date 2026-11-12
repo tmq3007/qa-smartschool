@@ -501,7 +501,7 @@ namespace QASmartClass.Classroom.Services
                 string sessionSalt = QASmartClass.Services.ClassControlService.Instance.SessionSalt;
                 long serverTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 var ack = $"OK|{Guid.NewGuid():N}|{serverTimestamp}|{encryptedSessionKeyBase64}|{classCode}|{sessionSalt}|{studentName}|{studentCode}\n";
-                await stream.WriteAsync(Encoding.UTF8.GetBytes(ack), ct);
+                await info.WriteSafeAsync(Encoding.UTF8.GetBytes(ack), ct);
 
                 Log.Information("Student joined: {Name} ({Code}) @ {IP}", info.Name, info.Code, remoteIP);
                 StudentConnected?.Invoke(this, new StudentConnectedEventArgs
@@ -521,7 +521,7 @@ namespace QASmartClass.Classroom.Services
                         string cmd = !string.IsNullOrEmpty(sessionSalt)
                             ? QASmartClass.Utilities.NetworkCryptoHelper.EncryptCommand(signedCmd, sessionSalt) + "\n"
                             : QASmartClass.Utilities.CryptoHelper.Encrypt(signedCmd, info.SessionKey) + "\n";
-                        await stream.WriteAsync(Encoding.UTF8.GetBytes(cmd), ct);
+                        await info.WriteSafeAsync(Encoding.UTF8.GetBytes(cmd), ct);
                     }
                     else if (control.IsWebWhitelistActive)
                     {
@@ -529,7 +529,7 @@ namespace QASmartClass.Classroom.Services
                         string cmd1 = !string.IsNullOrEmpty(sessionSalt)
                             ? QASmartClass.Utilities.NetworkCryptoHelper.EncryptCommand(signedCmd1, sessionSalt) + "\n"
                             : QASmartClass.Utilities.CryptoHelper.Encrypt(signedCmd1, info.SessionKey) + "\n";
-                        await stream.WriteAsync(Encoding.UTF8.GetBytes(cmd1), ct);
+                        await info.WriteSafeAsync(Encoding.UTF8.GetBytes(cmd1), ct);
                         
                         if (!string.IsNullOrEmpty(control.WebWhitelistUrls))
                         {
@@ -537,7 +537,7 @@ namespace QASmartClass.Classroom.Services
                             string cmd2 = !string.IsNullOrEmpty(sessionSalt)
                                 ? QASmartClass.Utilities.NetworkCryptoHelper.EncryptCommand(signedCmd2, sessionSalt) + "\n"
                                 : QASmartClass.Utilities.CryptoHelper.Encrypt(signedCmd2, info.SessionKey) + "\n";
-                            await stream.WriteAsync(Encoding.UTF8.GetBytes(cmd2), ct);
+                            await info.WriteSafeAsync(Encoding.UTF8.GetBytes(cmd2), ct);
                         }
                     }
                 }
@@ -556,7 +556,7 @@ namespace QASmartClass.Classroom.Services
                         string cmd = !string.IsNullOrEmpty(sessionSalt)
                             ? QASmartClass.Utilities.NetworkCryptoHelper.EncryptCommand(signedPinCmd, sessionSalt) + "\n"
                             : QASmartClass.Utilities.CryptoHelper.Encrypt(signedPinCmd, info.SessionKey) + "\n";
-                        await stream.WriteAsync(Encoding.UTF8.GetBytes(cmd), ct);
+                        await info.WriteSafeAsync(Encoding.UTF8.GetBytes(cmd), ct);
                     }
                 }
                 catch (Exception exSyncPin)
@@ -640,13 +640,16 @@ namespace QASmartClass.Classroom.Services
                     Log.Information("Student left: {Name} ({Code}) — WasCurrent: {IsCurrent}",
                         info.Name, info.Code, wasCurrentConnection);
 
-                    // ═══ MARK DEVICE OFFLINE ═══
-                    try
+                    // ═══ MARK DEVICE OFFLINE (chỉ khi đúng kết nối hiện tại rời lớp, tránh đánh dấu nhầm khi tái kết nối) ═══
+                    if (wasCurrentConnection)
                     {
-                        if (System.Windows.Application.Current is QASmartTouch.App app)
-                            ClassroomAppContext.DeviceMemory.MarkStudentOffline(info.Code);
+                        try
+                        {
+                            if (System.Windows.Application.Current is QASmartTouch.App app)
+                                ClassroomAppContext.DeviceMemory.MarkStudentOffline(info.Code);
+                        }
+                        catch { }
                     }
-                    catch { }
                 }
                 tcp.Close();
             }
@@ -738,12 +741,12 @@ namespace QASmartClass.Classroom.Services
                     bool seatOccupied = _clients.Values.Any(c => c.Code != info.Code && c.SeatNumber == seatNumber);
                     if (seatOccupied)
                     {
-                        _ = stream.WriteAsync(Encoding.UTF8.GetBytes($"CLAIM_REJECTED|Ghế số {seatNumber} đã có học sinh khác đăng ký!"), ct);
+                        _ = info.WriteSafeAsync(Encoding.UTF8.GetBytes($"CLAIM_REJECTED|Ghế số {seatNumber} đã có học sinh khác đăng ký!"), ct);
                     }
                     else
                     {
                         info.SeatNumber = seatNumber;
-                        _ = stream.WriteAsync(Encoding.UTF8.GetBytes("CLAIM_ACK"), ct);
+                        _ = info.WriteSafeAsync(Encoding.UTF8.GetBytes("CLAIM_ACK"), ct);
                         MessageReceived?.Invoke(this, new StudentMessageEventArgs
                         {
                             StudentCode = info.Code, Message = $"CLAIM_SUCCESS|{seatNumber}"
@@ -759,7 +762,7 @@ namespace QASmartClass.Classroom.Services
                 if (hbParts.Length >= 5 && int.TryParse(hbParts[4], out var cpu))
                     info.CpuUsage = cpu;
 
-                _ = stream.WriteAsync(Encoding.UTF8.GetBytes("HB_ACK"), ct);
+                _ = info.WriteSafeAsync(Encoding.UTF8.GetBytes("HB_ACK"), ct);
 
                 // LOI_VID_30 FIX: Phát qua HeartbeatReceived thay vì MessageReceived
                 // để ngăn chặn rò rỉ vào Chat UI (NET-001)
@@ -934,7 +937,7 @@ namespace QASmartClass.Classroom.Services
                         }
                         var commandWithNewLine = encryptedCommand.EndsWith("\n") ? encryptedCommand : encryptedCommand + "\n";
                         var bytes = Encoding.UTF8.GetBytes(commandWithNewLine);
-                        await client.Stream.WriteAsync(bytes);
+                        await client.WriteSafeAsync(bytes);
                         sent++;
                     }
                 }
@@ -1096,7 +1099,7 @@ namespace QASmartClass.Classroom.Services
                         }
                         var messageWithNewLine = encryptedMessage.EndsWith("\n") ? encryptedMessage : encryptedMessage + "\n";
                         var bytes = Encoding.UTF8.GetBytes(messageWithNewLine);
-                        await client.Stream.WriteAsync(bytes);
+                        await client.WriteSafeAsync(bytes);
                         Log.Information("Private msg to {Code} ({PC}): {Msg}", client.Code, client.PCName, message);
                     }
                 }
@@ -1207,7 +1210,7 @@ namespace QASmartClass.Classroom.Services
                             }
                             var messageWithNewLine = encryptedMessage.EndsWith("\n") ? encryptedMessage : encryptedMessage + "\n";
                             var bytes = Encoding.UTF8.GetBytes(messageWithNewLine);
-                            await client.Stream.WriteAsync(bytes);
+                            await client.WriteSafeAsync(bytes);
                             sent++;
                         }
                     }
@@ -1331,7 +1334,7 @@ namespace QASmartClass.Classroom.Services
                     }
                     var messageWithNewLine = encryptedMessage.EndsWith("\n") ? encryptedMessage : encryptedMessage + "\n";
                     var bytes = Encoding.UTF8.GetBytes(messageWithNewLine);
-                    await client.Stream.WriteAsync(bytes);
+                    await client.WriteSafeAsync(bytes);
                 }
             }
             catch (Exception ex)
@@ -1447,7 +1450,7 @@ namespace QASmartClass.Classroom.Services
                     // 4. Gửi qua TCP stream (newline-delimited framing)
                     string messageWithNewLine = encryptedCmd.EndsWith("\n") ? encryptedCmd : encryptedCmd + "\n";
                     byte[] bytes = Encoding.UTF8.GetBytes(messageWithNewLine);
-                    await client.Stream.WriteAsync(bytes, 0, bytes.Length);
+                    await client.WriteSafeAsync(bytes);
 
                     successCount++;
                     Log.Information("[SessionSync] Đã gửi UPDATE_SESSION tới HS {Code} ({IP})", code, client.IPAddress);
@@ -1503,6 +1506,24 @@ namespace QASmartClass.Classroom.Services
         public bool   IsMicOk { get; set; } = true;
         public TcpClient?    TcpClient { get; set; }
         public NetworkStream? Stream   { get; set; }
+        public System.Threading.SemaphoreSlim WriteLock { get; } = new(1, 1);
+
+        public async Task WriteSafeAsync(byte[] bytes, CancellationToken ct = default)
+        {
+            await WriteLock.WaitAsync(ct);
+            try
+            {
+                var activeStream = Stream;
+                if (activeStream != null && TcpClient?.Connected == true)
+                {
+                    await activeStream.WriteAsync(bytes, 0, bytes.Length, ct);
+                }
+            }
+            finally
+            {
+                WriteLock.Release();
+            }
+        }
         public DateTime LastSeen       { get; set; }
         public string SessionKey       { get; set; } = string.Empty;
         public string MacAddress       { get; set; } = string.Empty;

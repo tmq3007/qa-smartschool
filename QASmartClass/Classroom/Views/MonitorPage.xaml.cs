@@ -2568,6 +2568,7 @@ namespace QASmartClass.Classroom.Views
             int online = _allStudents.Count(s => s.IsOnline);
 
             SendCommand("CMD|LOCK_SCREEN");
+            (Application.Current as QASmartTouch.App)?._floatingModeBar?.SetClassScreenLockState(true);
 
             AddLog("Khóa màn hình", $"Đã thực hiện khóa {online} máy học sinh", "#FFF3E0", "#E65100");
 
@@ -2586,6 +2587,7 @@ namespace QASmartClass.Classroom.Views
             int online = _allStudents.Count(s => s.IsOnline);
 
             SendCommand("CMD|UNLOCK_SCREEN");
+            (Application.Current as QASmartTouch.App)?._floatingModeBar?.SetClassScreenLockState(false);
 
             AddLog("Mở khóa", $"Đã thực hiện mở khóa {online} máy học sinh", "#E8F5E9", "#2E7D32");
 
@@ -4021,7 +4023,7 @@ namespace QASmartClass.Classroom.Views
 
 
 
-        private void SendFile_Click(object sender, RoutedEventArgs e)
+        private async void SendFile_Click(object sender, RoutedEventArgs e)
         {
             var ofd = new Microsoft.Win32.OpenFileDialog
             {
@@ -4031,16 +4033,22 @@ namespace QASmartClass.Classroom.Views
             };
             if (ofd.ShowDialog() == true)
             {
-                // app → ClassroomAppContext (refactored)
-                int webPort = 8080;
-                if (ClassroomAppContext.Network?.WebBridge != null)
-                {
-                    webPort = ClassroomAppContext.Network.WebBridge.WebPort;
-                }
+                var ft = ClassroomAppContext.FileTransfer;
+                var selectedCodes = _allStudents
+                    .Where(s => s.IsSelected && s.IsOnline)
+                    .Select(s => !string.IsNullOrEmpty(s.StudentCode) ? s.StudentCode : s.PCName)
+                    .Where(c => !string.IsNullOrEmpty(c))
+                    .ToList();
+                IEnumerable<string>? targetCodes = selectedCodes.Count > 0 ? selectedCodes : null;
 
-                int online = _allStudents.Count(s => s.IsOnline);
+                int online = targetCodes != null ? selectedCodes.Count : _allStudents.Count(s => s.IsOnline);
                 foreach (var file in ofd.FileNames)
                 {
+                    if (ft != null)
+                    {
+                        await ft.OfferFileViaHttpPullAsync(file, targetCodes, autoOpenOnStudent: true);
+                    }
+                    /* // [MYTHWARE_LITE] Cơ chế cũ gửi đường dẫn cục bộ của máy GV qua CMD|FILE_BROADCAST:
                     QASmartClass.Services.BroadcastStateService.Instance.AddBroadcastFile(file);
                     if (string.IsNullOrEmpty(QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken))
                     {
@@ -4048,8 +4056,9 @@ namespace QASmartClass.Classroom.Views
                     }
                     var token = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
                     SendCommand($"CMD|FILE_BROADCAST|{file}|{webPort}|{token}");
+                    */
                 }
-                AddLog("Gửi tệp tin", $"Đã truyền {ofd.FileNames.Length} tệp dữ liệu tới {online} học sinh", "#2D3038", "#66BB6A");
+                AddLog("Gửi tệp tin", $"Đã truyền {ofd.FileNames.Length} tệp dữ liệu tới {online} học sinh (HTTP Stream)", "#2D3038", "#66BB6A");
             }
         }
 

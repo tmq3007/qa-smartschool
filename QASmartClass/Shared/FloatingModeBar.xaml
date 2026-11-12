@@ -7,226 +7,603 @@
         ResizeMode="NoResize"
         WindowStartupLocation="Manual">
 
-    <Grid Margin="6">
-        <!-- ═══════════════════════════════════════════════════════════ -->
-        <!-- 1. TRẠNG THÁI MỞ RỘNG (EXPANDED MODE BAR)                  -->
-        <!-- ═══════════════════════════════════════════════════════════ -->
-        <Border x:Name="pnlExpanded" CornerRadius="12"
-                Background="#E8EAF6" BorderBrush="#5C6BC0" BorderThickness="1.5"
-                Width="716" Height="50"
-                Visibility="Visible">
+    <Grid Margin="8">
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- 1. CỤC TRÒN NỔI ASSISTIVETOUCH / EASYTOUCH HỢP NHẤT (MẶC ĐỊNH)      -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <Border x:Name="pnlCollapsed"
+                Width="58" Height="58"
+                CornerRadius="29"
+                BorderThickness="1.8"
+                BorderBrush="#8893C5FD"
+                Cursor="Hand"
+                Opacity="0.86"
+                Visibility="Visible"
+                MouseEnter="Orb_MouseEnter"
+                MouseLeave="Orb_MouseLeave"
+                MouseLeftButtonDown="Orb_MouseLeftButtonDown"
+                MouseMove="Orb_MouseMove"
+                MouseLeftButtonUp="Orb_MouseLeftButtonUp"
+                MouseRightButtonUp="OnBroadcastRightClick"
+                TouchDown="Orb_TouchDown"
+                TouchMove="Orb_TouchMove"
+                TouchUp="Orb_TouchUp"
+                ToolTip="Chạm để mở Trung tâm Điều khiển Nhanh • Giữ kéo để di chuyển">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#F20F172A" Offset="0"/>
+                    <GradientStop Color="#F21E293B" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
             <Border.Effect>
-                <DropShadowEffect BlurRadius="14" ShadowDepth="3" Opacity="0.3" Color="#263238"/>
+                <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.48" Color="#000000"/>
             </Border.Effect>
 
-            <DockPanel Margin="4,2">
-                <!-- Left Drag Handle Grip (Rộng 30px để ngón tay dễ chạm) -->
-                <Border DockPanel.Dock="Left" Width="30" Cursor="SizeAll" Background="Transparent"
-                        ToolTip="Kéo giữ để di chuyển thanh điều khiển"
-                        PreviewMouseLeftButtonDown="DragHandle_PreviewMouseDown">
-                    <TextBlock Text="⠿" FontSize="18" Foreground="#5C6BC0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <Grid>
+                <!-- Vòng sáng viền trong mềm mại chuẩn iOS AssistiveTouch -->
+                <Ellipse x:Name="orbOuterRing"
+                         Width="42" Height="42"
+                         Fill="#1FFFFFFF"
+                         Stroke="#52FFFFFF"
+                         StrokeThickness="1.3"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+
+                <!-- Vòng đồng tâm thứ 2 -->
+                <Ellipse x:Name="orbMiddleRing"
+                         Width="30" Height="30"
+                         Fill="#33FFFFFF"
+                         Stroke="#85FFFFFF"
+                         StrokeThickness="1.3"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+
+                <!-- Nhân sáng trung tâm sắc nét -->
+                <Ellipse x:Name="orbInnerCore"
+                         Width="16" Height="16"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center">
+                    <Ellipse.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#FFFFFFFF" Offset="0"/>
+                            <GradientStop Color="#E0E7FF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Ellipse.Fill>
+                </Ellipse>
+
+                <!-- Chấm trạng thái nổi góc trên phải (Xanh chế độ / Đỏ đang chiếu hoặc ghi hình / Cam khóa lớp) -->
+                <Border x:Name="bdrOrbStatusHalo"
+                        Width="15" Height="15"
+                        CornerRadius="7.5"
+                        Background="#0F172A"
+                        Padding="2"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="0,1,1,0">
+                    <Ellipse x:Name="dotOrbStatus" Fill="#3B82F6"/>
                 </Border>
+            </Grid>
+        </Border>
 
-                <!-- Separator -->
-                <Border DockPanel.Dock="Left" Width="1" Background="#C5CAE9" Margin="2,6"/>
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- 2. TRUNG TÂM ĐIỀU KHIỂN BENTO HUB KHI CHẠM MỞ RỘNG CỤC TRÒN         -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <StackPanel x:Name="pnlExpanded"
+                    Orientation="Vertical"
+                    Visibility="Collapsed">
 
-                <!-- Right Drag Handle Grip -->
-                <Border DockPanel.Dock="Right" Width="26" Cursor="SizeAll" Background="Transparent"
-                        ToolTip="Kéo giữ để di chuyển thanh điều khiển"
-                        PreviewMouseLeftButtonDown="DragHandle_PreviewMouseDown">
-                    <TextBlock Text="⠿" FontSize="18" Foreground="#90A4AE" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                </Border>
+            <!-- THẺ CHÍNH BENTO DARK GLASS -->
+            <Border Width="396"
+                    CornerRadius="22"
+                    Background="#F5151B26"
+                    BorderBrush="#3894A3B8"
+                    BorderThickness="1.3"
+                    Padding="13,11,13,12">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="22" ShadowDepth="5" Opacity="0.52" Color="#000000"/>
+                </Border.Effect>
 
-                <!-- Separator before quick tools -->
-                <Border DockPanel.Dock="Right" Width="1" Background="#C5CAE9" Margin="3,6"/>
+                <StackPanel Orientation="Vertical">
+                    <!-- ─── HÀNG 1: THANH KÉO + TRẠNG THÁI + THU GỌN / ẨN ─── -->
+                    <DockPanel LastChildFill="True" Margin="0,0,0,9">
+                        <!-- Nút Ẩn hẳn cục tròn (Có xác nhận an toàn) -->
+                        <Border DockPanel.Dock="Right"
+                                Width="28" Height="28" CornerRadius="14"
+                                Background="#26FFFFFF" Cursor="Hand"
+                                Margin="5,0,0,0"
+                                MouseLeftButtonDown="OnCloseClick"
+                                PreviewTouchDown="OnCloseTouchDown"
+                                ToolTip="Ẩn nút điều khiển nổi (Ctrl+Alt+M để mở lại)">
+                            <Viewbox Width="11" Height="11" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Canvas Width="24" Height="24">
+                                    <Path Fill="#FCA5A5" Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                                </Canvas>
+                            </Viewbox>
+                        </Border>
 
-                <!-- Quick Tools (right side) -->
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="2,0">
-                    <!-- Show/Hide main window -->
-                    <Border x:Name="btnShowHide" Width="34" Height="34" CornerRadius="8" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonDown="OnShowHideClick"
-                            PreviewTouchDown="OnShowHideTouchDown"
-                            ToolTip="Hiển thị / Ẩn cửa sổ chính">
-                        <TextBlock x:Name="txtShowHide" Text="🔲" FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    </Border>
+                        <!-- Nút Thu gọn lại thành Cục tròn -->
+                        <Border x:Name="btnCollapseBar"
+                                DockPanel.Dock="Right"
+                                Height="28" CornerRadius="14"
+                                Background="#2563EB" Padding="11,0"
+                                Margin="6,0,0,0" Cursor="Hand"
+                                MouseLeftButtonDown="OnCollapseClick"
+                                PreviewTouchDown="btnCollapseBar_PreviewTouchDown"
+                                ToolTip="Thu gọn về nút tròn nổi EasyTouch">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="7" Height="7" Fill="White" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Thu gọn" FontSize="11.5" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
 
-                    <!-- Voice broadcast -->
-                    <Border x:Name="btnVoice" Width="34" Height="34" CornerRadius="8" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonDown="OnVoiceClick"
-                            PreviewTouchDown="OnVoiceTouchDown"
-                            ToolTip="Bắt đầu / Ngừng phát giọng nói tới cả lớp">
-                        <TextBlock x:Name="txtVoice" Text="🎤" FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    </Border>
+                        <!-- Vùng Kéo di chuyển & Nhãn trạng thái Live -->
+                        <Border Background="#1FFFFFFF"
+                                CornerRadius="14"
+                                Padding="10,4"
+                                Cursor="SizeAll"
+                                PreviewMouseLeftButtonDown="DragHandle_PreviewMouseDown"
+                                ToolTip="Giữ kéo để di chuyển bảng điều khiển">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="⠿" FontSize="14" Foreground="#94A3B8" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <Ellipse x:Name="dotHubLive" Width="8" Height="8" Fill="#3B82F6" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtHubStatusTitle"
+                                           Text="SMART CLASS"
+                                           FontSize="11" FontWeight="Bold" Foreground="#93C5FD"
+                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock x:Name="txtHubSubStatus"
+                                           Text="Sẵn sàng"
+                                           FontSize="11" FontWeight="SemiBold" Foreground="#CBD5E1"
+                                           MaxWidth="135" TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </DockPanel>
 
-                    <!-- Pen annotation -->
-                    <Border x:Name="btnPen" Width="34" Height="34" CornerRadius="8" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonDown="OnPenClick"
-                            PreviewTouchDown="OnPenTouchDown"
-                            ToolTip="Mở bảng viết chú thích SMART TOUCH">
-                        <TextBlock Text="✏️" FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    </Border>
+                    <!-- ─── HÀNG 2: CHUYỂN CHẾ ĐỘ HỆ THỐNG (GIỮ CHUẨN THƯƠNG HIỆU) ─── -->
+                    <Border Background="#18FFFFFF" CornerRadius="14" Padding="4" Margin="0,0,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                    <!-- Screen recording -->
-                    <Border x:Name="btnRecord" Width="34" Height="34" CornerRadius="8" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonDown="OnRecordClick"
-                            PreviewTouchDown="OnRecordTouchDown"
-                            ToolTip="Ghi hình bài giảng &amp; hoạt động trình chiếu">
-                        <TextBlock x:Name="txtRecord" Text="⏺️" FontSize="15" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    </Border>
-
-                    <!-- Screen broadcast + Quick Broadcast Menu (Split Pill) -->
-                    <Border x:Name="bdrBroadcastGroup" Height="34" CornerRadius="8" Background="#DCE3F9"
-                            BorderBrush="#9FA8DA" BorderThickness="1" Margin="2,0,3,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Border x:Name="btnBroadcast" MinWidth="36" Height="32" CornerRadius="7,0,0,7"
-                                    Padding="7,0,5,0" Background="Transparent" Cursor="Hand"
-                                    MouseLeftButtonDown="OnBroadcastClick"
-                                    MouseRightButtonUp="OnBroadcastRightClick"
-                                    PreviewTouchDown="OnBroadcastTouchDown"
-                                    ToolTip="Chia sẻ màn hình &amp; Quảng bá bài giảng cho Học sinh (Chuột phải hoặc bấm ▾ để chọn chế độ)">
-                                <TextBlock x:Name="txtBroadcast" Text="📺" FontSize="14" FontWeight="Bold"
-                                           Foreground="#1E293B" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <!-- SMART CLASS -->
+                            <Border x:Name="btnClass" Grid.Column="0" CornerRadius="10" Padding="6,6" Margin="1"
+                                    Background="#1976D2" Cursor="Hand"
+                                    MouseLeftButtonDown="OnClassClick"
+                                    PreviewTouchDown="OnClassTouchDown"
+                                    ToolTip="Chuyển sang giao diện Quản lý lớp học SMART CLASS">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="SMART CLASS" FontSize="10.5" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Quản lý lớp" FontSize="9" Foreground="#DBEAFE" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+                                </StackPanel>
                             </Border>
-                            <Border x:Name="sepBroadcastSplit" Width="1" Margin="0,6" Background="#9FA8DA"/>
-                            <Border x:Name="btnBroadcastMenu" Width="22" Height="32" CornerRadius="0,7,7,0"
+
+                            <!-- SMART TOUCH -->
+                            <Border x:Name="btnScreen" Grid.Column="1" CornerRadius="10" Padding="6,6" Margin="1"
                                     Background="Transparent" Cursor="Hand"
-                                    MouseLeftButtonDown="OnBroadcastMenuClick"
-                                    PreviewTouchDown="OnBroadcastMenuTouchDown"
-                                    ToolTip="Menu Quảng bá: Chọn màn hình/cửa sổ, Kéo vùng, Chiếu Bảng trắng, Mẫu HS, Thông báo, Mở Web">
-                                <TextBlock x:Name="txtBroadcastCaret" Text="▾" FontSize="11" FontWeight="Bold"
-                                           Foreground="#334155" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    MouseLeftButtonDown="OnScreenClick"
+                                    PreviewTouchDown="OnScreenTouchDown"
+                                    ToolTip="Chuyển sang Bảng viết tương tác SMART TOUCH">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="SMART TOUCH" FontSize="10.5" FontWeight="Bold" Foreground="#E2E8F0" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Bảng trắng" FontSize="9" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+                                </StackPanel>
                             </Border>
+
+                            <!-- DESKTOP -->
+                            <Border x:Name="btnDesktop" Grid.Column="2" CornerRadius="10" Padding="6,6" Margin="1"
+                                    Background="Transparent" Cursor="Hand"
+                                    MouseLeftButtonDown="OnDesktopClick"
+                                    PreviewTouchDown="OnDesktopTouchDown"
+                                    ToolTip="Thu ẩn ứng dụng để thao tác màn hình Windows DESKTOP">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="DESKTOP" FontSize="10.5" FontWeight="Bold" Foreground="#E2E8F0" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Màn hình máy" FontSize="9" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- ─── HÀNG 2B: TIỆN ÍCH NHANH (ẨN/HIỆN • BÚT BẢNG • GHI HÌNH) ─── -->
+                    <UniformGrid Columns="3" Margin="0,0,0,8">
+                        <Border x:Name="btnShowHide" Height="34" CornerRadius="11" Background="#22FFFFFF" Margin="0,0,4,0" Cursor="Hand"
+                                MouseLeftButtonDown="OnShowHideClick"
+                                PreviewTouchDown="OnShowHideTouchDown"
+                                ToolTip="Ẩn / Hiện cửa sổ chính đang mở">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="txtShowHide" Text="🔲" FontSize="12.5" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtShowHideLabel" Text="Ẩn/Hiện" FontSize="11.5" FontWeight="SemiBold" Foreground="#F1F5F9" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="btnPen" Height="34" CornerRadius="11" Background="#22FFFFFF" Margin="2,0,2,0" Cursor="Hand"
+                                MouseLeftButtonDown="OnPenClick"
+                                PreviewTouchDown="OnPenTouchDown"
+                                ToolTip="Mở nhanh Bút viết bảng trắng SMART TOUCH">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="✏️" FontSize="12.5" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Bút bảng" FontSize="11.5" FontWeight="SemiBold" Foreground="#F1F5F9" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="btnRecord" Height="34" CornerRadius="11" Background="#22FFFFFF" Margin="4,0,0,0" Cursor="Hand"
+                                MouseLeftButtonDown="OnRecordClick"
+                                PreviewTouchDown="OnRecordTouchDown"
+                                ToolTip="Ghi hình bài giảng &amp; âm thanh">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="txtRecord" Text="⏺" FontSize="12.5" Foreground="#F87171" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtRecordLabel" Text="Ghi hình" FontSize="11.5" FontWeight="SemiBold" Foreground="#F1F5F9" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+
+                    <!-- ─── HÀNG 3: CỤM MICRO • ÂM THANH • CAMERA • KHÓA MÁY HS ─── -->
+                    <Border Background="#18FFFFFF" CornerRadius="14" Padding="7,7,7,5" Margin="0,0,0,8">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="ÂM THANH • CAMERA • KỶ LUẬT LỚP"
+                                       FontSize="9.5" FontWeight="Bold" Foreground="#94A3B8"
+                                       Margin="2,0,0,6"/>
+
+                            <UniformGrid Columns="2" Margin="0,0,0,5">
+                                <!-- 1. MICRO [ 🎙️ Mic + Sóng âm | ▾ ] -->
+                                <Border x:Name="bdrMicPill" Height="36" CornerRadius="12" Background="#2A3241" Margin="0,0,3,0" ClipToBounds="True">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="1"/>
+                                            <ColumnDefinition Width="28"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border x:Name="btnVoice" Grid.Column="0" Background="Transparent" Cursor="Hand" Padding="8,0,4,0"
+                                                MouseLeftButtonDown="OnMicToggleClick"
+                                                PreviewTouchDown="OnMicToggleTouchDown"
+                                                ToolTip="Bật / Tắt Micro Giáo viên truyền xuống lớp">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <TextBlock x:Name="txtVoice" Text="🔇 Tắt mic" FontSize="11.5" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Height="14">
+                                                    <Border x:Name="barMic1" Width="3" Height="3" CornerRadius="1.5" Background="#34D399" VerticalAlignment="Center" Margin="1,0"/>
+                                                    <Border x:Name="barMic2" Width="3" Height="3" CornerRadius="1.5" Background="#34D399" VerticalAlignment="Center" Margin="1,0"/>
+                                                    <Border x:Name="barMic3" Width="3" Height="3" CornerRadius="1.5" Background="#34D399" VerticalAlignment="Center" Margin="1,0"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Grid.Column="1" Background="#40FFFFFF" Margin="0,7"/>
+                                        <Border Grid.Column="2" Background="Transparent" Cursor="Hand"
+                                                MouseLeftButtonDown="OnAudioPopoverClick"
+                                                PreviewTouchDown="OnAudioPopoverTouchDown"
+                                                ToolTip="Chọn thiết bị Micro &amp; Nguồn Âm thanh">
+                                            <TextBlock Text="▾" FontSize="11" FontWeight="Bold" Foreground="#E2E8F0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 2. ÂM THANH HỆ THỐNG [ 🔊 Âm thanh + Sóng âm ] -->
+                                <Border x:Name="bdrSysAudioPill" Height="36" CornerRadius="12" Background="#1D4ED8" Margin="3,0,0,0" Cursor="Hand"
+                                        MouseLeftButtonDown="OnSysAudioToggleClick"
+                                        PreviewTouchDown="OnSysAudioToggleTouchDown"
+                                        ToolTip="Bật / Tắt truyền Âm thanh hệ thống từ máy Giáo viên tới Học sinh">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock x:Name="txtSysAudio" Text="🔊 Âm thanh" FontSize="11.5" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Height="14">
+                                            <Border x:Name="barSys1" Width="3" Height="4" CornerRadius="1.5" Background="#93C5FD" VerticalAlignment="Center" Margin="1,0"/>
+                                            <Border x:Name="barSys2" Width="3" Height="4" CornerRadius="1.5" Background="#93C5FD" VerticalAlignment="Center" Margin="1,0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+
+                            <UniformGrid Columns="2">
+                                <!-- 3. CAMERA [ 📷 Cam | ▾ ] -->
+                                <Border x:Name="bdrCamPill" Height="36" CornerRadius="12" Background="#2A3241" Margin="0,0,3,0" ClipToBounds="True">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="1"/>
+                                            <ColumnDefinition Width="28"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border x:Name="btnCamToggle" Grid.Column="0" Background="Transparent" Cursor="Hand" Padding="8,0,4,0"
+                                                MouseLeftButtonDown="OnCamToggleClick"
+                                                PreviewTouchDown="OnCamToggleTouchDown"
+                                                ToolTip="Bật / Tắt Camera Giáo viên hiển thị trên màn hình Học sinh">
+                                            <TextBlock x:Name="txtCamState" Text="📷 Tắt cam" FontSize="11.5" FontWeight="SemiBold" Foreground="White"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <Border Grid.Column="1" Background="#40FFFFFF" Margin="0,7"/>
+                                        <Border Grid.Column="2" Background="Transparent" Cursor="Hand"
+                                                MouseLeftButtonDown="OnCamPopoverClick"
+                                                PreviewTouchDown="OnCamPopoverTouchDown"
+                                                ToolTip="Chọn thiết bị Camera, kiểu khung tròn/chữ nhật &amp; vị trí góc">
+                                            <TextBlock Text="▾" FontSize="11" FontWeight="Bold" Foreground="#E2E8F0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 4. KHÓA / MỞ KHÓA MÀN HÌNH HỌC SINH TOÀN LỚP -->
+                                <Border x:Name="btnClassLockToggle" Height="36" CornerRadius="12" Background="#2A3241" Margin="3,0,0,0" Cursor="Hand"
+                                        MouseLeftButtonDown="OnClassLockToggleClick"
+                                        PreviewTouchDown="OnClassLockToggleTouchDown"
+                                        ToolTip="Khóa hoặc Mở khóa màn hình toàn bộ máy Học sinh trong lớp">
+                                    <TextBlock x:Name="txtClassLockState" Text="🔒 Khóa máy HS" FontSize="11.5" FontWeight="Bold" Foreground="#FDE68A"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </UniformGrid>
                         </StackPanel>
                     </Border>
 
-                    <!-- Collapse Button -->
-                    <Border x:Name="btnCollapseBar" Width="32" Height="32" CornerRadius="8" Background="#C5CAE9" Cursor="Hand"
-                            Margin="2,0,2,0"
-                            MouseLeftButtonDown="OnCollapseClick"
-                            PreviewTouchDown="btnCollapseBar_PreviewTouchDown"
-                            ToolTip="Thu gọn thanh điều khiển">
-                        <TextBlock Text="▼" FontSize="11" FontWeight="Bold" Foreground="#37474F" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <!-- ─── HÀNG 4A: CHIA SẺ MÀN HÌNH (KHI CHƯA CHIẾU) ─── -->
+                    <Border x:Name="pnlShareIdle" Background="#18FFFFFF" CornerRadius="14" Padding="7">
+                        <StackPanel Orientation="Vertical">
+                            <Grid Margin="0,0,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Nút chính: Chia sẻ màn hình / Cửa sổ -->
+                                <Border x:Name="bdrBroadcastGroup" Grid.Column="0" Height="38" CornerRadius="12"
+                                        Background="#2563EB" Cursor="Hand" Margin="0,0,5,0"
+                                        MouseLeftButtonDown="OnBroadcastClick"
+                                        PreviewTouchDown="OnBroadcastTouchDown"
+                                        ToolTip="Chọn Toàn màn hình hoặc Cửa sổ ứng dụng để chiếu cho Học sinh">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock x:Name="txtBroadcast" Text="📺 Chia sẻ màn hình" FontSize="12.5" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Nút mở thêm tùy chọn Quảng bá -->
+                                <Border x:Name="btnBroadcastMenu" Grid.Column="1" Width="38" Height="38" CornerRadius="12"
+                                        Background="#2A3241" Cursor="Hand"
+                                        MouseLeftButtonDown="OnBroadcastMenuClick"
+                                        PreviewTouchDown="OnBroadcastMenuTouchDown"
+                                        ToolTip="Thêm chế độ: Mẫu Học sinh, Gửi thông báo, Mở Website, Chỉnh FPS">
+                                    <TextBlock x:Name="txtBroadcastCaret" Text="⋯" FontSize="15" FontWeight="Bold" Foreground="#E2E8F0"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+
+                            <UniformGrid Columns="2">
+                                <Border Height="33" CornerRadius="10" Background="#2A3241" Margin="0,0,3,0" Cursor="Hand"
+                                        MouseLeftButtonDown="OnPickRegionQuickClick"
+                                        PreviewTouchDown="OnPickRegionQuickTouchDown"
+                                        ToolTip="Khoanh chọn một vùng trên màn hình để chiếu riêng vùng đó">
+                                    <TextBlock Text="✂️ Khoanh vùng chiếu" FontSize="11" FontWeight="SemiBold" Foreground="#E2E8F0"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <Border Height="33" CornerRadius="10" Background="#2A3241" Margin="3,0,0,0" Cursor="Hand"
+                                        MouseLeftButtonDown="OnShareSmartTouchQuickClick"
+                                        PreviewTouchDown="OnShareSmartTouchQuickTouchDown"
+                                        ToolTip="Chiếu trực tiếp Bảng trắng SMART TOUCH 1 chạm">
+                                    <TextBlock Text="🖊️ Chiếu SMART TOUCH" FontSize="11" FontWeight="SemiBold" Foreground="#C7D2FE"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </UniformGrid>
+                        </StackPanel>
                     </Border>
 
-                    <!-- Close/disconnect -->
-                    <Border Width="34" Height="34" CornerRadius="8" Background="Transparent" Cursor="Hand"
-                            MouseLeftButtonDown="OnCloseClick"
-                            PreviewTouchDown="OnCloseTouchDown"
-                            ToolTip="Thoát thanh công cụ">
-                        <Viewbox Width="15" Height="15" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Canvas Width="24" Height="24">
-                                <Path Fill="#D32F2F" Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
-                            </Canvas>
-                        </Viewbox>
+                    <!-- ─── HÀNG 4B: ĐIỀU KHIỂN ĐANG CHIẾU TRỰC TIẾP (KHI ISLIVE == TRUE) ─── -->
+                    <Border x:Name="pnlShareLive" Background="#24EF4444" BorderBrush="#66EF4444" BorderThickness="1"
+                            CornerRadius="14" Padding="7" Visibility="Collapsed">
+                        <StackPanel Orientation="Vertical">
+                            <!-- Nút gợi ý chuyển sang chiếu màn hình hiện tại khi đang khóa nguồn cửa sổ -->
+                            <Border x:Name="btnShareActiveInstead" Height="32" CornerRadius="10" Background="#2563EB"
+                                    Margin="0,0,0,5" Cursor="Hand" Visibility="Collapsed"
+                                    MouseLeftButtonDown="OnShareCurrentInsteadClick"
+                                    PreviewTouchDown="OnShareCurrentInsteadTouchDown">
+                                <TextBlock x:Name="txtShareActiveInstead" Text="🔄 Chiếu màn hình hiện tại thay thế"
+                                           FontSize="11" FontWeight="Bold" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" Margin="8,0"/>
+                            </Border>
+
+                            <!-- Nút Cấp quyền Học sinh bấm ra ngoài khi đang xem chiếu -->
+                            <Border x:Name="btnAllowStudentExit" Height="35" CornerRadius="11" Background="#3B1D24"
+                                    BorderBrush="#7F1D1D" BorderThickness="1" Margin="0,0,0,5" Cursor="Hand"
+                                    MouseLeftButtonDown="OnAllowStudentExitClick"
+                                    PreviewTouchDown="OnAllowStudentExitTouchDown"
+                                    ToolTip="Mặc định khóa toàn màn hình Học sinh khi chiếu. Nhấn để cho phép Học sinh thu nhỏ / bấm ra ngoài">
+                                <TextBlock x:Name="txtAllowStudentExit"
+                                           Text="🔒 Đang khóa toàn màn hình HS (Chạm để mở)"
+                                           FontSize="11.2" FontWeight="Bold" Foreground="#FCA5A5"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+
+                            <UniformGrid Columns="3" Margin="0,0,0,5">
+                                <Border Height="34" CornerRadius="10" Background="#2A3241" Margin="0,0,3,0" Cursor="Hand"
+                                        MouseLeftButtonDown="OnLiveChangeSourceClick"
+                                        PreviewTouchDown="OnLiveChangeSourceTouchDown"
+                                        ToolTip="Đổi sang màn hình hoặc cửa sổ ứng dụng khác">
+                                    <TextBlock Text="🖥️ Nguồn" FontSize="11" FontWeight="SemiBold" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <Border Height="34" CornerRadius="10" Background="#2A3241" Margin="1.5,0,1.5,0" Cursor="Hand"
+                                        MouseLeftButtonDown="OnPickRegionQuickClick"
+                                        PreviewTouchDown="OnPickRegionQuickTouchDown"
+                                        ToolTip="Khoanh chọn lại vùng màn hình chiếu">
+                                    <TextBlock Text="✂️ Vùng" FontSize="11" FontWeight="SemiBold" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <Border x:Name="btnLivePause" Height="34" CornerRadius="10" Background="#2A3241" Margin="3,0,0,0" Cursor="Hand"
+                                        MouseLeftButtonDown="OnLivePauseClick"
+                                        PreviewTouchDown="OnLivePauseTouchDown"
+                                        ToolTip="Đóng băng / Tiếp tục hình ảnh trên màn hình Học sinh">
+                                    <TextBlock x:Name="txtLivePause" Text="⏸️ Đóng băng" FontSize="11" FontWeight="SemiBold" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </UniformGrid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border x:Name="btnLivePip" Grid.Column="0" Height="36" CornerRadius="11" Background="#2A3241" Margin="0,0,4,0" Cursor="Hand"
+                                        MouseLeftButtonDown="OnLivePipToggleClick"
+                                        PreviewTouchDown="OnLivePipToggleTouchDown"
+                                        ToolTip="Xem trực tiếp khung hình Học sinh đang nhìn thấy">
+                                    <TextBlock x:Name="txtLivePip" Text="👁️ Xem thử" FontSize="11.5" FontWeight="SemiBold" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <Border Grid.Column="1" Width="36" Height="36" CornerRadius="11" Background="#2A3241" Margin="0,0,4,0" Cursor="Hand"
+                                        MouseLeftButtonDown="OnBroadcastMenuClick"
+                                        PreviewTouchDown="OnBroadcastMenuTouchDown"
+                                        ToolTip="Mở thêm tùy chọn trình chiếu">
+                                    <TextBlock Text="⋯" FontSize="14" FontWeight="Bold" Foreground="#E2E8F0"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <Border Grid.Column="2" Height="36" CornerRadius="11" Background="#DC2626" Cursor="Hand"
+                                        MouseLeftButtonDown="OnLiveStopBroadcastClick"
+                                        PreviewTouchDown="OnLiveStopBroadcastTouchDown"
+                                        ToolTip="Dừng chia sẻ màn hình ngay lập tức">
+                                    <TextBlock Text="⏹️ Dừng chiếu" FontSize="11.5" FontWeight="Bold" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
                     </Border>
                 </StackPanel>
+            </Border>
 
-                <!-- Separator -->
-                <Border DockPanel.Dock="Right" Width="1" Background="#C5CAE9" Margin="3,6"/>
-
-                <!-- Mode Buttons (left side, fills remaining space) -->
-                <Grid Margin="2,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- 📚 Smart Class Button -->
-                    <!-- [SMARTTOUCH_ONLY] Thêm Visibility="Collapsed" để ẩn nút SmartClass -->
-                    <Border x:Name="btnClass" Grid.Column="0" CornerRadius="8,0,0,8" Margin="1"
-                            Background="#1976D2" Cursor="Hand" MouseLeftButtonDown="OnClassClick">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="📚 SMART CLASS" FontSize="10" FontWeight="Bold" 
-                                       Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Quản lý lớp" FontSize="8" Foreground="#BBDEFB" HorizontalAlignment="Center"/>
-                        </StackPanel>
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- HỘP CÀI ĐẶT THIẾT BỊ ÂM THANH & CAMERA (TÍCH HỢP CHUNG CỬA SỔ) -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <Border x:Name="bdrDevicePopover"
+                    Width="396"
+                    Margin="0,6,0,0"
+                    CornerRadius="18"
+                    Background="#F7181E29"
+                    BorderBrush="#4094A3B8"
+                    BorderThickness="1.2"
+                    Padding="13,11"
+                    Visibility="Collapsed">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.45" Color="#000000"/>
+                </Border.Effect>
+                <StackPanel Orientation="Vertical">
+                    <Border x:Name="bdrHardwareWarning" Background="#5C2B29" BorderBrush="#EF4444" BorderThickness="1"
+                            CornerRadius="8" Padding="9,6" Margin="0,0,0,8" Visibility="Collapsed">
+                        <TextBlock x:Name="txtHardwareWarning" Foreground="White" FontSize="11" TextWrapping="Wrap"/>
                     </Border>
 
-                    <!-- 🖊️ Smart Touch Button -->
-                    <Border x:Name="btnScreen" Grid.Column="1" Margin="1"
-                            Background="Transparent" Cursor="Hand" MouseLeftButtonDown="OnScreenClick">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="🖊️ SMART TOUCH" FontSize="10" FontWeight="Bold" 
-                                       Foreground="#37474F" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Bảng trắng" FontSize="8" Foreground="#78909C" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- 🔲 Desktop Button -->
-                    <!-- [SMARTTOUCH_ONLY] Thêm Visibility="Collapsed" để ẩn nút Desktop -->
-                    <Border x:Name="btnDesktop" Grid.Column="2" CornerRadius="0,8,8,0" Margin="1"
-                            Background="Transparent" Cursor="Hand" MouseLeftButtonDown="OnDesktopClick">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="🔲 DESKTOP" FontSize="10" FontWeight="Bold"
-                                       Foreground="#37474F" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Windows" FontSize="8" Foreground="#78909C" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-            </DockPanel>
-        </Border>
-
-        <!-- ═══════════════════════════════════════════════════════════ -->
-        <!-- 2. TRẠNG THÁI THU GỌN (COLLAPSED MINI CAPSULE)             -->
-        <!-- ═══════════════════════════════════════════════════════════ -->
-        <Border x:Name="pnlCollapsed"
-                CornerRadius="20"
-                Background="#E8EAF6" BorderBrush="#5C6BC0" BorderThickness="1.5"
-                Height="44"
-                Padding="4,2,4,2"
-                Visibility="Collapsed"
-                ToolTip="Nhấp để mở rộng thanh điều khiển">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.3" Color="#263238"/>
-            </Border.Effect>
-
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <!-- Vùng Grip kéo di chuyển riêng (Drag Handle) -->
-                <Border Width="30" Height="38" Background="Transparent" Cursor="SizeAll"
-                        ToolTip="Kéo giữ để di chuyển"
-                        PreviewMouseLeftButtonDown="DragHandle_PreviewMouseDown">
-                    <TextBlock Text="⠿" FontSize="18" Foreground="#5C6BC0" 
-                               VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                </Border>
-
-                <!-- Nút điều khiển nhanh Đang chiếu ngay khi thu gọn (Mini Live Pill) -->
-                <Border x:Name="bdrMiniLiveBadge"
-                        Visibility="Collapsed"
-                        CornerRadius="10"
-                        Background="#DC2626"
-                        Padding="8,5"
-                        Margin="0,0,4,0"
-                        Cursor="Hand"
-                        MouseLeftButtonDown="OnMiniLiveBadgeClick"
-                        PreviewTouchDown="OnMiniLiveBadgeTouchDown"
-                        ToolTip="Đang chia sẻ màn hình — Nhấn để đổi nguồn / tạm dừng / dừng chiếu">
-                    <TextBlock Text="🔴 LIVE" FontSize="10.5" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-                </Border>
-
-                <!-- Vùng Nút bấm Mở rộng (Expand Button) - Diện tích to, chạm là mở ngay lập tức -->
-                <Border x:Name="btnExpandModeBar"
-                        Background="Transparent"
-                        Padding="4,2"
-                        CornerRadius="12"
-                        Cursor="Hand"
-                        MouseLeftButtonDown="btnExpandModeBar_MouseLeftButtonDown"
-                        PreviewTouchDown="btnExpandModeBar_PreviewTouchDown"
-                        ToolTip="Nhấn để mở rộng thanh điều khiển">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <!-- Badge chế độ hiện tại -->
-                        <Border x:Name="bdrMiniModeBadge" CornerRadius="10" Background="#455A64" Padding="10,5" Margin="0,0,6,0">
-                            <TextBlock x:Name="txtMiniModeName" Text="🔲 DESKTOP" FontSize="11" FontWeight="Bold" Foreground="White"
-                                       VerticalAlignment="Center"/>
+                    <DockPanel LastChildFill="False" Margin="0,0,0,9">
+                        <Border x:Name="btnTabAudio" DockPanel.Dock="Left" CornerRadius="10" Background="#2563EB" Padding="10,5" Cursor="Hand"
+                                MouseLeftButtonDown="OnSwitchPopoverAudioTab">
+                            <TextBlock Text="🎙️ Nguồn Âm thanh" FontSize="11" FontWeight="Bold" Foreground="White"/>
                         </Border>
-                        <!-- Icon mở rộng ▲ / ▼ -->
-                        <Border Width="26" Height="26" CornerRadius="13" Background="#5C6BC0" VerticalAlignment="Center">
-                            <TextBlock x:Name="txtExpandArrow" Text="▲" FontSize="10" FontWeight="Bold" Foreground="White" 
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="btnTabCamera" DockPanel.Dock="Left" CornerRadius="10" Background="#2A3241" Padding="10,5" Margin="6,0,0,0" Cursor="Hand"
+                                MouseLeftButtonDown="OnSwitchPopoverCameraTab">
+                            <TextBlock Text="📷 Cài đặt Camera" FontSize="11" FontWeight="Bold" Foreground="White"/>
+                        </Border>
+                        <Border DockPanel.Dock="Right" CornerRadius="10" Background="#2A3241" Padding="8,5" Margin="5,0,0,0" Cursor="Hand"
+                                MouseLeftButtonDown="OnCloseDevicePopover">
+                            <TextBlock Text="✕" FontSize="11" FontWeight="Bold" Foreground="#FCA5A5"/>
+                        </Border>
+                        <Border DockPanel.Dock="Right" CornerRadius="10" Background="#2A3241" Padding="8,5" Cursor="Hand"
+                                MouseLeftButtonDown="OnRescanHardwareClick"
+                                ToolTip="Quét lại thiết bị Micro, Âm thanh &amp; Camera">
+                            <TextBlock Text="↻ Quét" FontSize="11" FontWeight="SemiBold" Foreground="#93C5FD"/>
+                        </Border>
+                    </DockPanel>
+
+                    <!-- Tab Âm thanh -->
+                    <StackPanel x:Name="pnlAudioSettings" Orientation="Vertical">
+                        <TextBlock Text="MICRO GIÁO VIÊN" FontSize="10" FontWeight="Bold" Foreground="#93C5FD" Margin="0,0,0,4"/>
+                        <ComboBox x:Name="cmbMicrophone" DisplayMemberPath="FriendlyName" Height="32" FontSize="11.5"
+                                  SelectionChanged="CmbMicrophone_SelectionChanged"/>
+                        <Border Height="6" CornerRadius="3" Background="#2A3241" Margin="0,5,0,9" ClipToBounds="True">
+                            <Border x:Name="bdrMicMeterFill" HorizontalAlignment="Left" Width="0" Background="#22C55E" CornerRadius="3"/>
+                        </Border>
+
+                        <TextBlock Text="ÂM THANH HỆ THỐNG (VIDEO / BÀI NGHE)" FontSize="10" FontWeight="Bold" Foreground="#93C5FD" Margin="0,0,0,4"/>
+                        <CheckBox x:Name="chkPopoverSystemAudio"
+                                  Content="Truyền Âm thanh phát ra từ máy Giáo viên tới Học sinh"
+                                  Foreground="#F1F5F9" FontSize="11.5" FontWeight="SemiBold" Margin="0,0,0,6"
+                                  Click="ChkPopoverSystemAudio_Click"/>
+                        <ComboBox x:Name="cmbSystemOutput" DisplayMemberPath="FriendlyName" Height="32" FontSize="11.5"
+                                  SelectionChanged="CmbSystemOutput_SelectionChanged"/>
+                        <Border Height="6" CornerRadius="3" Background="#2A3241" Margin="0,5,0,2" ClipToBounds="True">
+                            <Border x:Name="bdrSysMeterFill" HorizontalAlignment="Left" Width="0" Background="#60A5FA" CornerRadius="3"/>
                         </Border>
                     </StackPanel>
-                </Border>
-            </StackPanel>
-        </Border>
+
+                    <!-- Tab Camera -->
+                    <StackPanel x:Name="pnlCameraSettings" Orientation="Vertical" Visibility="Collapsed">
+                        <TextBlock Text="THIẾT BỊ CAMERA" FontSize="10" FontWeight="Bold" Foreground="#93C5FD" Margin="0,0,0,4"/>
+                        <ComboBox x:Name="cmbCamera" DisplayMemberPath="FriendlyName" Height="32" FontSize="11.5"
+                                  SelectionChanged="CmbCamera_SelectionChanged"/>
+
+                        <Border Height="132" Margin="0,7,0,7" CornerRadius="10" Background="#0F172A" BorderBrush="#334155" BorderThickness="1" ClipToBounds="True">
+                            <Grid>
+                                <TextBlock x:Name="txtCamPreviewHint"
+                                           Text="Camera đang tắt — Bấm nút 📷 Cam để bật"
+                                           Foreground="#94A3B8" FontSize="11" TextAlignment="Center" TextWrapping="Wrap"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="12"/>
+                                <Image x:Name="imgSelfCamPreview" Stretch="Uniform" Visibility="Collapsed"/>
+                            </Grid>
+                        </Border>
+
+                        <UniformGrid Columns="2" Margin="0,0,0,6">
+                            <ComboBox x:Name="cmbCamShape" Height="30" FontSize="11" Margin="0,0,3,0" SelectionChanged="CmbCamShape_SelectionChanged">
+                                <ComboBoxItem Content="Khung chữ nhật (16:9)" IsSelected="True"/>
+                                <ComboBoxItem Content="Khung tròn nổi"/>
+                            </ComboBox>
+                            <ComboBox x:Name="cmbCamCorner" Height="30" FontSize="11" Margin="3,0,0,0" SelectionChanged="CmbCamCorner_SelectionChanged">
+                                <ComboBoxItem Content="Góc dưới phải" IsSelected="True"/>
+                                <ComboBoxItem Content="Góc dưới trái"/>
+                                <ComboBoxItem Content="Góc trên phải"/>
+                            </ComboBox>
+                        </UniformGrid>
+
+                        <CheckBox x:Name="chkCamMirror" Content="Lật gương Camera tự nhiên" IsChecked="True"
+                                  Foreground="#F1F5F9" FontSize="11.5" Click="ChkCamMirror_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- KHUNG XEM THỬ TRỰC TIẾP MÀN HÌNH HỌC SINH ĐANG NHẬN (PiP)       -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <Border x:Name="bdrPipMonitor"
+                    Width="396"
+                    Margin="0,6,0,0"
+                    CornerRadius="18"
+                    Background="#F7181E29"
+                    BorderBrush="#4094A3B8"
+                    BorderThickness="1.2"
+                    Padding="11"
+                    Visibility="Collapsed">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.45" Color="#000000"/>
+                </Border.Effect>
+                <StackPanel Orientation="Vertical">
+                    <DockPanel Margin="0,0,0,6">
+                        <Border DockPanel.Dock="Right" CornerRadius="8" Background="#2A3241" Padding="8,3" Cursor="Hand"
+                                MouseLeftButtonDown="OnClosePipClick">
+                            <TextBlock Text="Đóng ▲" FontSize="10.5" FontWeight="SemiBold" Foreground="#93C5FD"/>
+                        </Border>
+                        <TextBlock Text="📺 MÀN HÌNH HỌC SINH ĐANG NHẬN" FontSize="10.5" FontWeight="Bold" Foreground="#93C5FD" VerticalAlignment="Center"/>
+                    </DockPanel>
+
+                    <Border Height="176" CornerRadius="10" Background="#090D16" BorderBrush="#334155" BorderThickness="1" ClipToBounds="True">
+                        <Grid>
+                            <Image x:Name="imgLivePip" Stretch="Uniform" RenderOptions.BitmapScalingMode="Linear"/>
+                            <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6" CornerRadius="6" Background="#CC0F172A" Padding="7,3">
+                                <TextBlock x:Name="txtPipBadge" Text="🟢 TRỰC TIẾP TRÊN MÁY HS" FontSize="9.5" FontWeight="Bold" Foreground="#86EFAC"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock x:Name="txtPipSubtitle" Text="Đang chờ khung hình trình chiếu..." FontSize="10.5" Foreground="#94A3B8"
+                               Margin="2,5,2,4" TextTrimming="CharacterEllipsis"/>
+
+                    <CheckBox x:Name="chkHideClassroomShell"
+                              Content="Ẩn cửa sổ Quản lý lớp khỏi màn hình Học sinh"
+                              Foreground="#E2E8F0" FontSize="11" FontWeight="SemiBold"
+                              Checked="ChkHideClassroomShell_Changed"
+                              Unchecked="ChkHideClassroomShell_Changed"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
     </Grid>
 </Window>

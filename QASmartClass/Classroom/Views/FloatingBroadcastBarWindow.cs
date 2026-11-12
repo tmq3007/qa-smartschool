@@ -38,6 +38,10 @@ namespace QASmartClass.Classroom.Views
         private static readonly Color MeetLiveGreenColor = Color.FromRgb(0x34, 0xA8, 0x53);
         private static readonly Color MeetWarningAmberColor = Color.FromRgb(0xFB, 0xBC, 0x04);
 
+        private readonly Border _easyTouchBubble;
+        private readonly Ellipse _easyTouchStatusDot;
+        private readonly TextBlock _easyTouchMiniTimer;
+
         private readonly Border _mainBarBorder;
         private readonly Ellipse _statusDot;
         private readonly TextBlock _txtStatusBadge;
@@ -68,6 +72,7 @@ namespace QASmartClass.Classroom.Views
 
         // Action Pills
         private readonly Button _btnShareActiveInstead;
+        private readonly Button _btnAllowStudentExit;
         private readonly Button _btnPauseResume;
         private readonly ToggleButton _btnTogglePiP;
 
@@ -100,10 +105,20 @@ namespace QASmartClass.Classroom.Views
         private string _openPopoverMode = ""; // "", "AUDIO", "CAMERA"
         private bool _isPaused;
         private bool _isLockedSource;
+        private bool _isEasyTouchExpanded = true;
+        private bool _allowStudentExit;
+        private bool _suppressAllowExitEvent;
         private bool _suppressCheckboxEvent;
         private bool _suppressDeviceSelectionEvent;
         private Point _touchDragStartScreen;
         private bool _isTouchDragging;
+        private Point _bubbleDragStartScreen;
+        private Point _bubbleWindowStartPos;
+        private bool _isBubbleMouseDown;
+        private bool _isBubbleTouchDown;
+        private bool _hasBubbleMoved;
+        private double _savedBubbleAnchorLeft = double.NaN;
+        private double _savedBubbleAnchorTop = double.NaN;
 
         public event EventHandler? ShareCurrentInsteadRequested;
         public event EventHandler? ChangeSourceRequested;
@@ -112,6 +127,7 @@ namespace QASmartClass.Classroom.Views
         public event EventHandler? StopRequested;
         public event EventHandler? RestoreShellRequested;
         public event EventHandler<bool>? HideClassroomShellChanged;
+        public event EventHandler<bool>? AllowStudentExitChanged;
 
         public FloatingBroadcastBarWindow(bool initialHideClassroomShell = false)
         {
@@ -128,20 +144,98 @@ namespace QASmartClass.Classroom.Views
             var rootStack = new StackPanel
             {
                 Orientation = Orientation.Vertical,
-                HorizontalAlignment = HorizontalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Left,
                 Margin = new Thickness(8)
             };
 
             // ═══════════════════════════════════════════════════════════════════
-            // 1. GOOGLE MEET FLOATING PILL DOCK (#202124)
+            // 0. EASYTOUCH CIRCULAR FLOATING BUTTON (58x58 — Kéo thả & Bung/Thu)
+            // ═══════════════════════════════════════════════════════════════════
+            _easyTouchBubble = new Border
+            {
+                Width = 58,
+                Height = 58,
+                CornerRadius = new CornerRadius(29),
+                Background = new SolidColorBrush(Color.FromArgb(236, 0x20, 0x21, 0x24)),
+                BorderBrush = new SolidColorBrush(MeetLightBlueColor),
+                BorderThickness = new Thickness(2.0),
+                Cursor = Cursors.Hand,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Visibility = Visibility.Collapsed,
+                ToolTip = "Đang chia sẻ màn hình • Chạm để mở bảng điều khiển, giữ kéo để di chuyển",
+                Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 16,
+                    ShadowDepth = 3,
+                    Opacity = 0.55
+                }
+            };
+
+            var bubbleGrid = new Grid();
+            bubbleGrid.Children.Add(new Ellipse
+            {
+                Width = 42,
+                Height = 42,
+                Fill = new SolidColorBrush(Color.FromArgb(46, 255, 255, 255)),
+                Stroke = new SolidColorBrush(Color.FromArgb(135, 255, 255, 255)),
+                StrokeThickness = 1.4,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            var bubbleInnerStack = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            bubbleInnerStack.Children.Add(new TextBlock
+            {
+                Text = "📺",
+                FontSize = 16,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, -1, 0, 0)
+            });
+            _easyTouchMiniTimer = new TextBlock
+            {
+                Text = "00:00",
+                FontSize = 8.5,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.White,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, -2, 0, 0)
+            };
+            bubbleInnerStack.Children.Add(_easyTouchMiniTimer);
+            bubbleGrid.Children.Add(bubbleInnerStack);
+
+            _easyTouchStatusDot = new Ellipse
+            {
+                Width = 12,
+                Height = 12,
+                Fill = new SolidColorBrush(MeetLiveGreenColor),
+                Stroke = new SolidColorBrush(MeetSurfaceColor),
+                StrokeThickness = 2,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top,
+                Margin = new Thickness(0, 1, 1, 0)
+            };
+            bubbleGrid.Children.Add(_easyTouchStatusDot);
+            _easyTouchBubble.Child = bubbleGrid;
+            AttachEasyTouchBubbleGesture(_easyTouchBubble);
+            rootStack.Children.Add(_easyTouchBubble);
+
+            // ═══════════════════════════════════════════════════════════════════
+            // 1. COMPACT EASYTOUCH HUB CARD (Gọn 2–3 hàng, KHÔNG trải dài ngang)
             // ═══════════════════════════════════════════════════════════════════
             _mainBarBorder = new Border
             {
+                Width = 446,
                 Background = new SolidColorBrush(MeetSurfaceColor),
                 BorderBrush = new SolidColorBrush(MeetBorderColor),
                 BorderThickness = new Thickness(1.2),
-                CornerRadius = new CornerRadius(26),
-                Padding = new Thickness(12, 7, 12, 7),
+                CornerRadius = new CornerRadius(22),
+                Padding = new Thickness(12, 10, 12, 10),
                 Effect = new System.Windows.Media.Effects.DropShadowEffect
                 {
                     Color = Colors.Black,
@@ -151,31 +245,44 @@ namespace QASmartClass.Classroom.Views
                 }
             };
 
-            var barPanel = new WrapPanel
+            var hubStack = new StackPanel
             {
-                Orientation = Orientation.Horizontal,
-                VerticalAlignment = VerticalAlignment.Center
+                Orientation = Orientation.Vertical
             };
 
-            // ─── Cụm kéo di chuyển + Trạng thái phát (Google Meet Info Pill) ───
+            // ─── HÀNG 1: Thanh tiêu đề kéo di chuyển + Nút Thu gọn thành hình tròn EasyTouch ───
+            var headerDock = new DockPanel
+            {
+                LastChildFill = true,
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+
+            var btnCollapseBubble = CreateMeetActionPill("● Thu gọn", MeetSubSurfaceColor, Color.FromRgb(0x8A, 0xB4, 0xF8),
+                "Thu gọn bảng điều khiển thành nút tròn nổi EasyTouch gọn nhẹ");
+            btnCollapseBubble.Height = 32;
+            btnCollapseBubble.Padding = new Thickness(11, 0, 11, 0);
+            btnCollapseBubble.Margin = new Thickness(6, 0, 0, 0);
+            btnCollapseBubble.Click += (_, _) => SetEasyTouchExpanded(false);
+            DockPanel.SetDock(btnCollapseBubble, Dock.Right);
+            headerDock.Children.Add(btnCollapseBubble);
+
             var dragStatusZone = new Border
             {
                 Background = new SolidColorBrush(MeetSubSurfaceColor),
-                CornerRadius = new CornerRadius(18),
-                Padding = new Thickness(12, 6, 12, 6),
-                Margin = new Thickness(0, 0, 8, 0),
+                CornerRadius = new CornerRadius(16),
+                Padding = new Thickness(10, 5, 10, 5),
                 Cursor = Cursors.SizeAll,
-                ToolTip = "Giữ chuột hoặc ngón tay tại đây để kéo thanh điều khiển tới vị trí bất kỳ"
+                ToolTip = "Giữ chuột hoặc ngón tay tại đây để kéo bảng điều khiển tới vị trí bất kỳ"
             };
 
             var statusStack = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
             statusStack.Children.Add(new TextBlock
             {
                 Text = "⠿",
-                FontSize = 15,
+                FontSize = 14,
                 Foreground = new SolidColorBrush(Color.FromRgb(0x9A, 0xA0, 0xA6)),
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 7, 0)
+                Margin = new Thickness(0, 0, 6, 0)
             });
 
             _statusDot = new Ellipse
@@ -184,14 +291,14 @@ namespace QASmartClass.Classroom.Views
                 Height = 9,
                 Fill = new SolidColorBrush(MeetLiveGreenColor),
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 6, 0)
+                Margin = new Thickness(0, 0, 5, 0)
             };
             statusStack.Children.Add(_statusDot);
 
             _txtStatusBadge = new TextBlock
             {
                 Text = "ĐANG TRÌNH BÀY",
-                FontSize = 11,
+                FontSize = 10.5,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(MeetLightBlueColor),
                 VerticalAlignment = VerticalAlignment.Center,
@@ -202,20 +309,20 @@ namespace QASmartClass.Classroom.Views
             _txtSourceTitle = new TextBlock
             {
                 Text = "Toàn màn hình",
-                FontSize = 12,
+                FontSize = 11.5,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = Brushes.White,
-                MaxWidth = 175,
+                MaxWidth = 108,
                 TextTrimming = TextTrimming.CharacterEllipsis,
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 8, 0)
+                Margin = new Thickness(0, 0, 6, 0)
             };
             statusStack.Children.Add(_txtSourceTitle);
 
             _txtTimerAndStudents = new TextBlock
             {
                 Text = "00:00 • 👥 0",
-                FontSize = 11.5,
+                FontSize = 11,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = new SolidColorBrush(Color.FromRgb(0xDA, 0xDC, 0xE0)),
                 VerticalAlignment = VerticalAlignment.Center
@@ -224,22 +331,40 @@ namespace QASmartClass.Classroom.Views
 
             dragStatusZone.Child = statusStack;
             EnableDragOnElement(dragStatusZone);
-            barPanel.Children.Add(dragStatusZone);
+            headerDock.Children.Add(dragStatusZone);
+            hubStack.Children.Add(headerDock);
+
+            // Nút chuyển nhanh nguồn chiếu màn hình hiện tại (chỉ hiện khi cần)
+            _btnShareActiveInstead = CreateMeetActionPill("🔄 Chiếu màn này thay thế", MeetActiveBlueColor, Colors.White,
+                "Học sinh vẫn đang xem cố định màn hình cũ. Bấm nút này nếu muốn chuyển sang chiếu màn hình hiện tại");
+            _btnShareActiveInstead.Visibility = Visibility.Collapsed;
+            _btnShareActiveInstead.Margin = new Thickness(0, 0, 0, 6);
+            _btnShareActiveInstead.HorizontalAlignment = HorizontalAlignment.Stretch;
+            _btnShareActiveInstead.Click += (_, _) => ShareCurrentInsteadRequested?.Invoke(this, EventArgs.Empty);
+            hubStack.Children.Add(_btnShareActiveInstead);
+
+            // ─── HÀNG 2: Âm thanh / Camera + Cấp quyền Học sinh ra ngoài ───
+            var mediaRow = new WrapPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 6)
+            };
 
             // ─── Google Meet Split-Pill 1: MICROPHONE [ 🎙️ + 3-bar equalizer | ▾ ] ───
             (_micSplitPill, _btnMicToggle, _btnMicMenu) = CreateMeetSplitPill(
-                mainTooltip: "Bật / Tắt Micro Giáo viên (giống Google Meet)",
+                mainTooltip: "Bật / Tắt Micro Giáo viên",
                 chevronTooltip: "Chọn thiết bị Micro & Nguồn âm thanh");
 
             var micContentStack = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
             _txtMicIcon = new TextBlock
             {
                 Text = "🔇 Mic",
-                FontSize = 12,
+                FontSize = 11.5,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = Brushes.White,
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 5, 0)
+                Margin = new Thickness(0, 0, 4, 0)
             };
             micContentStack.Children.Add(_txtMicIcon);
 
@@ -265,29 +390,29 @@ namespace QASmartClass.Classroom.Views
                 SyncMediaControlsState();
             };
             _btnMicMenu.Click += (_, _) => ToggleDevicePopover("AUDIO");
-            barPanel.Children.Add(_micSplitPill);
+            mediaRow.Children.Add(_micSplitPill);
 
-            // ─── Google Meet Pill 2: SYSTEM AUDIO [ 🔊 Tiếng máy + sóng âm ] ───
+            // ─── Google Meet Pill 2: SYSTEM AUDIO [ 🔊 Âm thanh + sóng âm ] ───
             _sysAudioPill = new Border
             {
                 Background = new SolidColorBrush(MeetActiveBlueColor),
                 CornerRadius = new CornerRadius(19),
-                Height = 38,
-                Margin = new Thickness(0, 0, 6, 0),
+                Height = 36,
+                Margin = new Thickness(0, 0, 5, 4),
                 ClipToBounds = true
             };
             _btnSysAudioToggle = CreateTransparentInnerButton(
-                new Thickness(12, 0, 12, 0),
+                new Thickness(10, 0, 10, 0),
                 "Bật / Tắt chia sẻ âm thanh hệ thống (video, bài nghe trên máy Giáo viên)");
             var sysStack = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
             _txtSysAudioLabel = new TextBlock
             {
-                Text = "🔊 Tiếng máy",
-                FontSize = 12,
+                Text = "🔊 Âm thanh",
+                FontSize = 11.5,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = Brushes.White,
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 5, 0)
+                Margin = new Thickness(0, 0, 4, 0)
             };
             sysStack.Children.Add(_txtSysAudioLabel);
             _sysBar1 = CreateVoiceBar(5);
@@ -302,7 +427,7 @@ namespace QASmartClass.Classroom.Views
                 SyncMediaControlsState();
             };
             _sysAudioPill.Child = _btnSysAudioToggle;
-            barPanel.Children.Add(_sysAudioPill);
+            mediaRow.Children.Add(_sysAudioPill);
 
             // ─── Google Meet Split-Pill 3: CAMERA [ 📷 Cam | ▾ ] ───
             (_camSplitPill, _btnCamToggle, _btnCamMenu) = CreateMeetSplitPill(
@@ -312,7 +437,7 @@ namespace QASmartClass.Classroom.Views
             _txtCamLabel = new TextBlock
             {
                 Text = "🚫 Cam",
-                FontSize = 12,
+                FontSize = 11.5,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = Brushes.White,
                 VerticalAlignment = VerticalAlignment.Center
@@ -325,37 +450,51 @@ namespace QASmartClass.Classroom.Views
                 SyncMediaControlsState();
             };
             _btnCamMenu.Click += (_, _) => ToggleDevicePopover("CAMERA");
-            barPanel.Children.Add(_camSplitPill);
+            mediaRow.Children.Add(_camSplitPill);
 
-            // Vạch ngăn mảnh chuẩn Google Meet
-            barPanel.Children.Add(new Rectangle
+            // ─── Pill 4: Cấp quyền Học sinh bấm ra ngoài (Mặc định Khóa toàn màn hình) ───
+            _btnAllowStudentExit = CreateMeetActionPill("🔒 Khóa HS", MeetPillDarkColor, Color.FromRgb(0xFC, 0xA5, 0xA5),
+                "Đang khóa cứng toàn màn hình Học sinh (Học sinh không làm gì khác được). Bấm để CHO PHÉP học sinh thu nhỏ / bấm ra ngoài.");
+            _btnAllowStudentExit.Height = 36;
+            _btnAllowStudentExit.Padding = new Thickness(10, 0, 10, 0);
+            _btnAllowStudentExit.Margin = new Thickness(0, 0, 0, 4);
+            _btnAllowStudentExit.Click += (_, _) =>
             {
-                Width = 1,
-                Height = 24,
-                Fill = new SolidColorBrush(MeetBorderColor),
-                Margin = new Thickness(2, 0, 8, 0),
+                if (_suppressAllowExitEvent) return;
+                SetAllowStudentExitState(!_allowStudentExit);
+                AllowStudentExitChanged?.Invoke(this, _allowStudentExit);
+            };
+            mediaRow.Children.Add(_btnAllowStudentExit);
+            hubStack.Children.Add(mediaRow);
+
+            // ─── HÀNG 3: Điều khiển Nguồn chiếu, Vùng, Đóng băng, Xem thử, Lớp học & Dừng ───
+            var barPanel = new WrapPanel
+            {
+                Orientation = Orientation.Horizontal,
                 VerticalAlignment = VerticalAlignment.Center
-            });
+            };
 
-            // ─── Cụm nút điều khiển trình bày (Chiếu màn này thay thế [Google Meet], Đổi nguồn, Vùng chọn, Đóng băng, Xem thử, Lớp học) ───
-            _btnShareActiveInstead = CreateMeetActionPill("🔄 Chiếu màn này thay thế", MeetActiveBlueColor, Colors.White,
-                "Học sinh vẫn đang xem cố định màn hình cũ. Bấm nút này nếu muốn chuyển sang chiếu màn hình hiện tại (Chuẩn Google Meet)");
-            _btnShareActiveInstead.Visibility = Visibility.Collapsed;
-            _btnShareActiveInstead.Click += (_, _) => ShareCurrentInsteadRequested?.Invoke(this, EventArgs.Empty);
-            barPanel.Children.Add(_btnShareActiveInstead);
-
-            var btnChangeSource = CreateMeetActionPill("🖥️ Nguồn chiếu", MeetPillDarkColor, Colors.White,
+            var btnChangeSource = CreateMeetActionPill("🖥️ Nguồn", MeetPillDarkColor, Colors.White,
                 "Chọn lại màn hình, cửa sổ ứng dụng, vùng chọn hoặc trang bài giảng");
+            btnChangeSource.Height = 36;
+            btnChangeSource.Padding = new Thickness(10, 0, 10, 0);
+            btnChangeSource.Margin = new Thickness(0, 0, 5, 4);
             btnChangeSource.Click += (_, _) => ChangeSourceRequested?.Invoke(this, EventArgs.Empty);
             barPanel.Children.Add(btnChangeSource);
 
             var btnRegion = CreateMeetActionPill("✂️ Vùng", MeetPillDarkColor, Colors.White,
                 "Kéo khung hình chữ nhật trên màn hình để chỉ chiếu đúng khu vực đó cho Học sinh");
+            btnRegion.Height = 36;
+            btnRegion.Padding = new Thickness(10, 0, 10, 0);
+            btnRegion.Margin = new Thickness(0, 0, 5, 4);
             btnRegion.Click += (_, _) => SelectRegionRequested?.Invoke(this, EventArgs.Empty);
             barPanel.Children.Add(btnRegion);
 
             _btnPauseResume = CreateMeetActionPill("⏸️ Đóng băng", MeetPillDarkColor, Colors.White,
                 "Đóng băng hình ảnh trên máy Học sinh để Giáo viên mở tài liệu riêng tư");
+            _btnPauseResume.Height = 36;
+            _btnPauseResume.Padding = new Thickness(10, 0, 10, 0);
+            _btnPauseResume.Margin = new Thickness(0, 0, 5, 4);
             _btnPauseResume.Click += (_, _) => TogglePauseRequested?.Invoke(this, EventArgs.Empty);
             barPanel.Children.Add(_btnPauseResume);
 
@@ -363,10 +502,10 @@ namespace QASmartClass.Classroom.Views
             {
                 Content = "👁️ Xem thử",
                 IsChecked = false,
-                Height = 38,
-                Padding = new Thickness(12, 0, 12, 0),
-                Margin = new Thickness(0, 0, 6, 0),
-                FontSize = 12,
+                Height = 36,
+                Padding = new Thickness(10, 0, 10, 0),
+                Margin = new Thickness(0, 0, 5, 4),
+                FontSize = 11.5,
                 FontWeight = FontWeights.SemiBold,
                 Cursor = Cursors.Hand,
                 Background = new SolidColorBrush(MeetPillDarkColor),
@@ -374,12 +513,12 @@ namespace QASmartClass.Classroom.Views
                 BorderThickness = new Thickness(0),
                 ToolTip = "Ẩn/Hiện màn hình thu nhỏ cho biết chính xác Học sinh đang nhìn thấy gì"
             };
-            ApplyRoundedButtonTemplate(_btnTogglePiP, 19);
+            ApplyRoundedButtonTemplate(_btnTogglePiP, 18);
             _btnTogglePiP.Checked += (_, _) =>
             {
                 if (_pipContainer != null) _pipContainer.Visibility = Visibility.Visible;
                 _btnTogglePiP.Background = new SolidColorBrush(MeetActiveBlueColor);
-                _btnTogglePiP.Content = "👁️ Ẩn xem thử";
+                _btnTogglePiP.Content = "👁️ Ẩn thử";
             };
             _btnTogglePiP.Unchecked += (_, _) =>
             {
@@ -389,20 +528,25 @@ namespace QASmartClass.Classroom.Views
             };
             barPanel.Children.Add(_btnTogglePiP);
 
-            var btnRestoreShell = CreateMeetActionPill("🏠 Lớp học", MeetPillDarkColor, Colors.White,
+            var btnRestoreShell = CreateMeetActionPill("🏠 Lớp", MeetPillDarkColor, Colors.White,
                 "Mở lại cửa sổ Quản lý lớp học QA SmartClass");
+            btnRestoreShell.Height = 36;
+            btnRestoreShell.Padding = new Thickness(10, 0, 10, 0);
+            btnRestoreShell.Margin = new Thickness(0, 0, 5, 4);
             btnRestoreShell.Click += (_, _) => RestoreShellRequested?.Invoke(this, EventArgs.Empty);
             barPanel.Children.Add(btnRestoreShell);
 
             // ─── Nút kết thúc đỏ chuẩn Google Meet (#EA4335) ───
-            var btnStop = CreateMeetActionPill("📞 Dừng chia sẻ", MeetMutedRedColor, Colors.White,
+            var btnStop = CreateMeetActionPill("📞 Dừng", MeetMutedRedColor, Colors.White,
                 "Dừng chia sẻ màn hình & âm thanh ngay lập tức");
-            btnStop.Margin = new Thickness(2, 0, 0, 0);
-            btnStop.Padding = new Thickness(15, 0, 15, 0);
+            btnStop.Height = 36;
+            btnStop.Margin = new Thickness(0, 0, 0, 4);
+            btnStop.Padding = new Thickness(12, 0, 12, 0);
             btnStop.Click += (_, _) => StopRequested?.Invoke(this, EventArgs.Empty);
             barPanel.Children.Add(btnStop);
 
-            _mainBarBorder.Child = barPanel;
+            hubStack.Children.Add(barPanel);
+            _mainBarBorder.Child = hubStack;
             rootStack.Children.Add(_mainBarBorder);
 
             // ═══════════════════════════════════════════════════════════════════
@@ -777,6 +921,14 @@ namespace QASmartClass.Classroom.Views
                 PositionTopCenter();
                 _meterTimer.Start();
             };
+            Deactivated += (_, _) =>
+            {
+                // Giống EasyTouch / AssistiveTouch: khi Giáo viên bấm ra ngoài bảng giảng / slide để dạy thì tự thu về nút tròn gọn nhẹ
+                if (_isEasyTouchExpanded && string.IsNullOrEmpty(_openPopoverMode) && _btnTogglePiP.IsChecked != true)
+                {
+                    SetEasyTouchExpanded(false);
+                }
+            };
             Closed += (_, _) =>
             {
                 _meterTimer.Stop();
@@ -843,7 +995,7 @@ namespace QASmartClass.Classroom.Views
                     : (sysOn ? MeetActiveBlueColor : MeetMutedRedColor));
                 _txtSysAudioLabel.Text = !svc.HasSystemAudioHardware
                     ? "🔇 Không loa"
-                    : (sysOn ? "🔊 Tiếng máy" : "🔈 Tắt tiếng máy");
+                    : (sysOn ? "🔊 Âm thanh" : "🔈 Tắt âm thanh");
 
                 // 3. Camera Split-Pill
                 bool camOn = svc.HasCameraHardware && svc.IsCameraEnabled;
@@ -945,26 +1097,28 @@ namespace QASmartClass.Classroom.Views
             var pill = new Border
             {
                 Background = new SolidColorBrush(MeetMutedRedColor),
-                CornerRadius = new CornerRadius(19),
-                Height = 38,
-                Margin = new Thickness(0, 0, 6, 0),
+                CornerRadius = new CornerRadius(18),
+                Height = 36,
+                Margin = new Thickness(0, 0, 5, 4),
                 ClipToBounds = true
             };
 
             var stack = new StackPanel { Orientation = Orientation.Horizontal };
 
-            var mainBtn = CreateTransparentInnerButton(new Thickness(12, 0, 8, 0), mainTooltip);
+            var mainBtn = CreateTransparentInnerButton(new Thickness(9, 0, 6, 0), mainTooltip);
+            mainBtn.Height = 36;
             stack.Children.Add(mainBtn);
 
             stack.Children.Add(new Rectangle
             {
                 Width = 1,
-                Height = 20,
+                Height = 18,
                 Fill = new SolidColorBrush(Color.FromArgb(95, 255, 255, 255)),
                 VerticalAlignment = VerticalAlignment.Center
             });
 
-            var chevBtn = CreateTransparentInnerButton(new Thickness(7, 0, 9, 0), chevronTooltip);
+            var chevBtn = CreateTransparentInnerButton(new Thickness(6, 0, 8, 0), chevronTooltip);
+            chevBtn.Height = 36;
             chevBtn.Content = new TextBlock
             {
                 Text = "▾",
@@ -1130,11 +1284,210 @@ namespace QASmartClass.Classroom.Views
             try
             {
                 var workArea = SystemParameters.WorkArea;
-                double w = ActualWidth > 0 ? ActualWidth : 980;
-                Left = workArea.Left + Math.Max(12, (workArea.Width - w) / 2.0);
-                Top = workArea.Top + 6;
+                double w = ActualWidth > 0 ? ActualWidth : 462;
+                Left = Math.Max(workArea.Left + 10, workArea.Right - w - 16);
+                Top = workArea.Top + 14;
+                _savedBubbleAnchorLeft = workArea.Right - 82;
+                _savedBubbleAnchorTop = workArea.Top + 14;
             }
             catch { }
+        }
+
+        private void ClampWindowToWorkArea()
+        {
+            try
+            {
+                var workArea = SystemParameters.WorkArea;
+                double w = ActualWidth > 0 ? ActualWidth : (_isEasyTouchExpanded ? 462 : 74);
+                double h = ActualHeight > 0 ? ActualHeight : (_isEasyTouchExpanded ? 160 : 74);
+                Left = Math.Max(workArea.Left + 6, Math.Min(Left, workArea.Right - w - 6));
+                Top = Math.Max(workArea.Top + 6, Math.Min(Top, workArea.Bottom - h - 6));
+            }
+            catch { }
+        }
+
+        public void SetEasyTouchExpanded(bool expanded)
+        {
+            if (_isEasyTouchExpanded == expanded) return;
+            _isEasyTouchExpanded = expanded;
+
+            var workArea = SystemParameters.WorkArea;
+            if (!expanded)
+            {
+                // Lưu mỏ neo tại góc phải của bảng đang mở để đặt nút tròn đúng tầm tay
+                double curW = ActualWidth > 0 ? ActualWidth : 462;
+                double targetBubbleLeft = Left + curW - 74;
+                if (!double.IsNaN(_savedBubbleAnchorLeft) && Math.Abs(_savedBubbleAnchorLeft - Left) < 520)
+                {
+                    targetBubbleLeft = Math.Max(workArea.Left + 8, Math.Min(targetBubbleLeft, workArea.Right - 76));
+                }
+
+                _openPopoverMode = "";
+                _devicePopoverBorder.Visibility = Visibility.Collapsed;
+                _warningBanner.Visibility = Visibility.Collapsed;
+                if (_btnTogglePiP.IsChecked == true) _btnTogglePiP.IsChecked = false;
+                if (_pipContainer != null) _pipContainer.Visibility = Visibility.Collapsed;
+
+                _mainBarBorder.Visibility = Visibility.Collapsed;
+                _easyTouchBubble.Visibility = Visibility.Visible;
+
+                Left = Math.Max(workArea.Left + 8, Math.Min(targetBubbleLeft, workArea.Right - 76));
+                Top = Math.Max(workArea.Top + 8, Math.Min(Top, workArea.Bottom - 76));
+                _savedBubbleAnchorLeft = Left;
+                _savedBubbleAnchorTop = Top;
+            }
+            else
+            {
+                _savedBubbleAnchorLeft = Left;
+                _savedBubbleAnchorTop = Top;
+
+                _easyTouchBubble.Visibility = Visibility.Collapsed;
+                _mainBarBorder.Visibility = Visibility.Visible;
+
+                const double estExpandedWidth = 462;
+                const double estExpandedHeight = 165;
+                // Nếu nút tròn đang ở nửa bên phải màn hình thì bung sang trái để không tràn mép
+                double targetLeft = (_savedBubbleAnchorLeft > workArea.Left + workArea.Width * 0.5)
+                    ? (_savedBubbleAnchorLeft + 74 - estExpandedWidth)
+                    : _savedBubbleAnchorLeft;
+
+                Left = Math.Max(workArea.Left + 8, Math.Min(targetLeft, workArea.Right - estExpandedWidth - 8));
+                Top = Math.Max(workArea.Top + 8, Math.Min(_savedBubbleAnchorTop, workArea.Bottom - estExpandedHeight - 8));
+                Activate();
+            }
+        }
+
+        private void AttachEasyTouchBubbleGesture(UIElement bubble)
+        {
+            bubble.MouseLeftButtonDown += (_, e) =>
+            {
+                if (e.StylusDevice != null) return;
+                try
+                {
+                    _bubbleDragStartScreen = PointToScreen(e.GetPosition(this));
+                    _bubbleWindowStartPos = new Point(Left, Top);
+                    _isBubbleMouseDown = true;
+                    _hasBubbleMoved = false;
+                    bubble.CaptureMouse();
+                    e.Handled = true;
+                }
+                catch { }
+            };
+
+            bubble.MouseMove += (_, e) =>
+            {
+                if (!_isBubbleMouseDown) return;
+                try
+                {
+                    var curScreen = PointToScreen(e.GetPosition(this));
+                    var dpi = VisualTreeHelper.GetDpi(this);
+                    double dx = (curScreen.X - _bubbleDragStartScreen.X) / dpi.DpiScaleX;
+                    double dy = (curScreen.Y - _bubbleDragStartScreen.Y) / dpi.DpiScaleY;
+                    if (Math.Sqrt(dx * dx + dy * dy) >= 6.0)
+                    {
+                        _hasBubbleMoved = true;
+                        Left = _bubbleWindowStartPos.X + dx;
+                        Top = _bubbleWindowStartPos.Y + dy;
+                        ClampWindowToWorkArea();
+                        _savedBubbleAnchorLeft = Left;
+                        _savedBubbleAnchorTop = Top;
+                    }
+                    e.Handled = true;
+                }
+                catch { }
+            };
+
+            bubble.MouseLeftButtonUp += (_, e) =>
+            {
+                if (!_isBubbleMouseDown) return;
+                bool wasMoved = _hasBubbleMoved;
+                _isBubbleMouseDown = false;
+                _hasBubbleMoved = false;
+                bubble.ReleaseMouseCapture();
+                e.Handled = true;
+                if (!wasMoved)
+                {
+                    SetEasyTouchExpanded(true);
+                }
+            };
+
+            bubble.TouchDown += (_, e) =>
+            {
+                try
+                {
+                    _bubbleDragStartScreen = PointToScreen(e.GetTouchPoint(this).Position);
+                    _bubbleWindowStartPos = new Point(Left, Top);
+                    _isBubbleTouchDown = true;
+                    _hasBubbleMoved = false;
+                    bubble.CaptureTouch(e.TouchDevice);
+                    e.Handled = true;
+                }
+                catch { }
+            };
+
+            bubble.TouchMove += (_, e) =>
+            {
+                if (!_isBubbleTouchDown) return;
+                try
+                {
+                    var curScreen = PointToScreen(e.GetTouchPoint(this).Position);
+                    var dpi = VisualTreeHelper.GetDpi(this);
+                    double dx = (curScreen.X - _bubbleDragStartScreen.X) / dpi.DpiScaleX;
+                    double dy = (curScreen.Y - _bubbleDragStartScreen.Y) / dpi.DpiScaleY;
+                    if (Math.Sqrt(dx * dx + dy * dy) >= 8.0)
+                    {
+                        _hasBubbleMoved = true;
+                        Left = _bubbleWindowStartPos.X + dx;
+                        Top = _bubbleWindowStartPos.Y + dy;
+                        ClampWindowToWorkArea();
+                        _savedBubbleAnchorLeft = Left;
+                        _savedBubbleAnchorTop = Top;
+                    }
+                    e.Handled = true;
+                }
+                catch { }
+            };
+
+            bubble.TouchUp += (_, e) =>
+            {
+                if (!_isBubbleTouchDown) return;
+                bool wasMoved = _hasBubbleMoved;
+                _isBubbleTouchDown = false;
+                _hasBubbleMoved = false;
+                bubble.ReleaseTouchCapture(e.TouchDevice);
+                e.Handled = true;
+                if (!wasMoved)
+                {
+                    SetEasyTouchExpanded(true);
+                }
+            };
+        }
+
+        public void SetAllowStudentExitState(bool allowExit)
+        {
+            _suppressAllowExitEvent = true;
+            try
+            {
+                _allowStudentExit = allowExit;
+                if (allowExit)
+                {
+                    _btnAllowStudentExit.Content = "🔓 Cho HS ra ngoài";
+                    _btnAllowStudentExit.Background = new SolidColorBrush(MeetLiveGreenColor);
+                    _btnAllowStudentExit.Foreground = Brushes.White;
+                    _btnAllowStudentExit.ToolTip = "Đang CHO PHÉP học sinh thu nhỏ / bấm ra ngoài màn chiếu. Bấm để KHÓA lại toàn màn hình 100%.";
+                }
+                else
+                {
+                    _btnAllowStudentExit.Content = "🔒 Khóa HS";
+                    _btnAllowStudentExit.Background = new SolidColorBrush(MeetPillDarkColor);
+                    _btnAllowStudentExit.Foreground = new SolidColorBrush(Color.FromRgb(0xFC, 0xA5, 0xA5));
+                    _btnAllowStudentExit.ToolTip = "Đang KHÓA CỨNG toàn màn hình Học sinh (Học sinh không làm gì khác được). Bấm để cho phép học sinh bấm ra ngoài.";
+                }
+            }
+            finally
+            {
+                _suppressAllowExitEvent = false;
+            }
         }
 
         private void EnableDragOnElement(UIElement element)
@@ -1216,10 +1569,13 @@ namespace QASmartClass.Classroom.Views
             _isPaused = isPaused;
             _txtSourceTitle.Text = sourceDescription;
             _txtTimerAndStudents.Text = $"{timerText} • 👥 {recipientCount}";
+            _easyTouchMiniTimer.Text = timerText;
 
             if (isPaused)
             {
                 _mainBarBorder.BorderBrush = new SolidColorBrush(MeetWarningAmberColor);
+                _easyTouchBubble.BorderBrush = new SolidColorBrush(MeetWarningAmberColor);
+                _easyTouchStatusDot.Fill = new SolidColorBrush(MeetWarningAmberColor);
                 _statusDot.Fill = new SolidColorBrush(MeetWarningAmberColor);
                 _txtStatusBadge.Text = "ĐANG ĐÓNG BĂNG";
                 _txtStatusBadge.Foreground = new SolidColorBrush(MeetWarningAmberColor);
@@ -1231,6 +1587,8 @@ namespace QASmartClass.Classroom.Views
             else
             {
                 _mainBarBorder.BorderBrush = new SolidColorBrush(MeetBorderColor);
+                _easyTouchBubble.BorderBrush = new SolidColorBrush(MeetLightBlueColor);
+                _easyTouchStatusDot.Fill = new SolidColorBrush(MeetLiveGreenColor);
                 _statusDot.Fill = new SolidColorBrush(MeetLiveGreenColor);
                 _txtStatusBadge.Text = _isLockedSource ? "📌 GIỮ CỐ ĐỊNH" : "ĐANG TRÌNH BÀY";
                 _txtStatusBadge.Foreground = new SolidColorBrush(MeetLightBlueColor);

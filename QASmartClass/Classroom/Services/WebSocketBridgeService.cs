@@ -41,6 +41,7 @@ namespace QASmartClass.Classroom.Services
         private CancellationTokenSource? _cts;
         private readonly ConcurrentDictionary<string, WebSocketClient> _wsClients = new();
         private readonly ConcurrentDictionary<string, System.Collections.Generic.List<DateTime>> _clientRequestTimes = new();
+        private readonly SemaphoreSlim _fileStreamLimiter = new(8, 8);
 
         // ─── Reference to classroom network ───
         private readonly NetworkDiscoveryService _networkService;
@@ -502,7 +503,42 @@ namespace QASmartClass.Classroom.Services
                     return;
                 }
 
-                // 5. Endpoint phát file /api/file_broadcast
+                // 5a. Endpoint tải tệp luồng 64KB chunked /api/files/download (GV → HS Windows PC & Android, hỗ trợ HTTP Range Resume, ~0 MB RAM)
+                if (urlPath.Equals("/api/files/download", StringComparison.OrdinalIgnoreCase))
+                {
+                    string clientToken = query.TryGetValue("token", out var dlTok) ? dlTok : "";
+                    string serverToken = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
+                    if (!string.IsNullOrEmpty(serverToken) && clientToken != serverToken)
+                    {
+                        SendSimpleTcpHttpResponse(stream, 401, "Unauthorized", "text/plain; charset=utf-8",
+                            Encoding.UTF8.GetBytes("401 Unauthorized - Invalid File Token"));
+                        return;
+                    }
+
+                    string fileId = query.TryGetValue("id", out var fid) ? fid : "";
+                    string reqName = query.TryGetValue("name", out var fnm) ? fnm : "";
+                    if (!QASmartClass.Services.BroadcastStateService.Instance.TryResolveSharedFile(fileId, reqName, out var desc) || desc == null)
+                    {
+                        SendSimpleTcpHttpResponse(stream, 404, "Not Found", "text/plain; charset=utf-8",
+                            Encoding.UTF8.GetBytes("404 File Not Found"));
+                        return;
+                    }
+
+                    string? rangeHeader = headers.TryGetValue("Range", out var rng) ? rng : null;
+                    await StreamFileDownloadHttpAsync(stream, desc.FilePath, desc.FileName, asAttachment: true, rangeHeader, ct);
+                    return;
+                }
+
+                // 5b. Endpoint nhận tệp nộp bài luồng 64KB chunked /api/files/upload (HS Windows PC & Android → GV, ~0 MB RAM)
+                if (urlPath.Equals("/api/files/upload", StringComparison.OrdinalIgnoreCase) && method == "POST")
+                {
+                    int bodyStartOffset = headerEndIdx + 4;
+                    int bodyBytesAlreadyRead = Math.Max(0, totalRead - bodyStartOffset);
+                    await HandleHttpFileUploadAsync(stream, headers, query, headerBuf, bodyStartOffset, bodyBytesAlreadyRead, clientIP, ct);
+                    return;
+                }
+
+                // 5. Endpoint phát file /api/file_broadcast (nâng cấp sang 64KB FileStream chunked để tránh tràn RAM file lớn)
                 if (urlPath.Equals("/api/file_broadcast", StringComparison.OrdinalIgnoreCase))
                 {
                     string clientToken = query.TryGetValue("token", out var fTok) ? fTok : "";
@@ -530,8 +566,10 @@ namespace QASmartClass.Classroom.Services
 
                     if (!string.IsNullOrEmpty(path) && File.Exists(path))
                     {
-                        byte[] content = File.ReadAllBytes(path);
-                        SendSimpleTcpHttpResponse(stream, 200, "OK", GetMimeType(path), content);
+                        // [MYTHWARE_LITE] byte[] content = File.ReadAllBytes(path);
+                        // [MYTHWARE_LITE] SendSimpleTcpHttpResponse(stream, 200, "OK", GetMimeType(path), content);
+                        string? rangeHeader = headers.TryGetValue("Range", out var rng2) ? rng2 : null;
+                        await StreamFileDownloadHttpAsync(stream, path, Path.GetFileName(path), asAttachment: false, rangeHeader, ct);
                     }
                     else
                     {
@@ -620,6 +658,190 @@ namespace QASmartClass.Classroom.Services
                 stream.Write(body, 0, body.Length);
             }
             stream.Flush();
+        }
+
+        private async Task StreamFileDownloadHttpAsync(
+            NetworkStream stream,
+            string filePath,
+            string downloadFileName,
+            bool asAttachment,
+            string? rangeHeader,
+            CancellationToken ct)
+        {
+            await _fileStreamLimiter.WaitAsync(ct);
+            try
+            {
+                var fi = new FileInfo(filePath);
+                if (!fi.Exists)
+                {
+                    SendSimpleTcpHttpResponse(stream, 404, "Not Found", "text/plain; charset=utf-8",
+                        Encoding.UTF8.GetBytes("404 File Not Found"));
+                    return;
+                }
+
+                long totalLength = fi.Length;
+                long start = 0;
+                long end = Math.Max(0, totalLength - 1);
+                bool isPartial = false;
+
+                if (!string.IsNullOrWhiteSpace(rangeHeader) &&
+                    rangeHeader.StartsWith("bytes=", StringComparison.OrdinalIgnoreCase) &&
+                    totalLength > 0)
+                {
+                    string spec = rangeHeader.Substring(6).Trim();
+                    int dash = spec.IndexOf('-');
+                    if (dash >= 0)
+                    {
+                        string startPart = spec.Substring(0, dash).Trim();
+                        string endPart = spec.Substring(dash + 1).Trim();
+                        if (long.TryParse(startPart, out long sVal) && sVal >= 0 && sVal < totalLength)
+                        {
+                            start = sVal;
+                            if (long.TryParse(endPart, out long eVal) && eVal >= start && eVal < totalLength)
+                                end = eVal;
+                            isPartial = true;
+                        }
+                    }
+                }
+
+                long contentLength = totalLength == 0 ? 0 : (end - start + 1);
+                string mimeType = GetMimeType(filePath);
+                string dispType = asAttachment ? "attachment" : "inline";
+                string safeAsciiName = string.Concat(downloadFileName.Select(ch => ch >= 32 && ch <= 126 && ch != '"' && ch != '\\' ? ch : '_'));
+                string encodedUtf8Name = Uri.EscapeDataString(downloadFileName);
+
+                var sb = new StringBuilder(512);
+                sb.Append(isPartial ? "HTTP/1.1 206 Partial Content\r\n" : "HTTP/1.1 200 OK\r\n");
+                sb.Append($"Content-Type: {mimeType}\r\n");
+                sb.Append($"Content-Length: {contentLength}\r\n");
+                sb.Append("Accept-Ranges: bytes\r\n");
+                if (isPartial)
+                {
+                    sb.Append($"Content-Range: bytes {start}-{end}/{totalLength}\r\n");
+                }
+                sb.Append($"Content-Disposition: {dispType}; filename=\"{safeAsciiName}\"; filename*=UTF-8''{encodedUtf8Name}\r\n");
+                sb.Append("Access-Control-Allow-Origin: *\r\n");
+                sb.Append("Cache-Control: no-cache, no-store\r\n");
+                sb.Append("Connection: close\r\n\r\n");
+
+                byte[] headerBytes = Encoding.ASCII.GetBytes(sb.ToString());
+                await stream.WriteAsync(headerBytes, ct);
+
+                if (contentLength > 0)
+                {
+                    using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 65536, useAsync: true);
+                    if (start > 0) fs.Seek(start, SeekOrigin.Begin);
+
+                    var buf = new byte[65536];
+                    long remaining = contentLength;
+                    while (remaining > 0 && !ct.IsCancellationRequested)
+                    {
+                        int toRead = (int)Math.Min(buf.Length, remaining);
+                        int read = await fs.ReadAsync(buf.AsMemory(0, toRead), ct);
+                        if (read <= 0) break;
+                        await stream.WriteAsync(buf.AsMemory(0, read), ct);
+                        remaining -= read;
+                    }
+                }
+                await stream.FlushAsync(ct);
+            }
+            finally
+            {
+                _fileStreamLimiter.Release();
+            }
+        }
+
+        private async Task HandleHttpFileUploadAsync(
+            NetworkStream stream,
+            Dictionary<string, string> headers,
+            Dictionary<string, string> query,
+            byte[] headerBuf,
+            int bodyStartOffset,
+            int bodyBytesAlreadyRead,
+            string clientIP,
+            CancellationToken ct)
+        {
+            await _fileStreamLimiter.WaitAsync(ct);
+            try
+            {
+                string studentCode = query.TryGetValue("code", out var qc) ? qc
+                    : (headers.TryGetValue("X-Student-Code", out var hc) ? hc : "HS00001");
+                string studentName = query.TryGetValue("name", out var qn) ? qn
+                    : (headers.TryGetValue("X-Student-Name", out var hn) ? Uri.UnescapeDataString(hn) : "Hoc_sinh");
+                string fileName = query.TryGetValue("filename", out var qf) ? qf
+                    : (headers.TryGetValue("X-File-Name", out var hf) ? Uri.UnescapeDataString(hf) : "BaiLam.dat");
+                string clientToken = query.TryGetValue("token", out var qt) ? qt
+                    : (headers.TryGetValue("X-Class-Token", out var ht) ? ht : "");
+
+                string serverToken = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
+                bool isLocal = clientIP == "127.0.0.1" || clientIP == "::1";
+                bool isConnectedStudent = _networkService.GetConnectedStudents().Any(s =>
+                    string.Equals(s.Code, studentCode, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(s.IPAddress, clientIP, StringComparison.OrdinalIgnoreCase));
+
+                if (!isLocal && !isConnectedStudent && !string.IsNullOrEmpty(serverToken) && clientToken != serverToken)
+                {
+                    byte[] unauthBody = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+                    {
+                        ok = false,
+                        message = "Chưa xác thực kết nối lớp học. Vui lòng kiểm tra kết nối tới máy Giáo viên."
+                    }));
+                    SendSimpleTcpHttpResponse(stream, 401, "Unauthorized", "application/json; charset=utf-8", unauthBody);
+                    return;
+                }
+
+                long contentLength = 0;
+                if (headers.TryGetValue("Content-Length", out var clStr))
+                {
+                    long.TryParse(clStr, out contentLength);
+                }
+
+                var ftService = (System.Windows.Application.Current as QASmartTouch.App)?.FileTransfer;
+                if (ftService == null)
+                {
+                    byte[] errBody = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+                    {
+                        ok = false,
+                        message = "Dịch vụ nhận bài của Giáo viên chưa sẵn sàng."
+                    }));
+                    SendSimpleTcpHttpResponse(stream, 503, "Service Unavailable", "application/json; charset=utf-8", errBody);
+                    return;
+                }
+
+                stream.ReadTimeout = 120000; // Cho phép tối đa 120s cho file lớn qua Wi-Fi
+                var result = await ftService.SaveIncomingHttpUploadAsync(
+                    stream,
+                    headerBuf,
+                    bodyStartOffset,
+                    bodyBytesAlreadyRead,
+                    contentLength,
+                    studentCode,
+                    studentName,
+                    fileName,
+                    ct);
+
+                string statusText = result.StatusCode switch
+                {
+                    200 => "OK",
+                    400 => "Bad Request",
+                    403 => "Forbidden",
+                    413 => "Payload Too Large",
+                    507 => "Insufficient Storage",
+                    _ => "Internal Server Error"
+                };
+
+                byte[] jsonResp = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+                {
+                    ok = result.Success,
+                    savedAs = result.SavedFileName,
+                    message = result.Message
+                }));
+                SendSimpleTcpHttpResponse(stream, result.StatusCode, statusText, "application/json; charset=utf-8", jsonResp);
+            }
+            finally
+            {
+                _fileStreamLimiter.Release();
+            }
         }
 
         private void StreamBroadcastFramesTcp(TcpClient tcpClient, NetworkStream stream, string clientIP, CancellationToken ct)

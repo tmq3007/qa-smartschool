@@ -80,13 +80,14 @@
                     BorderBrush="#90CAF9" BorderThickness="1" Visibility="Collapsed">
                 <StackPanel>
                     <DockPanel Margin="0,0,0,4">
-                        <TextBlock Text="📋 Yêu cầu bài tập từ GV" FontSize="13" FontWeight="Bold" Foreground="#1565C0"/>
+                        <TextBlock x:Name="txtAssignmentHeader" Text="📋 Yêu cầu bài tập từ GV" FontSize="13" FontWeight="Bold" Foreground="#1565C0"/>
                         <TextBlock x:Name="txtDeadline" DockPanel.Dock="Right" Text="" FontSize="13"
                                    FontWeight="Bold" VerticalAlignment="Center"/>
                     </DockPanel>
                     <TextBlock x:Name="txtAssignment" TextWrapping="Wrap" FontSize="13" Foreground="#212121"
                                Margin="0,2,0,0"/>
                     <TextBlock x:Name="txtCountdown" Text="" FontSize="12" Foreground="#E65100" Margin="0,4,0,0"/>
+                    <WrapPanel x:Name="assignmentFilesChipPanel" Orientation="Horizontal" Margin="0,8,0,0" Visibility="Collapsed"/>
                 </StackPanel>
             </Border>
 

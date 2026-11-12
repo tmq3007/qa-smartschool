@@ -6,8 +6,10 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Threading;
 using QASmartClass.Classroom.Helpers;
 using QASmartClass.Classroom.Services;
+using QASmartTouch.Services.Camera;
 using Serilog;
 
 namespace QASmartClass.Shared
@@ -16,11 +18,48 @@ namespace QASmartClass.Shared
     {
         private readonly ModeService _modeService;
         private readonly UserRoleService? _roleService;
-        private bool _isVoiceBroadcasting = false;
-        private bool _isRecording = false;
-        private bool _isBroadcasting = false;
+
+        private bool _isRecording;
+        private bool _isBroadcasting;
+        private bool _isBroadcastPaused;
+        private bool _isLockedSource;
+        private bool _allowStudentExit;
+        private bool _isClassScreenLocked;
+        private bool _isPipVisible;
+        private string _openPopoverMode = "";
+        private bool _suppressDeviceSelectionEvent;
+        private bool _suppressHideShellEvent;
+        private bool _suppressAllowExitEvent;
+        private bool _isBroadcastBridgeBound;
+
+        private Point _orbDragStartScreen;
+        private Point _orbWindowStartPos;
+        private double _orbAnchorLeft = -1;
+        private double _orbAnchorTop = -1;
+        private bool _isOrbMouseDown;
+        private bool _isOrbTouchDown;
+        private bool _hasOrbMoved;
+
         private DateTime _lastQuickActionUtc = DateTime.MinValue;
-        private readonly System.Windows.Threading.DispatcherTimer _quickStatusSyncTimer;
+        private readonly DispatcherTimer _quickStatusSyncTimer;
+        private readonly DispatcherTimer _mediaMeterTimer;
+        private readonly DispatcherTimer _idleOrbDimTimer;
+
+        // ═══ Sự kiện đồng bộ trực tiếp với BroadcastPage (Hợp nhất 1 Cục Tròn EasyTouch) ═══
+        public event EventHandler? ShareCurrentInsteadRequested;
+        public event EventHandler? ChangeSourceRequested;
+        public event EventHandler? SelectRegionRequested;
+        public event EventHandler? TogglePauseRequested;
+        public event EventHandler? StopRequested;
+        public event EventHandler? RestoreShellRequested;
+        public event EventHandler<bool>? HideClassroomShellChanged;
+        public event EventHandler<bool>? AllowStudentExitChanged;
+
+        public bool IsBroadcastBridgeBound
+        {
+            get => _isBroadcastBridgeBound;
+            set => _isBroadcastBridgeBound = value;
+        }
 
         #region Win32 Native Drag Constants & APIs
 
@@ -48,74 +87,65 @@ namespace QASmartClass.Shared
             _roleService = roleService;
             _modeService.ModeChanged += OnModeChanged;
 
-            // Đặt vị trí mặc định ở phía DƯỚI màn hình (trên Taskbar)
-            PositionAtBottom();
-
-            // SmartTouchOnly / Guest: ẩn nút Smart Class + các nút chức năng quản lý lớp học
-            //if (_roleService?.IsSmartTouchOnly == true || _roleService?.CurrentRole == UserRole.Guest)
-            //{
-            //    btnClass.Visibility = Visibility.Collapsed;
-            //    btnVoice.Visibility = Visibility.Collapsed;
-            //    btnBroadcast.Visibility = Visibility.Collapsed;
-            //    Log.Information("FloatingModeBar: SmartTouchOnly/Guest mode — " +
-            //        "btnClass, btnVoice, btnBroadcast COLLAPSED");
-            //}
-
-            // Keyboard shortcuts: Ctrl+1 = Class, Ctrl+2 = Screen, Ctrl+3 = Desktop
+            // Phím tắt nhanh: Ctrl+1 = SMART CLASS, Ctrl+2 = SMART TOUCH, Ctrl+3 = DESKTOP
             InputBindings.Add(new KeyBinding(new RelayCommand(() =>
             {
                 if (_modeService.IsTransitioning) return;
                 if (_roleService?.IsSmartTouchOnly != true && _roleService?.CurrentRole != UserRole.Guest)
                     _ = _modeService.GoToClassAsync();
-            }),
-                new KeyGesture(Key.D1, ModifierKeys.Control)));
+            }), new KeyGesture(Key.D1, ModifierKeys.Control)));
+
             InputBindings.Add(new KeyBinding(new RelayCommand(() =>
             {
                 if (_modeService.IsTransitioning) return;
                 _ = _modeService.GoToScreenAsync();
-            }),
-                new KeyGesture(Key.D2, ModifierKeys.Control)));
+            }), new KeyGesture(Key.D2, ModifierKeys.Control)));
+
             InputBindings.Add(new KeyBinding(new RelayCommand(() =>
             {
                 if (_modeService.IsTransitioning) return;
                 _ = _modeService.GoToDesktopAsync();
-            }),
-                new KeyGesture(Key.D3, ModifierKeys.Control)));
+            }), new KeyGesture(Key.D3, ModifierKeys.Control)));
 
+            // Mặc định luôn khởi tạo dưới dạng 1 Cục Tròn EasyTouch gọn gàng ở mép phải màn hình
+            CollapseBar();
+            PositionOrbDefaultEdge();
             UpdateUI(_modeService.CurrentMode);
 
-            if (_modeService.CurrentMode == AppMode.SmartScreen)
-            {
-                CollapseBar();
-                PositionAtTopRight();
-            }
-            else
-            {
-                ExpandBar();
-                PositionAtBottom();
-            }
-
-            Log.Information("FloatingModeBar initialized (Mode: {Mode}) - Smooth Native Drag enabled", _modeService.CurrentMode);
-            
-            // Giữ thanh nổi luôn hiển thị trên cùng khi ở chế độ DESKTOP hoặc đang phát trực tiếp bài giảng
-            Application.Current.Activated += (s, e) => { this.Topmost = true; };
-            Application.Current.Deactivated += (s, e) =>
+            Application.Current.Activated += (_, _) => { Topmost = true; };
+            Application.Current.Deactivated += (_, _) =>
             {
                 if (_modeService.CurrentMode != AppMode.Desktop && !ScreenShareController.Instance.IsLive)
                 {
-                    this.Topmost = false;
+                    Topmost = true; // Giữ nút tròn EasyTouch luôn nổi gọn trên ứng dụng
                 }
             };
 
-            SourceInitialized += (_, _) => ApplyCaptureExclusionForLiveState(ScreenShareController.Instance.IsLive);
+            Deactivated += (_, _) =>
+            {
+                // Chuẩn EasyTouch / AssistiveTouch: Khi Giáo viên bấm ra ngoài để giảng bài / viết bảng thì tự thu về cục tròn
+                if (pnlExpanded.Visibility == Visibility.Visible && string.IsNullOrEmpty(_openPopoverMode) && !_isPipVisible)
+                {
+                    CollapseBar();
+                }
+            };
+
+            SourceInitialized += (_, _) =>
+            {
+                // Luôn bật cờ chống lọt hình vào luồng chụp màn hình để Học sinh không bao giờ thấy cục tròn của Giáo viên
+                ApplyCaptureExclusionForLiveState(true);
+            };
+
+            EventHandler mediaStateHandler = (_, _) => Dispatcher.BeginInvoke(new Action(SyncMediaControlsState));
+            EventHandler<string> mediaWarnHandler = (_, msg) => Dispatcher.BeginInvoke(new Action(() => ShowHardwareWarning(msg)));
+
             ScreenShareController.Instance.LiveChanged += OnScreenShareLiveChanged;
             Services.BroadcastStateService.Instance.StateChanged += OnScreenShareLiveChanged;
             QASmartTouch.Services.ScreenRecorderService.Instance.SaveCompleted += OnRecorderSaveCompleted;
+            LiveBroadcastMediaService.Instance.StateChanged += mediaStateHandler;
+            LiveBroadcastMediaService.Instance.HardwareWarning += mediaWarnHandler;
 
-            _quickStatusSyncTimer = new System.Windows.Threading.DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1.2)
-            };
+            _quickStatusSyncTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.0) };
             _quickStatusSyncTimer.Tick += (_, _) =>
             {
                 SyncBroadcastVisualState();
@@ -123,199 +153,356 @@ namespace QASmartClass.Shared
             };
             _quickStatusSyncTimer.Start();
 
+            _mediaMeterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(90) };
+            _mediaMeterTimer.Tick += OnMediaMeterTimerTick;
+            _mediaMeterTimer.Start();
+
+            _idleOrbDimTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3.5) };
+            _idleOrbDimTimer.Tick += (_, _) =>
+            {
+                _idleOrbDimTimer.Stop();
+                if (pnlCollapsed.Visibility == Visibility.Visible && !_isOrbMouseDown && !_isOrbTouchDown)
+                {
+                    pnlCollapsed.Opacity = _isBroadcasting ? 0.88 : 0.78;
+                }
+            };
+            _idleOrbDimTimer.Start();
+
             Closed += (_, _) =>
             {
                 _quickStatusSyncTimer.Stop();
+                _mediaMeterTimer.Stop();
+                _idleOrbDimTimer.Stop();
                 ScreenShareController.Instance.LiveChanged -= OnScreenShareLiveChanged;
                 Services.BroadcastStateService.Instance.StateChanged -= OnScreenShareLiveChanged;
                 QASmartTouch.Services.ScreenRecorderService.Instance.SaveCompleted -= OnRecorderSaveCompleted;
+                LiveBroadcastMediaService.Instance.StateChanged -= mediaStateHandler;
+                LiveBroadcastMediaService.Instance.HardwareWarning -= mediaWarnHandler;
             };
 
+            SyncMediaControlsState();
             SyncBroadcastVisualState();
             SyncRecorderVisualState();
+            UpdateOrbAppearance();
+
+            Log.Information("Unified EasyTouch FloatingModeBar initialized (Mode: {Mode})", _modeService.CurrentMode);
         }
 
-        /// <summary>
-        /// Đặt vị trí thanh công cụ ở phía dưới màn hình (căn giữa)
-        /// Thường áp dụng cho chế độ SMART CLASS và DESKTOP
-        /// </summary>
+        #region Positioning, Orb Gesture & Edge-Snap
+
+        private void PositionOrbDefaultEdge()
+        {
+            try
+            {
+                var workArea = SystemParameters.WorkArea;
+                _orbAnchorLeft = Math.Max(workArea.Left + 12, workArea.Right - 82);
+                _orbAnchorTop = Math.Max(workArea.Top + 72, workArea.Top + workArea.Height * 0.18);
+                Left = _orbAnchorLeft;
+                Top = _orbAnchorTop;
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("PositionOrbDefaultEdge error: {Err}", ex.Message);
+            }
+        }
+
         public void PositionAtBottom()
         {
-            try
+            // [MYTHWARE_LITE] Giữ hàm tương thích API nhưng không còn trải dài dưới đáy màn hình; giữ nguyên vị trí cục tròn EasyTouch
+            if (_orbAnchorLeft < 0 || _orbAnchorTop < 0)
             {
-                var workArea = SystemParameters.WorkArea;
-                var screenW = SystemParameters.PrimaryScreenWidth;
-                UpdateLayout();
-                var targetWidth = (pnlExpanded.Visibility == Visibility.Visible)
-                    ? Math.Max(this.ActualWidth, 728)
-                    : (this.ActualWidth > 0 ? this.ActualWidth : 200);
-                var targetHeight = (pnlExpanded.Visibility == Visibility.Visible)
-                    ? Math.Max(this.ActualHeight, 62)
-                    : (this.ActualHeight > 0 ? this.ActualHeight : 56);
-
-                Left = (screenW - targetWidth) / 2;
-                Top = Math.Max(20, workArea.Bottom - targetHeight - 12);
-
-                if (txtExpandArrow != null)
-                {
-                    txtExpandArrow.Text = "▲";
-                }
-
-                EnsureWithinScreenBounds();
+                PositionOrbDefaultEdge();
             }
-            catch (Exception ex)
+            else if (pnlCollapsed.Visibility == Visibility.Visible)
             {
-                Log.Warning("PositionAtBottom error: {Err}", ex.Message);
+                EnsureWithinScreenBounds();
             }
         }
 
-        /// <summary>
-        /// Đặt vị trí thanh công cụ ở phía trên bên phải màn hình (vùng Header của Bảng vẽ)
-        /// Tránh che khuất thanh công cụ vẽ (panelTools) ở đáy bảng trong chế độ SMART TOUCH
-        /// </summary>
         public void PositionAtTopRight()
         {
+            if (_orbAnchorLeft < 0 || _orbAnchorTop < 0)
+            {
+                PositionOrbDefaultEdge();
+            }
+            else if (pnlCollapsed.Visibility == Visibility.Visible)
+            {
+                EnsureWithinScreenBounds();
+            }
+        }
+
+        private void SnapOrbToNearestScreenEdge()
+        {
             try
             {
                 var workArea = SystemParameters.WorkArea;
-                var screenW = SystemParameters.PrimaryScreenWidth;
-                UpdateLayout();
-                var targetWidth = (pnlExpanded.Visibility == Visibility.Visible)
-                    ? Math.Max(this.ActualWidth, 728)
-                    : (this.ActualWidth > 0 ? this.ActualWidth : 200);
+                double orbW = ActualWidth > 0 ? ActualWidth : 74;
+                double orbH = ActualHeight > 0 ? ActualHeight : 74;
+                double centerX = Left + orbW * 0.5;
+                double midScreenX = workArea.Left + workArea.Width * 0.5;
 
-                Left = screenW - targetWidth - 20;
-                Top = Math.Max(4, workArea.Top + 3);
+                Left = (centerX < midScreenX)
+                    ? workArea.Left + 8
+                    : Math.Max(workArea.Left + 8, workArea.Right - orbW - 8);
+                Top = Math.Max(workArea.Top + 8, Math.Min(Top, workArea.Bottom - orbH - 8));
 
-                if (txtExpandArrow != null)
-                {
-                    txtExpandArrow.Text = "▼";
-                }
-
-                EnsureWithinScreenBounds();
+                _orbAnchorLeft = Left;
+                _orbAnchorTop = Top;
             }
-            catch (Exception ex)
-            {
-                Log.Warning("PositionAtTopRight error: {Err}", ex.Message);
-            }
-        }
-
-        #region Smooth Native Drag & Bounds Management
-
-        private void DragHandle_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                StartNativeDrag();
-            }
-        }
-
-        private void OnDragBar(object sender, MouseButtonEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                StartNativeDrag();
-            }
-        }
-
-        private void StartNativeDrag()
-        {
-            try
-            {
-                var helper = new WindowInteropHelper(this);
-                if (helper.Handle != IntPtr.Zero)
-                {
-                    ReleaseCapture();
-                    SendMessage(helper.Handle, WM_NCLBUTTONDOWN, (IntPtr)HTCAPTION, IntPtr.Zero);
-                    EnsureWithinScreenBounds();
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Debug("StartNativeDrag fallback: {Err}", ex.Message);
-                try { DragMove(); EnsureWithinScreenBounds(); } catch { }
-            }
+            catch { }
         }
 
         private void EnsureWithinScreenBounds()
         {
             try
             {
-                var virtualLeft = SystemParameters.VirtualScreenLeft;
-                var virtualTop = SystemParameters.VirtualScreenTop;
-                var virtualWidth = SystemParameters.VirtualScreenWidth;
-                var virtualHeight = SystemParameters.VirtualScreenHeight;
+                var workArea = SystemParameters.WorkArea;
+                UpdateLayout();
+                double curW = ActualWidth > 0 ? ActualWidth : (pnlExpanded.Visibility == Visibility.Visible ? 412 : 74);
+                double curH = ActualHeight > 0 ? ActualHeight : (pnlExpanded.Visibility == Visibility.Visible ? 320 : 74);
 
-                var currentWidth = (pnlExpanded.Visibility == Visibility.Visible)
-                    ? Math.Max(this.ActualWidth, 728)
-                    : (this.ActualWidth > 0 ? this.ActualWidth : 200);
-                var currentHeight = (pnlExpanded.Visibility == Visibility.Visible)
-                    ? Math.Max(this.ActualHeight, 62)
-                    : (this.ActualHeight > 0 ? this.ActualHeight : 56);
-
-                if (this.Left < virtualLeft)
-                    this.Left = virtualLeft;
-                if (this.Top < virtualTop)
-                    this.Top = virtualTop;
-                if (this.Left + currentWidth > virtualLeft + virtualWidth)
-                    this.Left = virtualLeft + virtualWidth - currentWidth;
-                if (this.Top + currentHeight > virtualTop + virtualHeight)
-                    this.Top = virtualTop + virtualHeight - currentHeight;
+                Left = Math.Max(workArea.Left + 6, Math.Min(Left, workArea.Right - curW - 6));
+                Top = Math.Max(workArea.Top + 6, Math.Min(Top, workArea.Bottom - curH - 6));
             }
             catch { }
         }
 
-        #endregion
-
-        #region Collapse / Expand Handlers
-
-        public void CollapseBar()
+        private void DragHandle_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            pnlExpanded.Visibility = Visibility.Collapsed;
-            pnlCollapsed.Visibility = Visibility.Visible;
-            UpdateLayout();
-            if (_modeService?.CurrentMode == AppMode.SmartScreen)
+            if (e.LeftButton == MouseButtonState.Pressed)
             {
-                PositionAtTopRight();
+                try
+                {
+                    var helper = new WindowInteropHelper(this);
+                    if (helper.Handle != IntPtr.Zero)
+                    {
+                        ReleaseCapture();
+                        SendMessage(helper.Handle, WM_NCLBUTTONDOWN, (IntPtr)HTCAPTION, IntPtr.Zero);
+                    }
+                    else
+                    {
+                        DragMove();
+                    }
+                    EnsureWithinScreenBounds();
+                    var workArea = SystemParameters.WorkArea;
+                    double curW = ActualWidth > 0 ? ActualWidth : 412;
+                    _orbAnchorLeft = (Left + curW * 0.5 > workArea.Left + workArea.Width * 0.5)
+                        ? Math.Max(workArea.Left + 8, workArea.Right - 74 - 8)
+                        : workArea.Left + 8;
+                    _orbAnchorTop = Top;
+                }
+                catch
+                {
+                    try { DragMove(); EnsureWithinScreenBounds(); } catch { }
+                }
+            }
+        }
+
+        private void Orb_MouseEnter(object sender, MouseEventArgs e)
+        {
+            _idleOrbDimTimer.Stop();
+            pnlCollapsed.Opacity = 1.0;
+        }
+
+        private void Orb_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (!_isOrbMouseDown && !_isOrbTouchDown)
+            {
+                _idleOrbDimTimer.Stop();
+                _idleOrbDimTimer.Start();
+            }
+        }
+
+        private void Orb_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.StylusDevice != null) return;
+            try
+            {
+                _idleOrbDimTimer.Stop();
+                pnlCollapsed.Opacity = 1.0;
+                _orbDragStartScreen = PointToScreen(e.GetPosition(this));
+                _orbWindowStartPos = new Point(Left, Top);
+                _isOrbMouseDown = true;
+                _hasOrbMoved = false;
+                pnlCollapsed.CaptureMouse();
+                e.Handled = true;
+            }
+            catch { }
+        }
+
+        private void Orb_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!_isOrbMouseDown) return;
+            try
+            {
+                var curScreen = PointToScreen(e.GetPosition(this));
+                var dpi = VisualTreeHelper.GetDpi(this);
+                double dx = (curScreen.X - _orbDragStartScreen.X) / dpi.DpiScaleX;
+                double dy = (curScreen.Y - _orbDragStartScreen.Y) / dpi.DpiScaleY;
+                if (Math.Sqrt(dx * dx + dy * dy) >= 6.0)
+                {
+                    _hasOrbMoved = true;
+                    Left = _orbWindowStartPos.X + dx;
+                    Top = _orbWindowStartPos.Y + dy;
+                    EnsureWithinScreenBounds();
+                }
+                e.Handled = true;
+            }
+            catch { }
+        }
+
+        private void Orb_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (!_isOrbMouseDown) return;
+            bool moved = _hasOrbMoved;
+            _isOrbMouseDown = false;
+            _hasOrbMoved = false;
+            pnlCollapsed.ReleaseMouseCapture();
+            e.Handled = true;
+
+            if (!moved)
+            {
+                ExpandBar();
             }
             else
             {
+                SnapOrbToNearestScreenEdge();
+                _idleOrbDimTimer.Stop();
+                _idleOrbDimTimer.Start();
+            }
+        }
+
+        private void Orb_TouchDown(object? sender, TouchEventArgs e)
+        {
+            try
+            {
+                _idleOrbDimTimer.Stop();
+                pnlCollapsed.Opacity = 1.0;
+                _orbDragStartScreen = PointToScreen(e.GetTouchPoint(this).Position);
+                _orbWindowStartPos = new Point(Left, Top);
+                _isOrbTouchDown = true;
+                _hasOrbMoved = false;
+                pnlCollapsed.CaptureTouch(e.TouchDevice);
+                e.Handled = true;
+            }
+            catch { }
+        }
+
+        private void Orb_TouchMove(object? sender, TouchEventArgs e)
+        {
+            if (!_isOrbTouchDown) return;
+            try
+            {
+                var curScreen = PointToScreen(e.GetTouchPoint(this).Position);
+                var dpi = VisualTreeHelper.GetDpi(this);
+                double dx = (curScreen.X - _orbDragStartScreen.X) / dpi.DpiScaleX;
+                double dy = (curScreen.Y - _orbDragStartScreen.Y) / dpi.DpiScaleY;
+                if (Math.Sqrt(dx * dx + dy * dy) >= 8.0)
+                {
+                    _hasOrbMoved = true;
+                    Left = _orbWindowStartPos.X + dx;
+                    Top = _orbWindowStartPos.Y + dy;
+                    EnsureWithinScreenBounds();
+                }
+                e.Handled = true;
+            }
+            catch { }
+        }
+
+        private void Orb_TouchUp(object? sender, TouchEventArgs e)
+        {
+            if (!_isOrbTouchDown) return;
+            bool moved = _hasOrbMoved;
+            _isOrbTouchDown = false;
+            _hasOrbMoved = false;
+            pnlCollapsed.ReleaseTouchCapture(e.TouchDevice);
+            e.Handled = true;
+
+            if (!moved)
+            {
+                ExpandBar();
+            }
+            else
+            {
+                SnapOrbToNearestScreenEdge();
+                _idleOrbDimTimer.Stop();
+                _idleOrbDimTimer.Start();
+            }
+        }
+
+        #endregion
+
+        #region Collapse / Expand Hub
+
+        public void CollapseBar()
+        {
+            _openPopoverMode = "";
+            if (bdrDevicePopover != null) bdrDevicePopover.Visibility = Visibility.Collapsed;
+            if (bdrHardwareWarning != null) bdrHardwareWarning.Visibility = Visibility.Collapsed;
+            _isPipVisible = false;
+            if (bdrPipMonitor != null) bdrPipMonitor.Visibility = Visibility.Collapsed;
+            UpdatePipButtonVisual();
+
+            pnlExpanded.Visibility = Visibility.Collapsed;
+            pnlCollapsed.Visibility = Visibility.Visible;
+            pnlCollapsed.Opacity = 0.92;
+            UpdateLayout();
+
+            if (_orbAnchorLeft >= 0 && _orbAnchorTop >= 0)
+            {
+                Left = _orbAnchorLeft;
+                Top = _orbAnchorTop;
                 EnsureWithinScreenBounds();
             }
+
+            _idleOrbDimTimer?.Stop();
+            _idleOrbDimTimer?.Start();
         }
 
         public void ExpandBar()
         {
+            if (pnlCollapsed.Visibility == Visibility.Visible)
+            {
+                _orbAnchorLeft = Left;
+                _orbAnchorTop = Top;
+            }
+
+            SyncMediaControlsState();
+            SyncBroadcastVisualState();
+            SyncRecorderVisualState();
+
             pnlCollapsed.Visibility = Visibility.Collapsed;
             pnlExpanded.Visibility = Visibility.Visible;
             UpdateLayout();
-            EnsureWithinScreenBounds();
+
+            var workArea = SystemParameters.WorkArea;
+            double hubW = ActualWidth > 0 ? ActualWidth : 412;
+            double hubH = ActualHeight > 0 ? ActualHeight : 330;
+
+            double anchorX = _orbAnchorLeft >= 0 ? _orbAnchorLeft : Left;
+            double anchorY = _orbAnchorTop >= 0 ? _orbAnchorTop : Top;
+
+            // Mở rộng thông minh: nếu cục tròn ở nửa phải màn hình thì bung sang trái, nửa trái thì bung sang phải
+            double targetLeft = (anchorX > workArea.Left + workArea.Width * 0.5)
+                ? (anchorX + 74 - hubW)
+                : anchorX;
+
+            Left = Math.Max(workArea.Left + 8, Math.Min(targetLeft, workArea.Right - hubW - 8));
+            Top = Math.Max(workArea.Top + 8, Math.Min(anchorY, workArea.Bottom - hubH - 8));
+
+            Activate();
         }
 
         private void OnCollapseClick(object sender, MouseButtonEventArgs e)
         {
+            e.Handled = true;
             CollapseBar();
-            Log.Debug("FloatingModeBar collapsed");
         }
 
         private void btnCollapseBar_PreviewTouchDown(object? sender, TouchEventArgs e)
         {
+            e.Handled = true;
             CollapseBar();
-            e.Handled = true;
-            Log.Debug("FloatingModeBar collapsed via touch");
-        }
-
-        private void btnExpandModeBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            ExpandBar();
-            Log.Debug("FloatingModeBar expanded instantly");
-        }
-
-        private void btnExpandModeBar_PreviewTouchDown(object? sender, TouchEventArgs e)
-        {
-            ExpandBar();
-            e.Handled = true;
-            Log.Debug("FloatingModeBar expanded instantly via touch");
         }
 
         #endregion
@@ -324,32 +511,894 @@ namespace QASmartClass.Shared
 
         private async void OnClassClick(object sender, MouseButtonEventArgs e)
         {
-            if (_modeService.IsTransitioning) return;
+            e.Handled = true;
+            await SwitchToClassModeAsync();
+        }
 
-            if (_roleService?.IsSmartTouchOnly == true || _roleService?.CurrentRole == UserRole.Guest)
-            {
-                Log.Debug("SmartTouchOnly: blocked Smart Class switch");
-                return;
-            }
+        private async void OnClassTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            await SwitchToClassModeAsync();
+        }
+
+        private async System.Threading.Tasks.Task SwitchToClassModeAsync()
+        {
+            if (_modeService.IsTransitioning) return;
+            if (_roleService?.IsSmartTouchOnly == true || _roleService?.CurrentRole == UserRole.Guest) return;
             ApplyPressedFeedback(btnClass);
+            CollapseBar();
             await _modeService.GoToClassAsync();
         }
 
         private async void OnScreenClick(object sender, MouseButtonEventArgs e)
         {
+            e.Handled = true;
+            await SwitchToScreenModeAsync();
+        }
+
+        private async void OnScreenTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            await SwitchToScreenModeAsync();
+        }
+
+        private async System.Threading.Tasks.Task SwitchToScreenModeAsync()
+        {
             if (_modeService.IsTransitioning) return;
             ApplyPressedFeedback(btnScreen);
+            CollapseBar();
             await _modeService.GoToScreenAsync();
         }
 
         private async void OnDesktopClick(object sender, MouseButtonEventArgs e)
         {
+            e.Handled = true;
+            await SwitchToDesktopModeAsync();
+        }
+
+        private async void OnDesktopTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            await SwitchToDesktopModeAsync();
+        }
+
+        private async System.Threading.Tasks.Task SwitchToDesktopModeAsync()
+        {
             if (_modeService.IsTransitioning) return;
             ApplyPressedFeedback(btnDesktop);
+            CollapseBar();
             await _modeService.GoToDesktopAsync();
         }
 
-        private static void ApplyPressedFeedback(System.Windows.Controls.Border button)
+        private void OnModeChanged(object? sender, ModeChangedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                UpdateUI(e.NewMode);
+                // Luôn giữ giao diện ở trạng thái 1 Cục Tròn EasyTouch gọn gàng khi chuyển giữa SMART CLASS / SMART TOUCH / DESKTOP
+                CollapseBar();
+            });
+        }
+
+        private void UpdateUI(AppMode mode)
+        {
+            var inactiveColor = Brushes.Transparent;
+            var classColor = new SolidColorBrush(Color.FromRgb(0x25, 0x63, 0xEB));
+            var screenColor = new SolidColorBrush(Color.FromRgb(0x4F, 0x46, 0xE5));
+            var desktopColor = new SolidColorBrush(Color.FromRgb(0x0E, 0xA5, 0xE9));
+
+            btnClass.Background = mode == AppMode.SmartClass ? classColor : inactiveColor;
+            btnScreen.Background = mode == AppMode.SmartScreen ? screenColor : inactiveColor;
+            btnDesktop.Background = mode == AppMode.Desktop ? desktopColor : inactiveColor;
+
+            SetModeCardTextColor(btnClass, mode == AppMode.SmartClass);
+            SetModeCardTextColor(btnScreen, mode == AppMode.SmartScreen);
+            SetModeCardTextColor(btnDesktop, mode == AppMode.Desktop);
+
+            if (!_isBroadcasting)
+            {
+                txtHubStatusTitle.Text = mode switch
+                {
+                    AppMode.SmartClass => "SMART CLASS",
+                    AppMode.SmartScreen => "SMART TOUCH",
+                    _ => "DESKTOP"
+                };
+                txtHubStatusTitle.Foreground = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD));
+                int online = ClassroomAppContext.Network?.ConnectedCount ?? 0;
+                txtHubSubStatus.Text = online > 0 ? $"👥 {online} máy kết nối" : "Sẵn sàng";
+                dotHubLive.Fill = new SolidColorBrush(Color.FromRgb(0x3B, 0x82, 0xF6));
+            }
+
+            UpdateOrbAppearance();
+        }
+
+        private static void SetModeCardTextColor(Border border, bool isActive)
+        {
+            if (border.Child is StackPanel sp && sp.Children.Count >= 2)
+            {
+                if (sp.Children[0] is TextBlock titleTb)
+                    titleTb.Foreground = isActive ? Brushes.White : new SolidColorBrush(Color.FromRgb(0xE2, 0xE8, 0xF0));
+                if (sp.Children[1] is TextBlock subTb)
+                    subTb.Foreground = isActive
+                        ? new SolidColorBrush(Color.FromRgb(0xDB, 0xEA, 0xFE))
+                        : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
+            }
+        }
+
+        private void UpdateOrbAppearance()
+        {
+            if (pnlCollapsed == null || dotOrbStatus == null) return;
+
+            bool micOn = LiveBroadcastMediaService.Instance.HasMicrophoneHardware && LiveBroadcastMediaService.Instance.IsMicrophoneEnabled;
+            if (_isBroadcasting || _isRecording)
+            {
+                if (_isBroadcastPaused)
+                {
+                    pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B));
+                    dotOrbStatus.Fill = new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B));
+                }
+                else
+                {
+                    pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0xEF, 0x44, 0x44));
+                    dotOrbStatus.Fill = new SolidColorBrush(Color.FromRgb(0xEF, 0x44, 0x44));
+                }
+            }
+            else if (_isClassScreenLocked)
+            {
+                pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B));
+                dotOrbStatus.Fill = new SolidColorBrush(Color.FromRgb(0xF5, 0x9E, 0x0B));
+            }
+            else if (micOn)
+            {
+                pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromRgb(0x34, 0xD3, 0x99));
+                dotOrbStatus.Fill = new SolidColorBrush(Color.FromRgb(0x22, 0xC5, 0x5E));
+            }
+            else
+            {
+                Color modeDot = _modeService.CurrentMode switch
+                {
+                    AppMode.SmartClass => Color.FromRgb(0x3B, 0x82, 0xF6),
+                    AppMode.SmartScreen => Color.FromRgb(0x81, 0x8C, 0xF8),
+                    _ => Color.FromRgb(0x38, 0xBD, 0xF8)
+                };
+                pnlCollapsed.BorderBrush = new SolidColorBrush(Color.FromArgb(0x99, 0x93, 0xC5, 0xFD));
+                dotOrbStatus.Fill = new SolidColorBrush(modeDot);
+            }
+        }
+
+        #endregion
+
+        #region Media (Mic • Âm thanh • Camera) & Class Lock Integration
+
+        private void OnMicToggleClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            ToggleMicrophoneLive();
+        }
+
+        private void OnMicToggleTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            ToggleMicrophoneLive();
+        }
+
+        private void ToggleMicrophoneLive()
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                app.EnsureClassroomBroadcastEngineReady();
+                var svc = LiveBroadcastMediaService.Instance;
+                bool nextState = !svc.IsMicrophoneEnabled;
+                svc.SetMicrophoneEnabled(nextState);
+
+                var net = ClassroomAppContext.Network ?? app.NetworkService;
+                if (net != null && net.IsBroadcasting)
+                {
+                    string flag = nextState ? "1" : "0";
+                    _ = net.SendCommandAsync($"CMD|VOICE_BROADCAST|{flag}");
+                }
+                SyncMediaControlsState();
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[EasyTouch] ToggleMicrophoneLive error: {Err}", ex.Message);
+            }
+        }
+
+        private void OnSysAudioToggleClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            ToggleSystemAudioLive();
+        }
+
+        private void OnSysAudioToggleTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            ToggleSystemAudioLive();
+        }
+
+        private void ToggleSystemAudioLive()
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                app.EnsureClassroomBroadcastEngineReady();
+                var svc = LiveBroadcastMediaService.Instance;
+                svc.SetSystemAudioEnabled(!svc.IsSystemAudioEnabled);
+                SyncMediaControlsState();
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[EasyTouch] ToggleSystemAudioLive error: {Err}", ex.Message);
+            }
+        }
+
+        private async void OnCamToggleClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            await ToggleCameraLiveAsync();
+        }
+
+        private async void OnCamToggleTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            await ToggleCameraLiveAsync();
+        }
+
+        private async System.Threading.Tasks.Task ToggleCameraLiveAsync()
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                app.EnsureClassroomBroadcastEngineReady();
+                var svc = LiveBroadcastMediaService.Instance;
+                await svc.SetCameraEnabledAsync(!svc.IsCameraEnabled);
+                SyncMediaControlsState();
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[EasyTouch] ToggleCameraLiveAsync error: {Err}", ex.Message);
+            }
+        }
+
+        private void OnAudioPopoverClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            ToggleDevicePopover("AUDIO");
+        }
+
+        private void OnAudioPopoverTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            ToggleDevicePopover("AUDIO");
+        }
+
+        private void OnCamPopoverClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            ToggleDevicePopover("CAMERA");
+        }
+
+        private void OnCamPopoverTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            ToggleDevicePopover("CAMERA");
+        }
+
+        private void ToggleDevicePopover(string mode)
+        {
+            if (string.IsNullOrEmpty(mode) || _openPopoverMode == mode)
+            {
+                _openPopoverMode = "";
+                bdrDevicePopover.Visibility = Visibility.Collapsed;
+                bdrHardwareWarning.Visibility = Visibility.Collapsed;
+                EnsureWithinScreenBounds();
+                return;
+            }
+            ShowDevicePopoverSection(mode);
+        }
+
+        private void ShowDevicePopoverSection(string mode)
+        {
+            _openPopoverMode = mode;
+            bdrDevicePopover.Visibility = Visibility.Visible;
+            pnlAudioSettings.Visibility = mode == "AUDIO" ? Visibility.Visible : Visibility.Collapsed;
+            pnlCameraSettings.Visibility = mode == "CAMERA" ? Visibility.Visible : Visibility.Collapsed;
+            btnTabAudio.Background = new SolidColorBrush(mode == "AUDIO" ? Color.FromRgb(0x25, 0x63, 0xEB) : Color.FromRgb(0x2A, 0x32, 0x41));
+            btnTabCamera.Background = new SolidColorBrush(mode == "CAMERA" ? Color.FromRgb(0x25, 0x63, 0xEB) : Color.FromRgb(0x2A, 0x32, 0x41));
+            SyncMediaControlsState();
+            EnsureWithinScreenBounds();
+        }
+
+        private void OnSwitchPopoverAudioTab(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            ShowDevicePopoverSection("AUDIO");
+        }
+
+        private void OnSwitchPopoverCameraTab(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            ShowDevicePopoverSection("CAMERA");
+        }
+
+        private void OnCloseDevicePopover(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            ToggleDevicePopover("");
+        }
+
+        private async void OnRescanHardwareClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            LiveBroadcastMediaService.Instance.RefreshAudioHardwareCatalog();
+            await LiveBroadcastMediaService.Instance.RefreshCameraHardwareCatalogAsync();
+            SyncMediaControlsState();
+        }
+
+        private void CmbMicrophone_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressDeviceSelectionEvent) return;
+            if (cmbMicrophone.SelectedItem is AudioEndpointOption opt)
+            {
+                LiveBroadcastMediaService.Instance.SelectMicrophone(opt.DeviceId);
+            }
+        }
+
+        private void ChkPopoverSystemAudio_Click(object sender, RoutedEventArgs e)
+        {
+            if (_suppressDeviceSelectionEvent) return;
+            LiveBroadcastMediaService.Instance.SetSystemAudioEnabled(chkPopoverSystemAudio.IsChecked == true);
+            SyncMediaControlsState();
+        }
+
+        private void CmbSystemOutput_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressDeviceSelectionEvent) return;
+            if (cmbSystemOutput.SelectedItem is AudioEndpointOption opt)
+            {
+                LiveBroadcastMediaService.Instance.SelectSystemOutput(opt.DeviceId);
+            }
+        }
+
+        private async void CmbCamera_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressDeviceSelectionEvent) return;
+            if (cmbCamera.SelectedItem is CameraEndpointOption cam)
+            {
+                await LiveBroadcastMediaService.Instance.SelectCameraAsync(cam.DeviceId);
+            }
+        }
+
+        private void CmbCamShape_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressDeviceSelectionEvent || cmbCamShape == null) return;
+            LiveBroadcastMediaService.Instance.CameraShape = cmbCamShape.SelectedIndex == 1
+                ? MeetCameraShape.SmartTouchCircle
+                : MeetCameraShape.GoogleMeetRect;
+        }
+
+        private void CmbCamCorner_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressDeviceSelectionEvent || cmbCamCorner == null) return;
+            LiveBroadcastMediaService.Instance.CameraCorner = cmbCamCorner.SelectedIndex switch
+            {
+                1 => MeetCameraCorner.BottomLeft,
+                2 => MeetCameraCorner.TopRight,
+                _ => MeetCameraCorner.BottomRight
+            };
+        }
+
+        private void ChkCamMirror_Click(object sender, RoutedEventArgs e)
+        {
+            if (_suppressDeviceSelectionEvent) return;
+            LiveBroadcastMediaService.Instance.IsCameraMirrored = chkCamMirror.IsChecked == true;
+        }
+
+        private void ShowHardwareWarning(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message)) return;
+            txtHardwareWarning.Text = "⚠️ " + message;
+            bdrHardwareWarning.Visibility = Visibility.Visible;
+            if (pnlExpanded.Visibility == Visibility.Visible && bdrDevicePopover.Visibility != Visibility.Visible)
+            {
+                ShowDevicePopoverSection("AUDIO");
+            }
+        }
+
+        private void SyncMediaControlsState()
+        {
+            _suppressDeviceSelectionEvent = true;
+            try
+            {
+                var svc = LiveBroadcastMediaService.Instance;
+
+                // 1. Micro
+                bool micOn = svc.HasMicrophoneHardware && svc.IsMicrophoneEnabled;
+                btnVoice.IsEnabled = svc.HasMicrophoneHardware;
+                bdrMicPill.Background = new SolidColorBrush(!svc.HasMicrophoneHardware
+                    ? Color.FromRgb(0x33, 0x41, 0x55)
+                    : (micOn ? Color.FromRgb(0x05, 0x96, 0x69) : Color.FromRgb(0x7F, 0x1D, 0x1D)));
+                txtVoice.Text = !svc.HasMicrophoneHardware
+                    ? "🚫 Không Mic"
+                    : (micOn ? "🎙️ Mic: BẬT" : "🔇 Tắt mic");
+
+                // 2. Âm thanh (Hệ thống)
+                bool sysOn = svc.HasSystemAudioHardware && svc.IsSystemAudioEnabled;
+                bdrSysAudioPill.IsEnabled = svc.HasSystemAudioHardware;
+                bdrSysAudioPill.Background = new SolidColorBrush(!svc.HasSystemAudioHardware
+                    ? Color.FromRgb(0x33, 0x41, 0x55)
+                    : (sysOn ? Color.FromRgb(0x1D, 0x4E, 0xD8) : Color.FromRgb(0x7F, 0x1D, 0x1D)));
+                txtSysAudio.Text = !svc.HasSystemAudioHardware
+                    ? "🔇 Không loa"
+                    : (sysOn ? "🔊 Âm thanh" : "🔈 Tắt âm thanh");
+
+                // 3. Camera
+                bool camOn = svc.HasCameraHardware && svc.IsCameraEnabled;
+                btnCamToggle.IsEnabled = svc.HasCameraHardware || svc.IsScanningCameras;
+                bdrCamPill.Background = new SolidColorBrush(!svc.HasCameraHardware && !svc.IsScanningCameras
+                    ? Color.FromRgb(0x33, 0x41, 0x55)
+                    : (camOn ? Color.FromRgb(0x05, 0x96, 0x69) : Color.FromRgb(0x2A, 0x32, 0x41)));
+                txtCamState.Text = svc.IsScanningCameras && !svc.HasCameraHardware
+                    ? "📷 Đang dò..."
+                    : (!svc.HasCameraHardware ? "🚫 Không Cam" : (camOn ? "📷 Cam: BẬT" : "📷 Tắt cam"));
+
+                // 4. Đồng bộ danh sách thiết bị trong Popover
+                cmbMicrophone.ItemsSource = svc.AvailableMicrophones;
+                cmbMicrophone.IsEnabled = svc.HasMicrophoneHardware;
+                if (svc.HasMicrophoneHardware)
+                {
+                    cmbMicrophone.SelectedItem = svc.AvailableMicrophones.FirstOrDefault(m => m.DeviceId == svc.SelectedMicrophoneId)
+                                              ?? svc.AvailableMicrophones.FirstOrDefault();
+                }
+
+                chkPopoverSystemAudio.IsEnabled = svc.HasSystemAudioHardware;
+                chkPopoverSystemAudio.IsChecked = sysOn;
+                cmbSystemOutput.ItemsSource = svc.AvailableSystemOutputs;
+                cmbSystemOutput.IsEnabled = svc.HasSystemAudioHardware;
+                if (svc.HasSystemAudioHardware)
+                {
+                    cmbSystemOutput.SelectedItem = svc.AvailableSystemOutputs.FirstOrDefault(o => o.DeviceId == svc.SelectedSystemOutputId)
+                                                ?? svc.AvailableSystemOutputs.FirstOrDefault();
+                }
+
+                cmbCamera.ItemsSource = svc.AvailableCameras;
+                cmbCamera.IsEnabled = svc.HasCameraHardware;
+                if (svc.HasCameraHardware)
+                {
+                    cmbCamera.SelectedItem = svc.AvailableCameras.FirstOrDefault(c => c.DeviceId == svc.SelectedCameraId)
+                                          ?? svc.AvailableCameras.FirstOrDefault();
+                }
+
+                cmbCamShape.SelectedIndex = svc.CameraShape == MeetCameraShape.SmartTouchCircle ? 1 : 0;
+                cmbCamCorner.SelectedIndex = svc.CameraCorner switch
+                {
+                    MeetCameraCorner.BottomLeft => 1,
+                    MeetCameraCorner.TopRight => 2,
+                    _ => 0
+                };
+                chkCamMirror.IsChecked = svc.IsCameraMirrored;
+                txtCamPreviewHint.Text = !svc.HasCameraHardware
+                    ? "⚠️ Không tìm thấy thiết bị Camera trên máy Giáo viên."
+                    : (camOn ? "Đang khởi tạo hình ảnh Camera..." : "Camera đang tắt — Bấm nút 📷 Cam để bật");
+
+                UpdateOrbAppearance();
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("[EasyTouch] SyncMediaControlsState error: {Err}", ex.Message);
+            }
+            finally
+            {
+                _suppressDeviceSelectionEvent = false;
+            }
+        }
+
+        private void OnMediaMeterTimerTick(object? sender, EventArgs e)
+        {
+            if (pnlExpanded.Visibility != Visibility.Visible) return;
+
+            var svc = LiveBroadcastMediaService.Instance;
+            double micPct = svc.IsMicrophoneEnabled ? svc.CurrentMicLevelPercent : 0;
+            barMic1.Height = Math.Clamp(3 + micPct * 0.09, 3, 13);
+            barMic2.Height = Math.Clamp(3 + micPct * 0.12, 3, 14);
+            barMic3.Height = Math.Clamp(3 + micPct * 0.08, 3, 12);
+
+            double sysPct = svc.IsSystemAudioEnabled ? svc.CurrentSystemLevelPercent : 0;
+            barSys1.Height = Math.Clamp(3 + sysPct * 0.11, 3, 13);
+            barSys2.Height = Math.Clamp(3 + sysPct * 0.08, 3, 12);
+
+            if (bdrDevicePopover.Visibility == Visibility.Visible)
+            {
+                double maxW = 366;
+                bdrMicMeterFill.Width = Math.Clamp(maxW * (micPct / 100.0), 0, maxW);
+                bdrSysMeterFill.Width = Math.Clamp(maxW * (sysPct / 100.0), 0, maxW);
+
+                if (pnlCameraSettings.Visibility == Visibility.Visible)
+                {
+                    var camBmp = svc.LatestCameraPreviewBitmap;
+                    if (svc.IsCameraEnabled && camBmp != null)
+                    {
+                        imgSelfCamPreview.Source = camBmp;
+                        imgSelfCamPreview.Visibility = Visibility.Visible;
+                        txtCamPreviewHint.Visibility = Visibility.Collapsed;
+                    }
+                    else
+                    {
+                        imgSelfCamPreview.Source = null;
+                        imgSelfCamPreview.Visibility = Visibility.Collapsed;
+                        txtCamPreviewHint.Visibility = Visibility.Visible;
+                    }
+                }
+            }
+        }
+
+        // ─── KHÓA / MỞ KHÓA MÀN HÌNH HỌC SINH TOÀN LỚP ───
+        private void OnClassLockToggleClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            ToggleClassScreenLock();
+        }
+
+        private void OnClassLockToggleTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            ToggleClassScreenLock();
+        }
+
+        private void ToggleClassScreenLock()
+        {
+            try
+            {
+                var app = (QASmartTouch.App)Application.Current;
+                app.EnsureClassroomBroadcastEngineReady();
+
+                SetClassScreenLockState(!_isClassScreenLocked);
+                string cmd = _isClassScreenLocked ? "CMD|LOCK_SCREEN" : "CMD|UNLOCK_SCREEN";
+
+                var net = ClassroomAppContext.Network ?? app.NetworkService;
+                if (net != null && net.IsBroadcasting)
+                {
+                    _ = net.SendCommandAsync(cmd);
+                }
+                else
+                {
+                    ClassroomAppContext.DispatchCommand(cmd);
+                }
+
+                Log.Information("[EasyTouch] Class screen lock toggled: {Locked} ({Cmd})", _isClassScreenLocked, cmd);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning("[EasyTouch] ToggleClassScreenLock error: {Err}", ex.Message);
+            }
+        }
+
+        public void SetClassScreenLockState(bool isLocked)
+        {
+            _isClassScreenLocked = isLocked;
+            if (btnClassLockToggle != null && txtClassLockState != null)
+            {
+                if (isLocked)
+                {
+                    btnClassLockToggle.Background = new SolidColorBrush(Color.FromRgb(0xD9, 0x77, 0x06));
+                    txtClassLockState.Text = "🔓 Mở khóa HS";
+                    txtClassLockState.Foreground = Brushes.White;
+                    btnClassLockToggle.ToolTip = "Đang KHÓA màn hình máy Học sinh. Nhấn để MỞ KHÓA cho cả lớp.";
+                }
+                else
+                {
+                    btnClassLockToggle.Background = new SolidColorBrush(Color.FromRgb(0x2A, 0x32, 0x41));
+                    txtClassLockState.Text = "🔒 Khóa máy HS";
+                    txtClassLockState.Foreground = new SolidColorBrush(Color.FromRgb(0xFD, 0xE6, 0x8A));
+                    btnClassLockToggle.ToolTip = "Khóa màn hình toàn bộ máy Học sinh để tập trung nghe giảng.";
+                }
+            }
+            UpdateOrbAppearance();
+        }
+
+        #endregion
+
+        #region Broadcast Controls & Bridge Methods (Synced with BroadcastPage)
+
+        public void SetAllowStudentExitState(bool allowExit)
+        {
+            _suppressAllowExitEvent = true;
+            try
+            {
+                _allowStudentExit = allowExit;
+                if (btnAllowStudentExit != null && txtAllowStudentExit != null)
+                {
+                    if (allowExit)
+                    {
+                        btnAllowStudentExit.Background = new SolidColorBrush(Color.FromRgb(0x06, 0x5F, 0x46));
+                        btnAllowStudentExit.BorderBrush = new SolidColorBrush(Color.FromRgb(0x10, 0xB9, 0x81));
+                        txtAllowStudentExit.Text = "🔓 Đang cho phép HS bấm ra ngoài";
+                        txtAllowStudentExit.Foreground = new SolidColorBrush(Color.FromRgb(0xA7, 0xF3, 0xD0));
+                    }
+                    else
+                    {
+                        btnAllowStudentExit.Background = new SolidColorBrush(Color.FromRgb(0x3B, 0x1D, 0x24));
+                        btnAllowStudentExit.BorderBrush = new SolidColorBrush(Color.FromRgb(0xEF, 0x44, 0x44));
+                        txtAllowStudentExit.Text = "🔒 Đang khóa toàn màn hình HS (Chạm để mở)";
+                        txtAllowStudentExit.Foreground = new SolidColorBrush(Color.FromRgb(0xFC, 0xA5, 0xA5));
+                    }
+                }
+            }
+            finally
+            {
+                _suppressAllowExitEvent = false;
+            }
+        }
+
+        public void SetHideClassroomShellCheck(bool hideShell)
+        {
+            _suppressHideShellEvent = true;
+            try
+            {
+                if (chkHideClassroomShell != null)
+                {
+                    chkHideClassroomShell.IsChecked = hideShell;
+                }
+            }
+            finally
+            {
+                _suppressHideShellEvent = false;
+            }
+        }
+
+        public void UpdateLiveFrame(ImageSource? frame, string sourceDescription, string resolutionAndFps)
+        {
+            if (frame != null && imgLivePip != null)
+            {
+                imgLivePip.Source = frame;
+            }
+            if (txtPipSubtitle != null)
+            {
+                txtPipSubtitle.Text = $"Nguồn: {sourceDescription} ({resolutionAndFps})";
+            }
+        }
+
+        public void UpdateStatus(bool isPaused, string timerText, int recipientCount, string sourceDescription)
+        {
+            _isBroadcastPaused = isPaused;
+
+            if (_isBroadcasting)
+            {
+                txtHubStatusTitle.Text = isPaused
+                    ? "⏸ ĐÓNG BĂNG"
+                    : (_isLockedSource ? "📌 GIỮ CỐ ĐỊNH" : "🔴 ĐANG CHIẾU");
+                txtHubStatusTitle.Foreground = new SolidColorBrush(isPaused
+                    ? Color.FromRgb(0xFD, 0xE6, 0x8A)
+                    : Color.FromRgb(0xFC, 0xA5, 0xA5));
+                txtHubSubStatus.Text = $"{timerText} • 👥 {recipientCount} • {sourceDescription}";
+                dotHubLive.Fill = new SolidColorBrush(isPaused
+                    ? Color.FromRgb(0xF5, 0x9E, 0x0B)
+                    : Color.FromRgb(0xEF, 0x44, 0x44));
+            }
+
+            if (btnLivePause != null && txtLivePause != null)
+            {
+                btnLivePause.Background = new SolidColorBrush(isPaused
+                    ? Color.FromRgb(0x05, 0x96, 0x69)
+                    : Color.FromRgb(0x2A, 0x32, 0x41));
+                txtLivePause.Text = isPaused ? "▶️ Tiếp tục" : "⏸️ Đóng băng";
+            }
+
+            if (txtPipBadge != null)
+            {
+                txtPipBadge.Text = isPaused
+                    ? "⏸️ ĐÃ ĐÓNG BĂNG TRÊN MÁY HS"
+                    : (_isLockedSource ? "📌 CỐ ĐỊNH TRÊN MÁY HS" : "🟢 TRỰC TIẾP TRÊN MÁY HS");
+                txtPipBadge.Foreground = new SolidColorBrush(isPaused
+                    ? Color.FromRgb(0xFD, 0xE6, 0x8A)
+                    : Color.FromRgb(0x86, 0xEF, 0xAC));
+            }
+
+            UpdateOrbAppearance();
+        }
+
+        public void UpdateSourceLockIndicator(bool isLockedSource, bool canSwitchToCurrentScreen, string switchTargetLabel)
+        {
+            _isLockedSource = isLockedSource;
+            if (btnShareActiveInstead == null || txtShareActiveInstead == null) return;
+
+            if (isLockedSource && canSwitchToCurrentScreen && !string.IsNullOrWhiteSpace(switchTargetLabel))
+            {
+                string shortLabel = switchTargetLabel.Length > 24
+                    ? switchTargetLabel.Substring(0, 24) + "…"
+                    : switchTargetLabel;
+                txtShareActiveInstead.Text = $"🔄 Chiếu '{shortLabel}' thay thế";
+                btnShareActiveInstead.ToolTip = $"Đang giữ cố định nguồn cũ. Bấm để chuyển sang chiếu: {switchTargetLabel}";
+                btnShareActiveInstead.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                btnShareActiveInstead.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        public void ShowLivePipMonitor()
+        {
+            ExpandBar();
+            _isPipVisible = true;
+            bdrPipMonitor.Visibility = Visibility.Visible;
+            UpdatePipButtonVisual();
+            EnsureWithinScreenBounds();
+        }
+
+        private void UpdatePipButtonVisual()
+        {
+            if (btnLivePip != null && txtLivePip != null)
+            {
+                btnLivePip.Background = new SolidColorBrush(_isPipVisible
+                    ? Color.FromRgb(0x25, 0x63, 0xEB)
+                    : Color.FromRgb(0x2A, 0x32, 0x41));
+                txtLivePip.Text = _isPipVisible ? "👁️ Ẩn thử" : "👁️ Xem thử";
+            }
+        }
+
+        private void OnAllowStudentExitClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce() || _suppressAllowExitEvent) return;
+            SetAllowStudentExitState(!_allowStudentExit);
+            AllowStudentExitChanged?.Invoke(this, _allowStudentExit);
+        }
+
+        private void OnAllowStudentExitTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce() || _suppressAllowExitEvent) return;
+            SetAllowStudentExitState(!_allowStudentExit);
+            AllowStudentExitChanged?.Invoke(this, _allowStudentExit);
+        }
+
+        private void OnShareCurrentInsteadClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            ShareCurrentInsteadRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnShareCurrentInsteadTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            ShareCurrentInsteadRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnLiveChangeSourceClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            if (_isBroadcastBridgeBound) ChangeSourceRequested?.Invoke(this, EventArgs.Empty);
+            else DispatchBroadcastAction(QuickBroadcastAction.PickScreenOrWindow);
+        }
+
+        private void OnLiveChangeSourceTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            if (_isBroadcastBridgeBound) ChangeSourceRequested?.Invoke(this, EventArgs.Empty);
+            else DispatchBroadcastAction(QuickBroadcastAction.PickScreenOrWindow);
+        }
+
+        private void OnPickRegionQuickClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            CollapseBar();
+            if (_isBroadcasting && _isBroadcastBridgeBound) SelectRegionRequested?.Invoke(this, EventArgs.Empty);
+            else DispatchBroadcastAction(QuickBroadcastAction.PickRegion);
+        }
+
+        private void OnPickRegionQuickTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            CollapseBar();
+            if (_isBroadcasting && _isBroadcastBridgeBound) SelectRegionRequested?.Invoke(this, EventArgs.Empty);
+            else DispatchBroadcastAction(QuickBroadcastAction.PickRegion);
+        }
+
+        private void OnShareSmartTouchQuickClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            CollapseBar();
+            DispatchBroadcastAction(QuickBroadcastAction.ShareSmartTouchNow);
+        }
+
+        private void OnShareSmartTouchQuickTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            CollapseBar();
+            DispatchBroadcastAction(QuickBroadcastAction.ShareSmartTouchNow);
+        }
+
+        private void OnLivePauseClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            if (_isBroadcastBridgeBound) TogglePauseRequested?.Invoke(this, EventArgs.Empty);
+            else DispatchBroadcastAction(QuickBroadcastAction.TogglePause);
+        }
+
+        private void OnLivePauseTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            if (_isBroadcastBridgeBound) TogglePauseRequested?.Invoke(this, EventArgs.Empty);
+            else DispatchBroadcastAction(QuickBroadcastAction.TogglePause);
+        }
+
+        private void OnLivePipToggleClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            _isPipVisible = !_isPipVisible;
+            bdrPipMonitor.Visibility = _isPipVisible ? Visibility.Visible : Visibility.Collapsed;
+            UpdatePipButtonVisual();
+            EnsureWithinScreenBounds();
+        }
+
+        private void OnLivePipToggleTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            _isPipVisible = !_isPipVisible;
+            bdrPipMonitor.Visibility = _isPipVisible ? Visibility.Visible : Visibility.Collapsed;
+            UpdatePipButtonVisual();
+            EnsureWithinScreenBounds();
+        }
+
+        private void OnClosePipClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            _isPipVisible = false;
+            bdrPipMonitor.Visibility = Visibility.Collapsed;
+            UpdatePipButtonVisual();
+            EnsureWithinScreenBounds();
+        }
+
+        private void ChkHideClassroomShell_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_suppressHideShellEvent) return;
+            HideClassroomShellChanged?.Invoke(this, chkHideClassroomShell.IsChecked == true);
+        }
+
+        private void OnLiveStopBroadcastClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            if (_isBroadcastBridgeBound) StopRequested?.Invoke(this, EventArgs.Empty);
+            else ScreenShareController.Instance.RequestStop();
+            SyncBroadcastVisualState();
+        }
+
+        private void OnLiveStopBroadcastTouchDown(object? sender, TouchEventArgs e)
+        {
+            e.Handled = true;
+            if (!AcquireQuickActionDebounce()) return;
+            if (_isBroadcastBridgeBound) StopRequested?.Invoke(this, EventArgs.Empty);
+            else ScreenShareController.Instance.RequestStop();
+            SyncBroadcastVisualState();
+        }
+
+        #endregion
+
+        #region Quick Utility Actions & Broadcast Context Menu
+
+        private static void ApplyPressedFeedback(Border button)
         {
             try
             {
@@ -357,37 +1406,15 @@ namespace QASmartClass.Shared
                 button.RenderTransform = scaleTransform;
                 button.RenderTransformOrigin = new Point(0.5, 0.5);
 
-                var scaleXAnim = new System.Windows.Media.Animation.DoubleAnimation(
-                    1.0, 0.95, TimeSpan.FromMilliseconds(50))
+                var anim = new System.Windows.Media.Animation.DoubleAnimation(1.0, 0.95, TimeSpan.FromMilliseconds(55))
                 {
                     AutoReverse = true
                 };
-                var scaleYAnim = new System.Windows.Media.Animation.DoubleAnimation(
-                    1.0, 0.95, TimeSpan.FromMilliseconds(50))
-                {
-                    AutoReverse = true
-                };
-                var opacityAnim = new System.Windows.Media.Animation.DoubleAnimation(
-                    1.0, 0.7, TimeSpan.FromMilliseconds(50))
-                {
-                    AutoReverse = true
-                };
-
-                scaleTransform.BeginAnimation(
-                    ScaleTransform.ScaleXProperty, scaleXAnim);
-                scaleTransform.BeginAnimation(
-                    ScaleTransform.ScaleYProperty, scaleYAnim);
-                button.BeginAnimation(OpacityProperty, opacityAnim);
+                scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, anim);
+                scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, anim);
             }
-            catch (Exception ex)
-            {
-                Log.Debug("ApplyPressedFeedback error: {Err}", ex.Message);
-            }
+            catch { }
         }
-
-        #endregion
-
-        #region Quick Action Handlers
 
         private bool AcquireQuickActionDebounce(int debounceMs = 180)
         {
@@ -428,40 +1455,30 @@ namespace QASmartClass.Shared
                 bool isLive = ScreenShareController.Instance.IsLive;
                 if (_isBroadcasting != isLive)
                 {
-                    ApplyCaptureExclusionForLiveState(isLive);
-                    if (isLive) this.Topmost = true;
+                    ApplyCaptureExclusionForLiveState(true);
+                    if (isLive) Topmost = true;
                 }
                 _isBroadcasting = isLive;
 
-                if (bdrBroadcastGroup != null && txtBroadcast != null && txtBroadcastCaret != null && sepBroadcastSplit != null)
+                if (pnlShareIdle != null && pnlShareLive != null)
                 {
-                    if (isLive)
-                    {
-                        bdrBroadcastGroup.Background = new SolidColorBrush(Color.FromRgb(220, 38, 38)); // #DC2626
-                        bdrBroadcastGroup.BorderBrush = new SolidColorBrush(Color.FromRgb(185, 28, 28));
-                        txtBroadcast.Text = "🔴 LIVE";
-                        txtBroadcast.FontSize = 10.5;
-                        txtBroadcast.Foreground = Brushes.White;
-                        txtBroadcastCaret.Foreground = Brushes.White;
-                        sepBroadcastSplit.Background = new SolidColorBrush(Color.FromArgb(120, 255, 255, 255));
-                        btnBroadcast.ToolTip = "Đang chia sẻ màn hình trực tiếp — Nhấn để điều khiển / đổi nguồn / dừng chiếu";
-                    }
-                    else
-                    {
-                        bdrBroadcastGroup.Background = new SolidColorBrush(Color.FromRgb(220, 227, 249)); // #DCE3F9
-                        bdrBroadcastGroup.BorderBrush = new SolidColorBrush(Color.FromRgb(159, 168, 218));
-                        txtBroadcast.Text = "📺";
-                        txtBroadcast.FontSize = 14;
-                        txtBroadcast.Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59));
-                        txtBroadcastCaret.Foreground = new SolidColorBrush(Color.FromRgb(51, 65, 85));
-                        sepBroadcastSplit.Background = new SolidColorBrush(Color.FromRgb(159, 168, 218));
-                        btnBroadcast.ToolTip = "Chia sẻ màn hình & Quảng bá bài giảng (Bấm 📺 chọn nhanh màn hình, bấm ▾ để mở đầy đủ chế độ)";
-                    }
+                    pnlShareIdle.Visibility = isLive ? Visibility.Collapsed : Visibility.Visible;
+                    pnlShareLive.Visibility = isLive ? Visibility.Visible : Visibility.Collapsed;
                 }
 
-                if (bdrMiniLiveBadge != null)
+                if (!isLive)
                 {
-                    bdrMiniLiveBadge.Visibility = isLive ? Visibility.Visible : Visibility.Collapsed;
+                    _isBroadcastPaused = false;
+                    _isPipVisible = false;
+                    if (bdrPipMonitor != null) bdrPipMonitor.Visibility = Visibility.Collapsed;
+                    UpdatePipButtonVisual();
+                    UpdateUI(_modeService.CurrentMode);
+                }
+
+                UpdateOrbAppearance();
+                if (pnlExpanded.Visibility == Visibility.Visible)
+                {
+                    EnsureWithinScreenBounds();
                 }
             }
             catch (Exception ex)
@@ -476,24 +1493,22 @@ namespace QASmartClass.Shared
             {
                 bool active = QASmartTouch.Services.ScreenRecorderService.Instance.IsSessionActive;
                 _isRecording = active;
-                if (btnRecord != null && txtRecord != null)
+                if (btnRecord != null && txtRecord != null && txtRecordLabel != null)
                 {
                     btnRecord.Background = active
-                        ? new SolidColorBrush(Color.FromRgb(211, 47, 47))
-                        : Brushes.Transparent;
-                    txtRecord.Foreground = active ? Brushes.White : Brushes.Black;
-                    txtRecord.Text = active ? "🔴" : "⏺️";
-                    btnRecord.ToolTip = active
-                        ? "Đang ghi hình bài giảng — Nhấn để mở thanh điều khiển ghi hình"
-                        : "Ghi hình bài giảng & hoạt động trình chiếu";
+                        ? new SolidColorBrush(Color.FromRgb(0xDC, 0x26, 0x26))
+                        : new SolidColorBrush(Color.FromArgb(0x22, 0xFF, 0xFF, 0xFF));
+                    txtRecord.Text = active ? "🔴" : "⏺";
+                    txtRecordLabel.Text = active ? "Đang ghi" : "Ghi hình";
                 }
+                UpdateOrbAppearance();
             }
             catch { }
         }
 
-        /// <summary>Hiển thị / Ẩn cửa sổ chính</summary>
         private void OnShowHideClick(object sender, MouseButtonEventArgs e)
         {
+            e.Handled = true;
             if (!AcquireQuickActionDebounce()) return;
             ExecuteShowHideToggle();
         }
@@ -511,16 +1526,12 @@ namespace QASmartClass.Shared
             {
                 ApplyPressedFeedback(btnShowHide);
                 var app = (QASmartTouch.App)Application.Current;
-                Window? targetWindow = null;
-
-                if (app.ModeService.CurrentMode == AppMode.SmartClass)
+                Window? targetWindow = app.ModeService.CurrentMode switch
                 {
-                    targetWindow = app._classroomShell;
-                }
-                else if (app.ModeService.CurrentMode == AppMode.SmartScreen)
-                {
-                    targetWindow = app._whiteboardShell;
-                }
+                    AppMode.SmartClass => app._classroomShell,
+                    AppMode.SmartScreen => app._whiteboardShell,
+                    _ => null
+                };
 
                 if (targetWindow == null)
                 {
@@ -537,84 +1548,33 @@ namespace QASmartClass.Shared
 
                 if (targetWindow != null)
                 {
-                    if (targetWindow.Visibility == Visibility.Visible)
+                    if (targetWindow.Visibility == Visibility.Visible && targetWindow.WindowState != WindowState.Minimized)
                     {
                         targetWindow.Hide();
                         txtShowHide.Text = "📲";
-                        btnShowHide.ToolTip = "Hiển thị cửa sổ chính";
-                        Log.Information("Main window {WindowName} hidden", targetWindow.GetType().Name);
+                        txtShowHideLabel.Text = "Mở cửa sổ";
                     }
                     else
                     {
+                        if (targetWindow.WindowState == WindowState.Minimized)
+                            targetWindow.WindowState = WindowState.Maximized;
                         targetWindow.Show();
                         targetWindow.Activate();
                         txtShowHide.Text = "🔲";
-                        btnShowHide.ToolTip = "Ẩn cửa sổ chính";
-                        Log.Information("Main window {WindowName} shown", targetWindow.GetType().Name);
+                        txtShowHideLabel.Text = "Ẩn/Hiện";
                     }
                 }
+                CollapseBar();
             }
-            catch (Exception ex) { Log.Warning("ShowHide error: {Err}", ex.Message); }
-        }
-
-        /// <summary>Bắt đầu / Ngừng phát giọng nói cho HS</summary>
-        private void OnVoiceClick(object sender, MouseButtonEventArgs e)
-        {
-            if (!AcquireQuickActionDebounce()) return;
-            _ = ToggleVoiceBroadcastAsync();
-        }
-
-        private void OnVoiceTouchDown(object? sender, TouchEventArgs e)
-        {
-            e.Handled = true;
-            if (!AcquireQuickActionDebounce()) return;
-            _ = ToggleVoiceBroadcastAsync();
-        }
-
-        private async System.Threading.Tasks.Task ToggleVoiceBroadcastAsync()
-        {
-            try
+            catch (Exception ex)
             {
-                ApplyPressedFeedback(btnVoice);
-                var app = (QASmartTouch.App)Application.Current;
-                if (!app.EnsureClassroomBroadcastEngineReady()) return;
-
-                _isVoiceBroadcasting = !_isVoiceBroadcasting;
-                var net = ClassroomAppContext.Network ?? app.NetworkService;
-
-                if (net != null && net.IsBroadcasting)
-                {
-                    string stateFlag = _isVoiceBroadcasting ? "1" : "0";
-                    await net.SendCommandAsync($"CMD|VOICE_BROADCAST|{stateFlag}");
-                    await net.SendCommandAsync($"VOICE_BROADCAST|enabled={_isVoiceBroadcasting}");
-                }
-
-                btnVoice.Background = _isVoiceBroadcasting
-                    ? new SolidColorBrush(Color.FromRgb(22, 163, 74))
-                    : Brushes.Transparent;
-                txtVoice.Foreground = _isVoiceBroadcasting ? Brushes.White : Brushes.Black;
-                btnVoice.ToolTip = _isVoiceBroadcasting ? "Đang phát giọng nói tới cả lớp — Nhấn để dừng" : "Bắt đầu phát giọng nói tới cả lớp";
-
-                try
-                {
-                    app.Database.EventLogs.Add(new Data.EventLog
-                    {
-                        EventType = _isVoiceBroadcasting ? "VOICE_ON" : "VOICE_OFF",
-                        Actor = "GV",
-                        Details = _isVoiceBroadcasting ? "Bắt đầu phát giọng nói" : "Dừng phát giọng nói",
-                        Timestamp = DateTime.Now
-                    });
-                    app.Database.SaveChanges();
-                }
-                catch { }
-                Log.Information("Voice broadcast: {State}", _isVoiceBroadcasting);
+                Log.Warning("ShowHide error: {Err}", ex.Message);
             }
-            catch (Exception ex) { Log.Warning("Voice broadcast error: {Err}", ex.Message); }
         }
 
-        /// <summary>Mở bút chú thích trên màn hình (chuyển sang SmartScreen)</summary>
         private void OnPenClick(object sender, MouseButtonEventArgs e)
         {
+            e.Handled = true;
             if (!AcquireQuickActionDebounce()) return;
             ExecutePenSwitch();
         }
@@ -631,6 +1591,7 @@ namespace QASmartClass.Shared
             try
             {
                 ApplyPressedFeedback(btnPen);
+                CollapseBar();
                 if (_modeService.CurrentMode != AppMode.SmartScreen)
                 {
                     _ = _modeService.GoToScreenAsync();
@@ -644,14 +1605,16 @@ namespace QASmartClass.Shared
                         app._whiteboardShell.Activate();
                     }
                 }
-                Log.Information("Pen annotation: switched/focused SmartScreen");
             }
-            catch (Exception ex) { Log.Warning("Pen click error: {Err}", ex.Message); }
+            catch (Exception ex)
+            {
+                Log.Warning("Pen click error: {Err}", ex.Message);
+            }
         }
 
-        /// <summary>Ghi hình bài giảng thực tế qua ScreenRecorderService</summary>
         private void OnRecordClick(object sender, MouseButtonEventArgs e)
         {
+            e.Handled = true;
             if (!AcquireQuickActionDebounce()) return;
             ExecuteRecordAction();
         }
@@ -668,6 +1631,7 @@ namespace QASmartClass.Shared
             try
             {
                 ApplyPressedFeedback(btnRecord);
+                CollapseBar();
                 var recorder = QASmartTouch.Services.ScreenRecorderService.Instance;
                 if (recorder.IsSessionActive)
                 {
@@ -703,71 +1667,38 @@ namespace QASmartClass.Shared
 
         private void OnBroadcastClick(object sender, MouseButtonEventArgs e)
         {
+            e.Handled = true;
             if (!AcquireQuickActionDebounce()) return;
-            HandlePrimaryBroadcastTrigger(bdrBroadcastGroup);
+            CollapseBar();
+            DispatchBroadcastAction(QuickBroadcastAction.PickScreenOrWindow);
         }
 
         private void OnBroadcastTouchDown(object? sender, TouchEventArgs e)
         {
             e.Handled = true;
             if (!AcquireQuickActionDebounce()) return;
-            HandlePrimaryBroadcastTrigger(bdrBroadcastGroup);
+            CollapseBar();
+            DispatchBroadcastAction(QuickBroadcastAction.PickScreenOrWindow);
         }
 
         private void OnBroadcastRightClick(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
-            OpenQuickBroadcastMenu(bdrBroadcastGroup);
+            OpenQuickBroadcastMenu(pnlCollapsed);
         }
 
         private void OnBroadcastMenuClick(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
             if (!AcquireQuickActionDebounce()) return;
-            ApplyPressedFeedback(bdrBroadcastGroup);
-            OpenQuickBroadcastMenu(bdrBroadcastGroup);
+            OpenQuickBroadcastMenu(sender as FrameworkElement ?? btnBroadcastMenu);
         }
 
         private void OnBroadcastMenuTouchDown(object? sender, TouchEventArgs e)
         {
             e.Handled = true;
             if (!AcquireQuickActionDebounce()) return;
-            ApplyPressedFeedback(bdrBroadcastGroup);
-            OpenQuickBroadcastMenu(bdrBroadcastGroup);
-        }
-
-        private void OnMiniLiveBadgeClick(object sender, MouseButtonEventArgs e)
-        {
-            e.Handled = true;
-            if (!AcquireQuickActionDebounce()) return;
-            OpenQuickBroadcastMenu(bdrMiniLiveBadge);
-        }
-
-        private void OnMiniLiveBadgeTouchDown(object? sender, TouchEventArgs e)
-        {
-            e.Handled = true;
-            if (!AcquireQuickActionDebounce()) return;
-            OpenQuickBroadcastMenu(bdrMiniLiveBadge);
-        }
-
-        private void HandlePrimaryBroadcastTrigger(FrameworkElement anchor)
-        {
-            try
-            {
-                ApplyPressedFeedback(anchor as Border ?? bdrBroadcastGroup);
-                if (ScreenShareController.Instance.IsLive)
-                {
-                    // Khi đang chiếu trực tiếp: mở Menu điều khiển nhanh để GV đổi nguồn / tạm dừng / dừng chiếu an toàn, không sợ bấm nhầm
-                    OpenQuickBroadcastMenu(anchor);
-                    return;
-                }
-
-                DispatchBroadcastAction(QuickBroadcastAction.PickScreenOrWindow);
-            }
-            catch (Exception ex)
-            {
-                Log.Warning("HandlePrimaryBroadcastTrigger error: {Err}", ex.Message);
-            }
+            OpenQuickBroadcastMenu(sender as FrameworkElement ?? btnBroadcastMenu);
         }
 
         private void DispatchBroadcastAction(QuickBroadcastAction action)
@@ -776,7 +1707,6 @@ namespace QASmartClass.Shared
             {
                 var app = (QASmartTouch.App)Application.Current;
                 if (!app.EnsureClassroomBroadcastEngineReady()) return;
-
                 ScreenShareController.Instance.RequestAction(action);
                 SyncBroadcastVisualState();
             }
@@ -799,158 +1729,53 @@ namespace QASmartClass.Shared
                 var menu = new ContextMenu
                 {
                     PlacementTarget = placementTarget,
-                    Placement = (_modeService.CurrentMode == AppMode.SmartScreen && Top < 120)
+                    Placement = Top < 180
                         ? System.Windows.Controls.Primitives.PlacementMode.Bottom
                         : System.Windows.Controls.Primitives.PlacementMode.Top,
-                    VerticalOffset = (_modeService.CurrentMode == AppMode.SmartScreen && Top < 120) ? 6 : -6,
                     Background = Brushes.White,
                     BorderBrush = new SolidColorBrush(Color.FromRgb(199, 210, 254)),
                     BorderThickness = new Thickness(1.5),
                     Padding = new Thickness(6),
-                    FontSize = 13.5
+                    FontSize = 13
                 };
 
-                var headerItem = new MenuItem
+                MenuItem BuildItem(string icon, string title, Action onClick, bool danger = false)
                 {
-                    IsEnabled = false,
-                    Header = new TextBlock
-                    {
-                        Text = isLive
-                            ? $"🔴 ĐANG CHIẾU TRỰC TIẾP  •  {onlineCount} máy HS kết nối"
-                            : $"📡 QUẢNG BÁ & CHIA SẺ MÀN HÌNH ({onlineCount} HS online)",
-                        FontWeight = FontWeights.Bold,
-                        FontSize = 12,
-                        Foreground = isLive
-                            ? new SolidColorBrush(Color.FromRgb(220, 38, 38))
-                            : new SolidColorBrush(Color.FromRgb(30, 64, 175)),
-                        Margin = new Thickness(2, 2, 2, 2)
-                    }
-                };
-                menu.Items.Add(headerItem);
-                menu.Items.Add(new Separator());
-
-                MenuItem BuildTouchItem(string icon, string title, string subtitle, Action onClick, bool danger = false, bool accent = false)
-                {
-                    var sp = new StackPanel { Margin = new Thickness(2, 3, 6, 3) };
-                    sp.Children.Add(new TextBlock
-                    {
-                        Text = $"{icon}  {title}",
-                        FontWeight = (danger || accent) ? FontWeights.Bold : FontWeights.SemiBold,
-                        FontSize = 13.5,
-                        Foreground = danger
-                            ? new SolidColorBrush(Color.FromRgb(220, 38, 38))
-                            : accent
-                                ? new SolidColorBrush(Color.FromRgb(29, 78, 216))
-                                : new SolidColorBrush(Color.FromRgb(15, 23, 42))
-                    });
-                    if (!string.IsNullOrEmpty(subtitle))
-                    {
-                        sp.Children.Add(new TextBlock
-                        {
-                            Text = subtitle,
-                            FontSize = 11,
-                            Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)),
-                            Margin = new Thickness(22, 1, 0, 0)
-                        });
-                    }
-
                     var mi = new MenuItem
                     {
-                        Header = sp,
-                        MinHeight = 40,
+                        Header = $"{icon}  {title}",
+                        MinHeight = 36,
+                        FontWeight = danger ? FontWeights.Bold : FontWeights.SemiBold,
+                        Foreground = danger
+                            ? new SolidColorBrush(Color.FromRgb(220, 38, 38))
+                            : new SolidColorBrush(Color.FromRgb(15, 23, 42)),
                         Cursor = Cursors.Hand
                     };
-                    mi.Click += (_, _) => onClick();
+                    mi.Click += (_, _) =>
+                    {
+                        CollapseBar();
+                        onClick();
+                    };
                     return mi;
                 }
 
+                menu.Items.Add(new MenuItem
+                {
+                    IsEnabled = false,
+                    Header = isLive ? $"🔴 ĐANG CHIẾU • {onlineCount} máy HS" : $"📡 CHẾ ĐỘ QUẢNG BÁ ({onlineCount} HS online)",
+                    FontWeight = FontWeights.Bold
+                });
+                menu.Items.Add(new Separator());
+
                 if (isLive)
                 {
-                    menu.Items.Add(BuildTouchItem(
-                        "⏹️", "Dừng chia sẻ màn hình ngay",
-                        "Ngắt luồng phát màn hình trên toàn bộ máy Học sinh",
-                        () =>
-                        {
-                            ScreenShareController.Instance.RequestStop();
-                            SyncBroadcastVisualState();
-                        },
-                        danger: true));
-
-                    menu.Items.Add(BuildTouchItem(
-                        "⏸️", "Tạm dừng / Tiếp tục khung hình chiếu",
-                        "Đóng băng tạm thời hình ảnh bên máy Học sinh để GV thao tác riêng tư",
-                        () => DispatchBroadcastAction(QuickBroadcastAction.TogglePause)));
-
-                    menu.Items.Add(BuildTouchItem(
-                        "👁️", "Hiện thanh điều khiển & Xem trước nổi (PiP)",
-                        "Mở cửa sổ nhỏ xem trực tiếp hình ảnh Học sinh đang nhìn thấy",
-                        () => DispatchBroadcastAction(QuickBroadcastAction.ShowFloatingPip)));
-
-                    menu.Items.Add(new Separator());
-
-                    menu.Items.Add(BuildTouchItem(
-                        "🔄", "Đổi sang Màn hình / Cửa sổ ứng dụng khác...",
-                        "Chuyển mượt nguồn chiếu (PowerPoint, Chrome, Video) không ngắt kết nối",
-                        () => DispatchBroadcastAction(QuickBroadcastAction.PickScreenOrWindow),
-                        accent: true));
-
-                    menu.Items.Add(BuildTouchItem(
-                        "✂️", "Kéo chọn Vùng màn hình khác để chiếu...",
-                        "Chỉ chiếu đúng khung hình chữ nhật GV khoanh chọn",
-                        () => DispatchBroadcastAction(QuickBroadcastAction.PickRegion)));
-
-                    menu.Items.Add(BuildTouchItem(
-                        "🖊️", "Chuyển sang chiếu Bảng trắng SMART TOUCH",
-                        "Truyền trực tiếp nét viết bảng tương tác 30/60 FPS siêu nét",
-                        () => DispatchBroadcastAction(QuickBroadcastAction.ShareSmartTouchNow)));
+                    menu.Items.Add(BuildItem("⏹️", "Dừng chia sẻ màn hình ngay", () => ScreenShareController.Instance.RequestStop(), danger: true));
                 }
-                else
-                {
-                    menu.Items.Add(BuildTouchItem(
-                        "🖥️", "Chọn Màn hình / Cửa sổ ứng dụng để chiếu...",
-                        "Hộp chọn trực quan chuẩn Google Meet (Toàn màn hình, PowerPoint, Trình duyệt...)",
-                        () => DispatchBroadcastAction(QuickBroadcastAction.PickScreenOrWindow),
-                        accent: true));
-
-                    menu.Items.Add(BuildTouchItem(
-                        "✂️", "Kéo chọn Vùng màn hình chiếu...",
-                        "Khoanh vùng bất kỳ trên màn hình để chiếu riêng vùng đó cho HS",
-                        () => DispatchBroadcastAction(QuickBroadcastAction.PickRegion)));
-
-                    menu.Items.Add(BuildTouchItem(
-                        "🖊️", "Chiếu ngay Bảng trắng SMART TOUCH (1 chạm)",
-                        "Phát trực tiếp bảng viết tương tác cho cả lớp không cần rời bảng",
-                        () => DispatchBroadcastAction(QuickBroadcastAction.ShareSmartTouchNow)));
-
-                    menu.Items.Add(BuildTouchItem(
-                        "📑", "Chiếu Trang bài giảng QA SmartClass...",
-                        "Chọn trang nội bộ trong hệ thống để trình chiếu",
-                        () => DispatchBroadcastAction(QuickBroadcastAction.PickQaPage)));
-                }
-
+                menu.Items.Add(BuildItem("👨‍🎓", "Chia sẻ màn hình Học sinh cho cả lớp", () => DispatchBroadcastAction(QuickBroadcastAction.OpenStudentDemo)));
+                menu.Items.Add(BuildItem("📢", "Gửi Thông báo nổi tới cả lớp...", () => DispatchBroadcastAction(QuickBroadcastAction.OpenNoticeTab)));
+                menu.Items.Add(BuildItem("🌐", "Mở Website học tập đồng loạt...", () => DispatchBroadcastAction(QuickBroadcastAction.OpenWebsiteTab)));
                 menu.Items.Add(new Separator());
-
-                menu.Items.Add(BuildTouchItem(
-                    "👨‍🎓", "Chia sẻ màn hình Học sinh cho cả lớp (Mẫu HS)",
-                    "Chọn 1 máy Học sinh tiêu biểu để phát bài làm lên toàn lớp",
-                    () => DispatchBroadcastAction(QuickBroadcastAction.OpenStudentDemo)));
-
-                menu.Items.Add(BuildTouchItem(
-                    "📢", "Gửi Thông báo nổi tới cả lớp...",
-                    "Phát thông báo / dặn dò hiển thị tức thì lên màn hình Học sinh",
-                    () => DispatchBroadcastAction(QuickBroadcastAction.OpenNoticeTab)));
-
-                menu.Items.Add(BuildTouchItem(
-                    "🌐", "Mở Website học tập đồng loạt...",
-                    "Đẩy đường link bài học tự động mở trên máy tính & Tablet Học sinh",
-                    () => DispatchBroadcastAction(QuickBroadcastAction.OpenWebsiteTab)));
-
-                menu.Items.Add(new Separator());
-
-                menu.Items.Add(BuildTouchItem(
-                    "⚙️", "Mở Trung tâm Quảng bá (Chỉnh 30/60 FPS & Độ nét)",
-                    "Tùy chỉnh chế độ Tự động / Siêu nét Chữ / Video 60fps & chọn Nhóm nhận",
-                    () => DispatchBroadcastAction(QuickBroadcastAction.OpenBroadcastHub)));
+                menu.Items.Add(BuildItem("⚙️", "Mở Trung tâm Quảng bá (Chỉnh FPS & Độ nét)", () => DispatchBroadcastAction(QuickBroadcastAction.OpenBroadcastHub)));
 
                 menu.IsOpen = true;
             }
@@ -959,16 +1784,6 @@ namespace QASmartClass.Shared
                 Log.Warning("OpenQuickBroadcastMenu error: {Err}", ex.Message);
             }
         }
-
-        /* // [MYTHWARE_LITE] Giữ lại mã nguồn ghi hình / phát bảng cũ (1 FPS PNG) theo quy tắc bảo toàn lịch sử không xóa trắng
-        private async void Legacy_OnRecordClick(object sender, MouseButtonEventArgs e)
-        {
-            _isRecording = !_isRecording;
-        }
-        private System.Windows.Threading.DispatcherTimer? _broadcastTimer;
-        private int _broadcastTickCount = 0;
-        private static void CaptureSmartScreenCanvas(QASmartTouch.App app) { }
-        */
 
         private void OnCloseTouchDown(object? sender, TouchEventArgs e)
         {
@@ -979,6 +1794,7 @@ namespace QASmartClass.Shared
 
         private void OnCloseClick(object sender, MouseButtonEventArgs e)
         {
+            e.Handled = true;
             if (!AcquireQuickActionDebounce()) return;
             ExecuteCloseBar();
         }
@@ -986,124 +1802,32 @@ namespace QASmartClass.Shared
         private void ExecuteCloseBar()
         {
             bool isLiveShare = ScreenShareController.Instance.IsLive;
+            bool isMicOn = LiveBroadcastMediaService.Instance.IsMicrophoneEnabled;
             bool isRec = QASmartTouch.Services.ScreenRecorderService.Instance.IsSessionActive;
-            bool isTransmitting = isLiveShare || _isVoiceBroadcasting || isRec;
-            
-            string warningMsg = "Ẩn thanh công cụ nổi?\n\nBạn có thể mở lại bằng cách nhấn vào biểu tượng Công cụ nổi ở menu chính hoặc dùng tổ hợp phím Ctrl+Alt+M.";
+            bool isTransmitting = isLiveShare || isMicOn || isRec;
+
+            string warningMsg = "Ẩn nút điều khiển tròn EasyTouch?\n\nBạn có thể mở lại bất cứ lúc nào bằng tổ hợp phím Ctrl+Alt+M.";
             if (isTransmitting)
             {
-                warningMsg = "⚠️ CẢNH BÁO AN NINH & RIÊNG TƯ:\n" +
-                             "Hệ thống đang phát màn hình/giọng nói hoặc ghi hình trong nền.\n\n" +
-                             "Bạn có muốn DỪNG TẤT CẢ các kết nối phát sóng này và ẩn thanh công cụ nổi không?\n" +
-                             "(Chọn YES để dừng và ẩn, NO để ẩn và tiếp tục phát ngầm, CANCEL để hủy)";
+                warningMsg = "⚠️ Hệ thống đang phát màn hình / âm thanh hoặc ghi hình.\n\n" +
+                             "Bạn có muốn DỪNG tất cả phiên phát sóng và ẩn nút điều khiển không?\n" +
+                             "(YES: Dừng & Ẩn • NO: Chỉ ẩn nút • CANCEL: Hủy)";
             }
 
-            var result = MessageBox.Show(warningMsg, "Xác nhận đóng thanh công cụ", 
-                isTransmitting ? MessageBoxButton.YesNoCancel : MessageBoxButton.YesNo, 
+            var result = MessageBox.Show(warningMsg, "Xác nhận ẩn nút điều khiển",
+                isTransmitting ? MessageBoxButton.YesNoCancel : MessageBoxButton.YesNo,
                 isTransmitting ? MessageBoxImage.Warning : MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
                 if (isLiveShare) ScreenShareController.Instance.RequestStop();
-                if (_isVoiceBroadcasting) _ = ToggleVoiceBroadcastAsync();
+                if (isMicOn) LiveBroadcastMediaService.Instance.SetMicrophoneEnabled(false);
                 if (isRec) QASmartTouch.Services.ScreenRecorderService.Instance.StopRecording();
-
                 Hide();
-                Log.Information("FloatingModeBar safely hidden and stopped all background transmissions");
             }
-            else if (result == MessageBoxResult.No)
+            else if (result == MessageBoxResult.No && isTransmitting)
             {
-                if (isTransmitting)
-                {
-                    Hide();
-                    Log.Information("FloatingModeBar hidden, transmissions remain running in background");
-                }
-                else
-                {
-                    Log.Debug("Close cancelled by user");
-                }
-            }
-        }
-
-        #endregion
-
-        #region Mode UI Update
-
-        private void OnModeChanged(object? sender, ModeChangedEventArgs e)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                UpdateUI(e.NewMode);
-
-                if (e.NewMode == AppMode.SmartScreen)
-                {
-                    // [Smart Touch UX] Tự động thu gọn thành Mini-Pill và đưa lên góc trên bên phải (khu vực Header)
-                    // để hoàn toàn giải phóng không gian cho thanh công cụ vẽ (panelTools) ở đáy bảng
-                    CollapseBar();
-                    PositionAtTopRight();
-                }
-                else
-                {
-                    // Khi chuyển sang SMART CLASS hoặc DESKTOP: mở rộng và đưa xuống đáy màn hình
-                    ExpandBar();
-                    PositionAtBottom();
-                }
-            });
-        }
-
-        private void UpdateUI(AppMode mode)
-        {
-            var inactiveColor = Brushes.Transparent;
-
-            var classColor   = new SolidColorBrush(Color.FromRgb(0x19, 0x76, 0xD2)); // #1976D2 Xanh
-            var screenColor  = new SolidColorBrush(Color.FromRgb(0x5C, 0x6B, 0xC0)); // #5C6BC0 Indigo
-            var desktopColor = new SolidColorBrush(Color.FromRgb(0x45, 0x5A, 0x64)); // #455A64 Xám
-
-            btnClass.Background   = mode == AppMode.SmartClass  ? classColor   : inactiveColor;
-            btnScreen.Background  = mode == AppMode.SmartScreen  ? screenColor  : inactiveColor;
-            btnDesktop.Background = mode == AppMode.Desktop      ? desktopColor : inactiveColor;
-
-            SetButtonTextColor(btnClass,   mode == AppMode.SmartClass);
-            SetButtonTextColor(btnScreen,  mode == AppMode.SmartScreen);
-            SetButtonTextColor(btnDesktop, mode == AppMode.Desktop);
-
-            // Cập nhật trạng thái cho Mini Pill (khi thu gọn)
-            if (txtMiniModeName != null && bdrMiniModeBadge != null)
-            {
-                switch (mode)
-                {
-                    case AppMode.SmartClass:
-                        txtMiniModeName.Text = "📚 SMART CLASS";
-                        bdrMiniModeBadge.Background = classColor;
-                        break;
-                    case AppMode.SmartScreen:
-                        txtMiniModeName.Text = "🖊️ SMART TOUCH";
-                        bdrMiniModeBadge.Background = screenColor;
-                        break;
-                    case AppMode.Desktop:
-                    default:
-                        txtMiniModeName.Text = "🔲 DESKTOP";
-                        bdrMiniModeBadge.Background = desktopColor;
-                        break;
-                }
-            }
-
-            Log.Debug("FloatingModeBar updated: {Mode}", mode);
-        }
-
-        private static void SetButtonTextColor(System.Windows.Controls.Border border, bool isActive)
-        {
-            if (border.Child is System.Windows.Controls.StackPanel sp)
-            {
-                foreach (var child in sp.Children)
-                {
-                    if (child is System.Windows.Controls.TextBlock tb)
-                    {
-                        tb.Foreground = isActive
-                             ? Brushes.White
-                             : new SolidColorBrush(Color.FromRgb(55, 71, 79));
-                    }
-                }
+                Hide();
             }
         }
 

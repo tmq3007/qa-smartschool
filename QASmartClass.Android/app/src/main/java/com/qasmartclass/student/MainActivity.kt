@@ -93,6 +93,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var labelRailFiles: TextView
     private lateinit var badgeRailWork: TextView
     private lateinit var badgeRailChat: TextView
+    private lateinit var badgeRailFiles: TextView
+    private var activePreviewDialog: AlertDialog? = null
 
     // Tab 0 (Lớp học) & Lesson State
     private lateinit var panelSoon: LinearLayout
@@ -132,9 +134,27 @@ class MainActivity : AppCompatActivity() {
     private lateinit var filesGridContainer: LinearLayout
     private lateinit var colReceivedFiles: LinearLayout
     private lateinit var colSessionProfile: LinearLayout
+    private lateinit var btnAttachQuickFile: Button
+    private lateinit var btnSubmitFileFromDocs: Button
     private lateinit var btnRefreshFiles: Button
     private lateinit var layoutReceivedFiles: LinearLayout
     private lateinit var btnProfileSwitchStudent: Button
+
+    private val pickStudentSubmitFileLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+    ) { uri: android.net.Uri? ->
+        if (uri != null) {
+            uploadStudentUriToTeacher(uri)
+        }
+    }
+
+    private fun launchStudentFilePicker() {
+        try {
+            pickStudentSubmitFileLauncher.launch(arrayOf("*/*"))
+        } catch (e: Exception) {
+            Toast.makeText(this, "Không mở được trình chọn tệp: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     private data class ReceivedFileItem(
         val fileName: String,
@@ -189,8 +209,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtLanPingBadge: TextView
     private lateinit var cardDiscoveredClass: LinearLayout
 
-    // Screen 3: Google Meet Fullscreen Broadcast Controls
+    // Screen 3: Google Meet Fullscreen Broadcast Controls + EasyTouch Floating Orb
     private lateinit var topBroadcastBadgeBar: LinearLayout
+    private lateinit var btnEasyTouchBroadcast: View
+    private lateinit var txtEasyTouchPodTitle: TextView
+    private lateinit var btnCollapseEasyTouchStudent: Button
     private lateinit var floatingBroadcastDock: LinearLayout
     private lateinit var btnInlineBroadcastAudio: Button
     private lateinit var btnFullscreenMuteAudio: Button
@@ -200,6 +223,7 @@ class MainActivity : AppCompatActivity() {
     private var broadcastAudioJob: Job? = null
     @Volatile private var isBroadcastAudioMuted = false
     private var isForceBroadcastMode = false
+    private var easyTouchCustomPositioned = false
     @Volatile private var hasPromptedCaptureThisSession = false
 
     private fun getDeviceShortTag(): String {
@@ -225,6 +249,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnZoomIn: Button
     private lateinit var txtZoomLevel: TextView
     private lateinit var quickNoteCanvas: com.qasmartclass.student.views.QuickNoteCanvasView
+    private lateinit var layoutLatestTeacherFileBar: LinearLayout
+    private lateinit var txtLatestTeacherFileName: TextView
+    private lateinit var btnPreviewLatestTeacherFile: Button
     private lateinit var btnNotePen: Button
     private lateinit var btnNoteHighlight: Button
     private lateinit var btnNoteEraser: Button
@@ -243,7 +270,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtLockTimer: TextView
 
     private var currentZoomPercent = 100
-    private var isLessonSidebarVisible = true
+    // [MYTHWARE_LITE] Đã ẩn phần Sổ nháp nhanh theo yêu cầu
+    private var isLessonSidebarVisible = false
     private var isHandAcceptedByTeacher = false
     private var lockTimerJob: Job? = null
     private var isUserInitiatedDisconnect = false
@@ -390,6 +418,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Chốt chặn chống nhân bản Task khi Launcher mở lại sau khi cài APK hoặc chuyển từ trình xem tài liệu ngoài
+        if (!isTaskRoot &&
+            intent?.hasCategory(android.content.Intent.CATEGORY_LAUNCHER) == true &&
+            intent?.action == android.content.Intent.ACTION_MAIN) {
+            finish()
+            return
+        }
         // Luôn ẩn bàn phím ảo khi vừa mở màn hình để không che nút "VÀO LỚP HỌC NGAY" trên Tablet ngang
         window.setSoftInputMode(
             android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN or
@@ -405,10 +440,17 @@ class MainActivity : AppCompatActivity() {
         initViews()
         setupListeners()
         applyResponsiveLayout()
+        refreshLatestTeacherFileBanner()
         currentFocus?.clearFocus()
 
         // Start Auto Discovery via UDP
         startAutoDiscovery()
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        hideSoftKeyboard()
     }
 
     private fun hideSoftKeyboard() {
@@ -534,7 +576,11 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
             }
-            colLectureSidebar.visibility = if (isLessonSidebarVisible) View.VISIBLE else View.GONE
+            // [MYTHWARE_LITE] Đảm bảo phần Sổ nháp nhanh luôn ẩn, nhường 100% chiều rộng cho khung bài giảng
+            colLectureSidebar.visibility = View.GONE
+            if (::btnToggleLessonSidebar.isInitialized) {
+                btnToggleLessonSidebar.visibility = View.GONE
+            }
         }
 
         // 4. Tab 3 (Tài liệu & Phiên học): 2 cột trên Tablet, 1 cột trên Compact
@@ -646,6 +692,7 @@ class MainActivity : AppCompatActivity() {
         labelRailFiles = findViewById(R.id.labelRailFiles)
         badgeRailWork = findViewById(R.id.badgeRailWork)
         badgeRailChat = findViewById(R.id.badgeRailChat)
+        badgeRailFiles = findViewById(R.id.badgeRailFiles)
 
         // Adaptive Bottom Nav Bar (< 600dp)
         bottomNavBar = findViewById(R.id.bottomNavBar)
@@ -694,6 +741,9 @@ class MainActivity : AppCompatActivity() {
         btnZoomIn = findViewById(R.id.btnZoomIn)
         txtZoomLevel = findViewById(R.id.txtZoomLevel)
         quickNoteCanvas = findViewById(R.id.quickNoteCanvas)
+        layoutLatestTeacherFileBar = findViewById(R.id.layoutLatestTeacherFileBar)
+        txtLatestTeacherFileName = findViewById(R.id.txtLatestTeacherFileName)
+        btnPreviewLatestTeacherFile = findViewById(R.id.btnPreviewLatestTeacherFile)
         btnNotePen = findViewById(R.id.btnNotePen)
         btnNoteHighlight = findViewById(R.id.btnNoteHighlight)
         btnNoteEraser = findViewById(R.id.btnNoteEraser)
@@ -703,6 +753,7 @@ class MainActivity : AppCompatActivity() {
         progressUploadBar = findViewById(R.id.progressUploadBar)
         txtUploadPercent = findViewById(R.id.txtUploadPercent)
         txtUploadStatusLabel = findViewById(R.id.txtUploadStatusLabel)
+        btnAttachQuickFile = findViewById(R.id.btnAttachQuickFile)
         btnQuickSubmitWork = findViewById(R.id.btnQuickSubmitWork)
 
         // Tab 1: Bài tập & Kiểm tra (Classwork Hub)
@@ -730,16 +781,20 @@ class MainActivity : AppCompatActivity() {
         filesGridContainer = findViewById(R.id.filesGridContainer)
         colReceivedFiles = findViewById(R.id.colReceivedFiles)
         colSessionProfile = findViewById(R.id.colSessionProfile)
+        btnSubmitFileFromDocs = findViewById(R.id.btnSubmitFileFromDocs)
         btnRefreshFiles = findViewById(R.id.btnRefreshFiles)
         layoutReceivedFiles = findViewById(R.id.layoutReceivedFiles)
         btnProfileSwitchStudent = findViewById(R.id.btnProfileSwitchStudent)
 
-        // Screen 3: Google Meet Fullscreen Broadcast Overlay
+        // Screen 3: Google Meet Fullscreen Broadcast Overlay + EasyTouch Orb
         broadcastOverlay = findViewById(R.id.broadcastOverlay)
         imgBroadcastScreen = findViewById(R.id.imgBroadcastScreen)
         progressBroadcastLoading = findViewById(R.id.progressBroadcastLoading)
         topBroadcastBadgeBar = findViewById(R.id.topBroadcastBadgeBar)
         txtBroadcastStatus = findViewById(R.id.txtBroadcastStatus)
+        btnEasyTouchBroadcast = findViewById(R.id.btnEasyTouchBroadcast)
+        txtEasyTouchPodTitle = findViewById(R.id.txtEasyTouchPodTitle)
+        btnCollapseEasyTouchStudent = findViewById(R.id.btnCollapseEasyTouchStudent)
         floatingBroadcastDock = findViewById(R.id.floatingBroadcastDock)
         btnInlineBroadcastAudio = findViewById(R.id.btnInlineBroadcastAudio)
         btnFullscreenMuteAudio = findViewById(R.id.btnFullscreenMuteAudio)
@@ -899,13 +954,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Google Meet Fullscreen Broadcast Controls (Chạm màn hình để hiện/ẩn thanh điều khiển đáy)
+        // Fullscreen Broadcast EasyTouch Controls (Chạm màn hình bên ngoài để thu gọn hộp về nút tròn EasyTouch)
         imgBroadcastScreen.setOnClickListener {
-            toggleBroadcastControlsVisibility()
+            if (floatingBroadcastDock.visibility == View.VISIBLE) {
+                collapseStudentEasyTouch()
+            }
         }
         broadcastOverlay.setOnClickListener {
-            toggleBroadcastControlsVisibility()
+            if (floatingBroadcastDock.visibility == View.VISIBLE) {
+                collapseStudentEasyTouch()
+            }
         }
+        btnCollapseEasyTouchStudent.setOnClickListener {
+            collapseStudentEasyTouch()
+        }
+        setupStudentEasyTouch()
 
         btnInlineBroadcastAudio.setOnClickListener {
             toggleBroadcastAudioMute()
@@ -977,6 +1040,9 @@ class MainActivity : AppCompatActivity() {
             quickNoteCanvas.clearCanvas()
             Toast.makeText(this, "Đã xóa trang nháp", Toast.LENGTH_SHORT).show()
         }
+        btnAttachQuickFile.setOnClickListener {
+            launchStudentFilePicker()
+        }
         btnQuickSubmitWork.setOnClickListener {
             performQuickNoteOrHomeworkUpload()
         }
@@ -998,7 +1064,10 @@ class MainActivity : AppCompatActivity() {
         chipWorkSurvey.setOnClickListener { switchWorkSubTab("SURVEY") }
         chipWorkResults.setOnClickListener { switchWorkSubTab("RESULTS") }
 
-        // Tài liệu lớp học
+        // Tài liệu lớp học & Nộp tệp bài làm
+        btnSubmitFileFromDocs.setOnClickListener {
+            launchStudentFilePicker()
+        }
         btnRefreshFiles.setOnClickListener {
             refreshReceivedFilesPanel()
             Toast.makeText(this, "Đã làm mới danh sách tài liệu", Toast.LENGTH_SHORT).show()
@@ -1047,9 +1116,11 @@ class MainActivity : AppCompatActivity() {
         // Back gesture & Hardware Back
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (broadcastOverlay.visibility == View.VISIBLE && !isForceBroadcastMode) {
-                    broadcastUiHideJob?.cancel()
-                    broadcastOverlay.visibility = View.GONE
+                if (broadcastOverlay.visibility == View.VISIBLE) {
+                    // Khi Giáo viên đang khóa Fullscreen (mặc định), chặn hoàn toàn nút Back
+                    if (!isForceBroadcastMode) {
+                        minimizeFullscreenBroadcastOverlay()
+                    }
                 } else if (connectedPanel.visibility == View.VISIBLE && currentTab != 0) {
                     switchTab(0)
                 } else if (connectedPanel.visibility == View.VISIBLE) {
@@ -1062,33 +1133,189 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun dpPx(v: Int): Int = (v * resources.displayMetrics.density).toInt()
+
+    @android.annotation.SuppressLint("ClickableViewAccessibility")
+    private fun setupStudentEasyTouch() {
+        val touchSlop = android.view.ViewConfiguration.get(this).scaledTouchSlop
+        var downRawX = 0f
+        var downRawY = 0f
+        var startViewX = 0f
+        var startViewY = 0f
+        var isDragging = false
+
+        btnEasyTouchBroadcast.setOnTouchListener { v, event ->
+            val parent = broadcastOverlay
+            when (event.actionMasked) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    v.animate().cancel()
+                    v.alpha = 1.0f
+                    downRawX = event.rawX
+                    downRawY = event.rawY
+                    startViewX = v.x
+                    startViewY = v.y
+                    isDragging = false
+                    true
+                }
+                android.view.MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX - downRawX
+                    val dy = event.rawY - downRawY
+                    if (!isDragging && kotlin.math.hypot(dx.toDouble(), dy.toDouble()) > touchSlop) {
+                        isDragging = true
+                        if (floatingBroadcastDock.visibility == View.VISIBLE) {
+                            collapseStudentEasyTouch(immediate = true)
+                        }
+                    }
+                    if (isDragging && parent.width > 0 && parent.height > 0) {
+                        val margin = dpPx(10).toFloat()
+                        val maxX = (parent.width.toFloat() - v.width.toFloat() - margin).coerceAtLeast(margin)
+                        val maxY = (parent.height.toFloat() - v.height.toFloat() - margin).coerceAtLeast(margin)
+                        v.x = (startViewX + dx).coerceIn(margin, maxX)
+                        v.y = (startViewY + dy).coerceIn(margin, maxY)
+                        easyTouchCustomPositioned = true
+                    }
+                    true
+                }
+                android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                    if (!isDragging) {
+                        toggleBroadcastControlsVisibility()
+                    } else if (parent.width > 0) {
+                        // Tự động hít gọn sát mép trái hoặc mép phải màn hình giống AssistiveTouch / EasyTouch
+                        val margin = dpPx(12).toFloat()
+                        val snapX = if (v.x + v.width / 2f < parent.width / 2f) {
+                            margin
+                        } else {
+                            (parent.width.toFloat() - v.width.toFloat() - margin).coerceAtLeast(margin)
+                        }
+                        v.animate().x(snapX).alpha(0.68f).setDuration(180).start()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun positionEasyTouchPodNearBubble() {
+        broadcastOverlay.post {
+            val parentW = broadcastOverlay.width.toFloat()
+            val parentH = broadcastOverlay.height.toFloat()
+            if (parentW <= 0f || parentH <= 0f) return@post
+
+            val podW = (if (floatingBroadcastDock.width > 0) floatingBroadcastDock.width else dpPx(256)).toFloat()
+            val podH = (if (floatingBroadcastDock.height > 0) floatingBroadcastDock.height else dpPx(176)).toFloat()
+            val gap = dpPx(10).toFloat()
+            val margin = dpPx(12).toFloat()
+
+            val bx = btnEasyTouchBroadcast.x
+            val by = btnEasyTouchBroadcast.y
+            val bw = btnEasyTouchBroadcast.width.coerceAtLeast(dpPx(52)).toFloat()
+
+            val targetX = if (bx + bw / 2f > parentW / 2f) {
+                (bx - podW - gap).coerceIn(margin, (parentW - podW - margin).coerceAtLeast(margin))
+            } else {
+                (bx + bw + gap).coerceIn(margin, (parentW - podW - margin).coerceAtLeast(margin))
+            }
+            val targetY = by.coerceIn(margin, (parentH - podH - margin).coerceAtLeast(margin))
+
+            floatingBroadcastDock.x = targetX
+            floatingBroadcastDock.y = targetY
+        }
+    }
+
+    private fun setImmersiveFullscreen(enable: Boolean) {
+        try {
+            val controller = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+            if (enable) {
+                window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                controller.systemBarsBehavior =
+                    androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            } else {
+                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                controller.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            }
+        } catch (e: Exception) {
+            Log.d(TAG, "setImmersiveFullscreen error: ${e.message}")
+        }
+    }
+
+    private fun applyBroadcastLockState(isForce: Boolean, notifyToast: Boolean = false) {
+        val prevForce = isForceBroadcastMode
+        isForceBroadcastMode = isForce
+
+        runOnUiThread {
+            topBroadcastBadgeBar.visibility = View.GONE
+            findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.GONE
+            btnCloseBroadcast.visibility = if (!isForce) View.VISIBLE else View.GONE
+
+            if (isScreenBroadcastActive && isForce) {
+                if (broadcastOverlay.visibility != View.VISIBLE) {
+                    if (imgBroadcastScreen.drawable == null && imgInlineBroadcast.drawable != null) {
+                        imgBroadcastScreen.setImageDrawable(imgInlineBroadcast.drawable)
+                    }
+                    broadcastOverlay.visibility = View.VISIBLE
+                }
+                setImmersiveFullscreen(true)
+            } else if (!isForce && lockOverlay.visibility != View.VISIBLE) {
+                setImmersiveFullscreen(false)
+            }
+
+            findViewById<View?>(R.id.dotEasyTouchLive)?.backgroundTintList =
+                android.content.res.ColorStateList.valueOf(if (isForce) 0xFF22C55E.toInt() else 0xFF38BDF8.toInt())
+
+            if (notifyToast && prevForce != isForce) {
+                val msg = if (isForce) {
+                    "🔒 Giáo viên đã khóa chế độ xem toàn màn hình"
+                } else {
+                    "🔓 Giáo viên cho phép thu nhỏ / bấm ra ngoài"
+                }
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun openFullscreenBroadcastOverlay() {
         if (imgBroadcastScreen.drawable == null && imgInlineBroadcast.drawable != null) {
             imgBroadcastScreen.setImageDrawable(imgInlineBroadcast.drawable)
         }
-        val canMinimize = !isForceBroadcastMode
-        btnCloseBroadcast.visibility = if (canMinimize) View.VISIBLE else View.GONE
-        findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = if (canMinimize) View.VISIBLE else View.GONE
+        topBroadcastBadgeBar.visibility = View.GONE
+        findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.GONE
+        btnCloseBroadcast.visibility = if (!isForceBroadcastMode) View.VISIBLE else View.GONE
         broadcastOverlay.visibility = View.VISIBLE
-        showBroadcastControlsAndScheduleHide()
+        setImmersiveFullscreen(true)
+        collapseStudentEasyTouch(immediate = true)
     }
 
     private fun minimizeFullscreenBroadcastOverlay() {
         if (isForceBroadcastMode) return
-        broadcastUiHideJob?.cancel()
+        collapseStudentEasyTouch(immediate = true)
+        setImmersiveFullscreen(false)
         imgBroadcastScreen.drawable?.let { imgInlineBroadcast.setImageDrawable(it) }
         broadcastOverlay.visibility = View.GONE
         if (currentTab != 0) switchTab(0)
     }
 
+    private fun collapseStudentEasyTouch(immediate: Boolean = false) {
+        broadcastUiHideJob?.cancel()
+        floatingBroadcastDock.animate().cancel()
+        topBroadcastBadgeBar.visibility = View.GONE
+        if (immediate) {
+            floatingBroadcastDock.visibility = View.GONE
+            floatingBroadcastDock.alpha = 0f
+            btnEasyTouchBroadcast.alpha = 0.68f
+        } else {
+            floatingBroadcastDock.animate().alpha(0f).setDuration(160).withEndAction {
+                floatingBroadcastDock.visibility = View.GONE
+                btnEasyTouchBroadcast.animate().alpha(0.68f).setDuration(180).start()
+            }.start()
+        }
+    }
+
     private fun toggleBroadcastControlsVisibility() {
         val visibleNow = floatingBroadcastDock.visibility == View.VISIBLE
         if (visibleNow) {
-            broadcastUiHideJob?.cancel()
-            floatingBroadcastDock.animate().alpha(0f).setDuration(180).withEndAction {
-                floatingBroadcastDock.visibility = View.GONE
-                topBroadcastBadgeBar.visibility = View.GONE
-            }.start()
+            collapseStudentEasyTouch()
         } else {
             showBroadcastControlsAndScheduleHide()
         }
@@ -1097,15 +1324,26 @@ class MainActivity : AppCompatActivity() {
     private fun showBroadcastControlsAndScheduleHide() {
         broadcastUiHideJob?.cancel()
         floatingBroadcastDock.animate().cancel()
-        floatingBroadcastDock.alpha = 1f
+        topBroadcastBadgeBar.visibility = View.GONE
+        findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.GONE
+        btnCloseBroadcast.visibility = if (!isForceBroadcastMode) View.VISIBLE else View.GONE
+        btnEasyTouchBroadcast.alpha = 1.0f
+
+        floatingBroadcastDock.alpha = 0f
         floatingBroadcastDock.visibility = View.VISIBLE
-        topBroadcastBadgeBar.alpha = 1f
-        topBroadcastBadgeBar.visibility = View.VISIBLE
+        positionEasyTouchPodNearBubble()
+        floatingBroadcastDock.animate().alpha(1f).setDuration(160).start()
+        scheduleBroadcastControlsAutoHide()
     }
 
     private fun scheduleBroadcastControlsAutoHide() {
-        // Giữ thanh điều khiển & nút Thu nhỏ hiển thị ổn định trên màn hình cảm ứng (chỉ ẩn/hiện khi người dùng chủ động chạm vào ảnh)
         broadcastUiHideJob?.cancel()
+        broadcastUiHideJob = lifecycleScope.launch {
+            delay(4500)
+            if (floatingBroadcastDock.visibility == View.VISIBLE) {
+                collapseStudentEasyTouch()
+            }
+        }
     }
 
     /**
@@ -1267,21 +1505,467 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun resolveMimeTypeForFile(fileName: String): String {
+        val ext = fileName.substringAfterLast('.', "").lowercase(Locale.ROOT)
+        if (ext.isNotBlank()) {
+            android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)?.let { return it }
+        }
+        return when (ext) {
+            "pdf" -> "application/pdf"
+            "doc" -> "application/msword"
+            "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            "xls" -> "application/vnd.ms-excel"
+            "xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            "ppt" -> "application/vnd.ms-powerpoint"
+            "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            "jpg", "jpeg" -> "image/jpeg"
+            "png" -> "image/png"
+            "webp" -> "image/webp"
+            "mp4" -> "video/mp4"
+            "mp3" -> "audio/mpeg"
+            "txt", "csv", "md" -> "text/plain"
+            "zip" -> "application/zip"
+            else -> "*/*"
+        }
+    }
+
+    private fun decodeSampledBitmapFromFile(file: java.io.File, maxDimensionPx: Int): android.graphics.Bitmap? {
+        if (!file.exists() || file.length() <= 0L) return null
+        return try {
+            val boundsOpts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(file.absolutePath, boundsOpts)
+            val srcW = boundsOpts.outWidth
+            val srcH = boundsOpts.outHeight
+            if (srcW <= 0 || srcH <= 0) return null
+
+            var sampleSize = 1
+            while ((srcW / sampleSize) > maxDimensionPx || (srcH / sampleSize) > maxDimensionPx) {
+                sampleSize *= 2
+            }
+            val decodeOpts = BitmapFactory.Options().apply {
+                inSampleSize = sampleSize
+                inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+            }
+            BitmapFactory.decodeFile(file.absolutePath, decodeOpts)
+        } catch (_: OutOfMemoryError) {
+            try {
+                BitmapFactory.decodeFile(file.absolutePath, BitmapFactory.Options().apply {
+                    inSampleSize = 4
+                    inPreferredConfig = android.graphics.Bitmap.Config.RGB_565
+                })
+            } catch (_: Throwable) {
+                null
+            }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun getAvailableTeacherFiles(maxCount: Int = 16): List<ReceivedFileItem> {
+        val list = mutableListOf<ReceivedFileItem>()
+        receivedTeacherFiles.filter { !it.isLocalSnapshot }.forEach { item ->
+            val f = java.io.File(item.urlOrPath)
+            if (f.exists() && !f.name.endsWith(".part")) {
+                list.add(item)
+            }
+        }
+        try {
+            val dlDir = java.io.File(getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS), "QASmartClass")
+            dlDir.listFiles()
+                ?.filter { it.isFile && !it.name.endsWith(".part") }
+                ?.sortedByDescending { it.lastModified() }
+                ?.take(maxCount)
+                ?.forEach { f ->
+                    if (list.none { it.urlOrPath == f.absolutePath }) {
+                        val sizeText = if (f.length() < 1024 * 1024) {
+                            String.format(Locale.US, "%.1f KB", f.length() / 1024.0)
+                        } else {
+                            String.format(Locale.US, "%.1f MB", f.length() / (1024.0 * 1024.0))
+                        }
+                        val t = SimpleDateFormat("HH:mm • dd/MM", Locale.getDefault()).format(Date(f.lastModified()))
+                        list.add(
+                            ReceivedFileItem(
+                                fileName = f.name,
+                                urlOrPath = f.absolutePath,
+                                timeText = "Đã lưu ($sizeText) lúc $t",
+                                isLocalSnapshot = false
+                            )
+                        )
+                    }
+                }
+        } catch (_: Exception) {}
+        return list.take(maxCount)
+    }
+
+    private fun refreshLatestTeacherFileBanner() {
+        if (!::layoutLatestTeacherFileBar.isInitialized) return
+        val latest = getAvailableTeacherFiles(1).firstOrNull()
+        if (latest != null) {
+            val targetFile = java.io.File(latest.urlOrPath)
+            layoutLatestTeacherFileBar.visibility = View.VISIBLE
+            txtLatestTeacherFileName.text = "📎 Đề/Tài liệu GV: ${latest.fileName}"
+            val openAction = View.OnClickListener {
+                openLocalReceivedFile(targetFile, latest.fileName)
+            }
+            layoutLatestTeacherFileBar.setOnClickListener(openAction)
+            btnPreviewLatestTeacherFile.setOnClickListener(openAction)
+        } else {
+            layoutLatestTeacherFileBar.visibility = View.GONE
+        }
+    }
+
+    private fun openLocalReceivedFile(file: java.io.File, displayTitle: String = file.name) {
+        if (isFinishing || isDestroyed) return
+        if (!file.exists()) {
+            Toast.makeText(this, "Tệp cục bộ không còn tồn tại: ${file.name}", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (::badgeRailFiles.isInitialized) {
+            badgeRailFiles.visibility = View.GONE
+        }
+
+        val ext = file.extension.lowercase(Locale.ROOT)
+        val density = resources.displayMetrics.density
+        val dm = resources.displayMetrics
+        fun dp(v: Int): Int = (v * density).toInt()
+
+        try {
+            activePreviewDialog?.dismiss()
+        } catch (_: Exception) {}
+        activePreviewDialog = null
+
+        if (ext in setOf("jpg", "jpeg", "png", "webp", "bmp")) {
+            val bmp = decodeSampledBitmapFromFile(file, 2048)
+            if (bmp != null) {
+                var zoomPercent = 100
+                val maxBaseWidth = (dm.widthPixels * 0.72f).toInt().coerceAtLeast(dp(280))
+                val maxBaseHeight = (dm.heightPixels * 0.64f).toInt().coerceAtLeast(dp(220))
+                val aspect = bmp.width.toFloat() / bmp.height.toFloat().coerceAtLeast(1f)
+                var baseW = maxBaseWidth
+                var baseH = (baseW / aspect).toInt()
+                if (baseH > maxBaseHeight) {
+                    baseH = maxBaseHeight
+                    baseW = (baseH * aspect).toInt()
+                }
+
+                val rootContainer = LinearLayout(this).apply {
+                    orientation = LinearLayout.VERTICAL
+                    setPadding(dp(12), dp(8), dp(12), dp(4))
+                }
+
+                val zoomBar = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = Gravity.CENTER_VERTICAL
+                    setPadding(dp(4), 0, dp(4), dp(8))
+                }
+
+                val tvHint = TextView(this).apply {
+                    text = "💡 Đóng cửa sổ này bạn vẫn bấm '👁 Xem lại' được bất cứ lúc nào"
+                    textSize = 12f
+                    setTextColor(0xFF475569.toInt())
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                }
+                zoomBar.addView(tvHint)
+
+                val tvZoomPct = TextView(this).apply {
+                    text = "100%"
+                    textSize = 12.5f
+                    setTypeface(null, Typeface.BOLD)
+                    setTextColor(0xFF1A73E8.toInt())
+                    gravity = Gravity.CENTER
+                    setPadding(dp(8), 0, dp(8), 0)
+                }
+
+                val iv = ImageView(this).apply {
+                    setImageBitmap(bmp)
+                    scaleType = ImageView.ScaleType.FIT_CENTER
+                    adjustViewBounds = true
+                    layoutParams = FrameLayout.LayoutParams(baseW, baseH, Gravity.CENTER)
+                }
+
+                fun applyPreviewZoom(newZoom: Int) {
+                    zoomPercent = newZoom.coerceIn(50, 300)
+                    tvZoomPct.text = "$zoomPercent%"
+                    val targetW = (baseW * zoomPercent) / 100
+                    val targetH = (baseH * zoomPercent) / 100
+                    iv.layoutParams = FrameLayout.LayoutParams(targetW, targetH, Gravity.CENTER)
+                    iv.requestLayout()
+                }
+
+                fun makeZoomBtn(label: String, onClick: () -> Unit): Button {
+                    return Button(this).apply {
+                        text = label
+                        isAllCaps = false
+                        textSize = 13f
+                        setTypeface(null, Typeface.BOLD)
+                        setTextColor(0xFF1E293B.toInt())
+                        setBackgroundResource(R.drawable.bg_m3_tonal_card)
+                        minWidth = 0
+                        minimumWidth = 0
+                        setPadding(dp(10), 0, dp(10), 0)
+                        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(30))
+                        setOnClickListener { onClick() }
+                    }
+                }
+
+                zoomBar.addView(makeZoomBtn("−") { applyPreviewZoom(zoomPercent - 25) })
+                tvZoomPct.setOnClickListener { applyPreviewZoom(100) }
+                zoomBar.addView(tvZoomPct)
+                zoomBar.addView(makeZoomBtn("+") { applyPreviewZoom(zoomPercent + 25) })
+                rootContainer.addView(zoomBar)
+
+                val vScroll = ScrollView(this).apply {
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        maxBaseHeight + dp(12)
+                    )
+                    setBackgroundColor(0xFF0F172A.toInt())
+                }
+                val hScroll = HorizontalScrollView(this).apply {
+                    isFillViewport = true
+                }
+                val centerFrame = FrameLayout(this).apply {
+                    setPadding(dp(6), dp(6), dp(6), dp(6))
+                }
+                centerFrame.addView(iv)
+                hScroll.addView(centerFrame)
+                vScroll.addView(hScroll)
+                rootContainer.addView(vScroll)
+
+                if (!isFinishing && !isDestroyed) {
+                    activePreviewDialog = AlertDialog.Builder(this)
+                        .setTitle(displayTitle)
+                        .setView(rootContainer)
+                        .setNeutralButton("Mở bằng ứng dụng ngoài") { _, _ ->
+                            launchFileProviderIntent(file)
+                        }
+                        .setPositiveButton("Đóng", null)
+                        .create().also { dlg ->
+                            dlg.setOnDismissListener {
+                                if (activePreviewDialog === dlg) activePreviewDialog = null
+                            }
+                            dlg.show()
+                        }
+                }
+                return
+            }
+        }
+
+        if (ext in setOf("txt", "md", "csv", "log", "json", "xml") && file.length() <= 256 * 1024) {
+            try {
+                val contentText = file.readText(Charsets.UTF_8)
+                val scroll = ScrollView(this).apply { setPadding(dp(18), dp(12), dp(18), dp(12)) }
+                val tv = TextView(this).apply {
+                    text = contentText
+                    textSize = 14f
+                    setTextColor(0xFF1E293B.toInt())
+                    setTextIsSelectable(true)
+                }
+                scroll.addView(tv)
+                if (!isFinishing && !isDestroyed) {
+                    activePreviewDialog = AlertDialog.Builder(this)
+                        .setTitle(displayTitle)
+                        .setView(scroll)
+                        .setNeutralButton("Mở ứng dụng ngoài") { _, _ ->
+                            launchFileProviderIntent(file)
+                        }
+                        .setPositiveButton("Đóng", null)
+                        .create().also { dlg ->
+                            dlg.setOnDismissListener {
+                                if (activePreviewDialog === dlg) activePreviewDialog = null
+                            }
+                            dlg.show()
+                        }
+                }
+                return
+            } catch (_: Exception) {}
+        }
+
+        launchFileProviderIntent(file)
+    }
+
+    private fun launchFileProviderIntent(file: java.io.File) {
+        try {
+            val contentUri = androidx.core.content.FileProvider.getUriForFile(
+                this,
+                "${packageName}.fileprovider",
+                file
+            )
+            val mime = resolveMimeTypeForFile(file.name)
+            val viewIntent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                setDataAndType(contentUri, mime)
+                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(android.content.Intent.createChooser(viewIntent, "Mở tài liệu: ${file.name}"))
+        } catch (e: Exception) {
+            Toast.makeText(
+                this,
+                "Đã lưu tệp '${file.name}' trong máy nhưng chưa có ứng dụng đọc định dạng này.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun downloadOfferedFileFromTeacher(
+        fileId: String,
+        rawFileName: String,
+        autoOpen: Boolean,
+        webPort: Int,
+        token: String,
+        explicitEndpointPath: String? = null
+    ) {
+        val teacherHost = (currentTeacherIp ?: discoveredTeacherIp ?: "10.0.2.2").trim()
+        val activePort = if (webPort > 0) webPort else currentTeacherWebPort
+        val activeToken = token.ifBlank { currentBroadcastToken }
+        val cleanName = rawFileName.substringAfterLast('/').substringAfterLast('\\')
+            .replace(Regex("[<>:\"|?*]"), "_")
+            .ifBlank { "TaiLieu_LopHoc.dat" }
+
+        val downloadUrl = if (!explicitEndpointPath.isNullOrBlank()) {
+            "http://$teacherHost:$activePort$explicitEndpointPath"
+        } else {
+            val encId = java.net.URLEncoder.encode(fileId, "UTF-8")
+            val encTok = java.net.URLEncoder.encode(activeToken, "UTF-8")
+            "http://$teacherHost:$activePort/api/files/download?id=$encId&token=$encTok"
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Random jitter 30–320ms để 40 tablet tải êm không nghẽn Wi-Fi AP
+                delay((30L..320L).random())
+
+                val dlDir = java.io.File(getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS), "QASmartClass")
+                if (!dlDir.exists()) dlDir.mkdirs()
+
+                var targetFile = java.io.File(dlDir, cleanName)
+                var dupIdx = 1
+                while (targetFile.exists()) {
+                    val base = cleanName.substringBeforeLast('.', cleanName)
+                    val ext = cleanName.substringAfterLast('.', "")
+                    val nextName = if (ext.isNotEmpty()) "${base}_$dupIdx.$ext" else "${base}_$dupIdx"
+                    targetFile = java.io.File(dlDir, nextName)
+                    dupIdx++
+                }
+                val partFile = java.io.File(dlDir, "${targetFile.name}.part")
+
+                val conn = (URL(downloadUrl).openConnection() as HttpURLConnection).apply {
+                    requestMethod = "GET"
+                    connectTimeout = 8000
+                    readTimeout = 60000
+                    setRequestProperty("Connection", "close")
+                }
+
+                val code = conn.responseCode
+                if (code !in 200..206) {
+                    conn.disconnect()
+                    if (fileId.isNotBlank()) {
+                        sendRawTcpLine("FILE_PROGRESS|$fileId|0|ERR|HTTP_$code")
+                    }
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@MainActivity, "⚠️ Lỗi tải tài liệu $cleanName (HTTP $code)", Toast.LENGTH_SHORT).show()
+                    }
+                    return@launch
+                }
+
+                val totalBytes = conn.contentLengthLong
+                var receivedBytes = 0L
+                var lastPctSent = -1
+
+                conn.inputStream.use { input ->
+                    java.io.FileOutputStream(partFile).use { fos ->
+                        val buf = ByteArray(65536)
+                        var read: Int
+                        while (input.read(buf).also { read = it } > 0) {
+                            fos.write(buf, 0, read)
+                            receivedBytes += read
+                            if (totalBytes > 0 && fileId.isNotBlank()) {
+                                val pct = ((receivedBytes * 100L) / totalBytes).toInt().coerceIn(0, 99)
+                                if (pct >= lastPctSent + 30) {
+                                    lastPctSent = pct
+                                    sendRawTcpLine("FILE_PROGRESS|$fileId|$pct|DOWNLOADING")
+                                }
+                            }
+                        }
+                        fos.flush()
+                    }
+                }
+                conn.disconnect()
+
+                if (targetFile.exists()) targetFile.delete()
+                partFile.renameTo(targetFile)
+
+                if (fileId.isNotBlank()) {
+                    sendRawTcpLine("FILE_PROGRESS|$fileId|100|DONE")
+                }
+
+                val sizeKbText = if (receivedBytes < 1024 * 1024) {
+                    String.format(Locale.US, "%.1f KB", receivedBytes / 1024.0)
+                } else {
+                    String.format(Locale.US, "%.1f MB", receivedBytes / (1024.0 * 1024.0))
+                }
+                val nowText = SimpleDateFormat("HH:mm • dd/MM", Locale.getDefault()).format(Date())
+
+                withContext(Dispatchers.Main) {
+                    receivedTeacherFiles.removeAll { it.urlOrPath == targetFile.absolutePath }
+                    receivedTeacherFiles.add(
+                        0,
+                        ReceivedFileItem(
+                            fileName = targetFile.name,
+                            urlOrPath = targetFile.absolutePath,
+                            timeText = "Nhận từ Giáo viên ($sizeKbText) lúc $nowText",
+                            isLocalSnapshot = false
+                        )
+                    )
+                    refreshReceivedFilesPanel()
+                    refreshLatestTeacherFileBanner()
+                    if (::badgeRailFiles.isInitialized && currentTab != 3) {
+                        badgeRailFiles.visibility = View.VISIBLE
+                    }
+                    if (currentTab == 1 && currentWorkSubTab == "HOMEWORK") {
+                        switchWorkSubTab("HOMEWORK")
+                    }
+                    Toast.makeText(this@MainActivity, "📥 Đã lưu tài liệu từ Giáo viên: ${targetFile.name}", Toast.LENGTH_LONG).show()
+
+                    if (autoOpen) {
+                        val extLow = targetFile.extension.lowercase(Locale.ROOT)
+                        if (extLow !in setOf("apk", "exe", "bat", "sh")) {
+                            openLocalReceivedFile(targetFile, targetFile.name)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "downloadOfferedFileFromTeacher error ($downloadUrl): ${e.message}")
+                if (fileId.isNotBlank()) {
+                    sendRawTcpLine("FILE_PROGRESS|$fileId|0|ERR|${(e.message ?: "IO").replace('|', ' ')}")
+                }
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, "⚠️ Không tải được tệp $cleanName: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     private fun refreshReceivedFilesPanel() {
         if (!::layoutReceivedFiles.isInitialized) return
         layoutReceivedFiles.removeAllViews()
         val density = resources.displayMetrics.density
         fun dp(v: Int): Int = (v * density).toInt()
 
-        // Quét thêm các ảnh/tệp đã lưu trước đó trong thư mục cục bộ
+        // Quét cả thư mục Tài liệu Giáo viên gửi (Downloads/QASmartClass) và Ảnh chụp bài giảng (Pictures/QASmartClass)
         val combined = mutableListOf<ReceivedFileItem>()
         combined.addAll(receivedTeacherFiles)
         try {
+            val dlDir = java.io.File(getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS), "QASmartClass")
             val picDir = java.io.File(getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES), "QASmartClass")
-            picDir.listFiles()?.sortedByDescending { it.lastModified() }?.take(12)?.forEach { f ->
+            val diskFiles = mutableListOf<Pair<java.io.File, Boolean>>()
+            dlDir.listFiles()?.filter { it.isFile && !it.name.endsWith(".part") }?.forEach { diskFiles.add(it to false) }
+            picDir.listFiles()?.filter { it.isFile && !it.name.endsWith(".part") }?.forEach { diskFiles.add(it to true) }
+
+            diskFiles.sortedByDescending { it.first.lastModified() }.take(24).forEach { (f, isSnap) ->
                 if (combined.none { it.urlOrPath == f.absolutePath }) {
                     val t = SimpleDateFormat("HH:mm • dd/MM", Locale.getDefault()).format(Date(f.lastModified()))
-                    combined.add(ReceivedFileItem(f.name, f.absolutePath, "Đã lưu lúc $t", isLocalSnapshot = true))
+                    val labelPrefix = if (isSnap) "Ảnh chụp lúc" else "Đã lưu lúc"
+                    combined.add(ReceivedFileItem(f.name, f.absolutePath, "$labelPrefix $t", isLocalSnapshot = isSnap))
                 }
             }
         } catch (_: Exception) {}
@@ -1301,7 +1985,7 @@ class MainActivity : AppCompatActivity() {
                 gravity = Gravity.CENTER
             })
             emptyBox.addView(TextView(this).apply {
-                text = "Khi Giáo viên gửi tệp bài giảng hoặc khi bạn bấm '📸 Chụp lưu' trên màn hình chiếu, tệp sẽ xuất hiện tại đây."
+                text = "Khi Giáo viên phát đề/tài liệu hoặc khi bạn bấm '📸 Chụp lưu', tệp sẽ tự động lưu tại đây."
                 textSize = 13f
                 setTextColor(0xFF64748B.toInt())
                 gravity = Gravity.CENTER
@@ -1312,23 +1996,54 @@ class MainActivity : AppCompatActivity() {
         }
 
         combined.forEach { item ->
+            val localFileObj = java.io.File(item.urlOrPath)
+            val isLocalOnDisk = localFileObj.exists()
+            val extLow = item.fileName.substringAfterLast('.', "").lowercase(Locale.ROOT)
+            val isImageFile = isLocalOnDisk && extLow in setOf("jpg", "jpeg", "png", "webp", "bmp")
+            val isInAppPreviewable = isLocalOnDisk && extLow in setOf("jpg", "jpeg", "png", "webp", "bmp", "txt", "md", "csv", "log", "json", "xml")
+            val fileEmoji = when {
+                item.isLocalSnapshot || extLow in setOf("jpg", "jpeg", "png", "webp", "bmp") -> "🖼️"
+                extLow == "pdf" -> "📕"
+                extLow in setOf("doc", "docx", "txt") -> "📝"
+                extLow in setOf("xls", "xlsx") -> "📊"
+                extLow in setOf("ppt", "pptx") -> "📋"
+                extLow in setOf("mp4", "webm", "mkv") -> "🎬"
+                else -> "📄"
+            }
+
             val row = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
                 setBackgroundResource(R.drawable.bg_m3_tonal_card)
-                setPadding(dp(14), dp(12), dp(14), dp(12))
+                setPadding(dp(12), dp(10), dp(12), dp(10))
+                isClickable = true
+                isFocusable = true
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply { bottomMargin = dp(8) }
             }
 
-            val iconText = TextView(this).apply {
-                text = if (item.isLocalSnapshot) "🖼️" else "📄"
-                textSize = 18f
-                setPadding(0, 0, dp(12), 0)
+            val thumbBmp = if (isImageFile) decodeSampledBitmapFromFile(localFileObj, 140) else null
+            if (thumbBmp != null) {
+                val thumbView = ImageView(this).apply {
+                    setImageBitmap(thumbBmp)
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    setBackgroundResource(R.drawable.bg_m3_surface_card)
+                    clipToOutline = true
+                    layoutParams = LinearLayout.LayoutParams(dp(46), dp(46)).apply {
+                        marginEnd = dp(12)
+                    }
+                }
+                row.addView(thumbView)
+            } else {
+                val iconText = TextView(this).apply {
+                    text = fileEmoji
+                    textSize = 18f
+                    setPadding(0, 0, dp(12), 0)
+                }
+                row.addView(iconText)
             }
-            row.addView(iconText)
 
             val infoCol = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
@@ -1340,6 +2055,7 @@ class MainActivity : AppCompatActivity() {
                 setTypeface(null, Typeface.BOLD)
                 setTextColor(0xFF0F172A.toInt())
                 maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.MIDDLE
             })
             infoCol.addView(TextView(this).apply {
                 text = item.timeText
@@ -1348,8 +2064,26 @@ class MainActivity : AppCompatActivity() {
             })
             row.addView(infoCol)
 
+            val openAction = View.OnClickListener {
+                if (isLocalOnDisk) {
+                    openLocalReceivedFile(localFileObj, item.fileName)
+                } else {
+                    try {
+                        startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(item.urlOrPath)).apply {
+                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        })
+                    } catch (_: Exception) {
+                        Toast.makeText(this@MainActivity, "Không thể mở đường dẫn: ${item.urlOrPath}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
             val btnOpen = Button(this).apply {
-                text = if (item.isLocalSnapshot) "Xem ảnh" else "Tải / Mở"
+                text = when {
+                    isInAppPreviewable -> "👁 Xem lại"
+                    isLocalOnDisk -> "📂 Mở tệp"
+                    else -> "Tải về"
+                }
                 isAllCaps = false
                 textSize = 12.5f
                 setTypeface(null, Typeface.BOLD)
@@ -1358,33 +2092,12 @@ class MainActivity : AppCompatActivity() {
                 minWidth = 0
                 minimumWidth = 0
                 setPadding(dp(12), 0, dp(12), 0)
-                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(34))
-                setOnClickListener {
-                    if (item.isLocalSnapshot) {
-                        val bmp = BitmapFactory.decodeFile(item.urlOrPath)
-                        if (bmp != null) {
-                            val iv = ImageView(this@MainActivity).apply {
-                                setImageBitmap(bmp)
-                                adjustViewBounds = true
-                                setPadding(dp(12), dp(12), dp(12), dp(12))
-                            }
-                            AlertDialog.Builder(this@MainActivity)
-                                .setTitle(item.fileName)
-                                .setView(iv)
-                                .setPositiveButton("Đóng", null)
-                                .show()
-                        }
-                    } else {
-                        try {
-                            startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(item.urlOrPath)).apply {
-                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                            })
-                        } catch (_: Exception) {
-                            Toast.makeText(this@MainActivity, "Không thể mở đường dẫn: ${item.urlOrPath}", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(34)).apply {
+                    marginStart = dp(8)
                 }
+                setOnClickListener(openAction)
             }
+            row.setOnClickListener(openAction)
             row.addView(btnOpen)
             layoutReceivedFiles.addView(row)
         }
@@ -1639,7 +2352,12 @@ class MainActivity : AppCompatActivity() {
                 badgeRailChat.visibility = View.GONE
                 scrollChat.post { scrollChat.fullScroll(View.FOCUS_DOWN) }
             }
-            3 -> refreshReceivedFilesPanel()
+            3 -> {
+                if (::badgeRailFiles.isInitialized) {
+                    badgeRailFiles.visibility = View.GONE
+                }
+                refreshReceivedFilesPanel()
+            }
         }
     }
 
@@ -1947,9 +2665,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             isAssignmentView -> {
-                if (activeHwTitle.isBlank() && activeHwDesc.isBlank()) {
+                val teacherFiles = getAvailableTeacherFiles(8)
+                if (activeHwTitle.isBlank() && activeHwDesc.isBlank() && teacherFiles.isEmpty()) {
                     iconSoonWrapper.visibility = View.VISIBLE
-                    txtSoonSubtitle.text = "Hiện chưa có bài tập mới nào được giao. Khi Giáo viên giao bài tập trên lớp, đề bài và khung làm bài sẽ hiện tại đây."
+                    txtSoonSubtitle.text = "Hiện chưa có bài tập mới nào được giao. Khi Giáo viên giao bài tập hoặc gửi đề trên lớp, đề bài và khung làm bài sẽ hiện tại đây."
                     layoutInteractiveFeature.visibility = View.GONE
                     return
                 }
@@ -1958,7 +2677,7 @@ class MainActivity : AppCompatActivity() {
                 txtSoonSubtitle.text = if (hwSubmitted) {
                     lastHwAckMessage.ifBlank { "Đã nộp bài tập thành công cho Giáo viên." }
                 } else {
-                    "Hoàn thành nội dung trả lời bên dưới và bấm Nộp bài tập"
+                    "Bấm '👁 Xem lại' để mở đề/tài liệu Giáo viên gửi bất cứ lúc nào và nhập bài làm bên dưới"
                 }
                 layoutInteractiveFeature.visibility = View.VISIBLE
 
@@ -1982,7 +2701,9 @@ class MainActivity : AppCompatActivity() {
                 card.addView(tvSubject)
 
                 val tvTitle = TextView(this).apply {
-                    text = activeHwTitle.ifBlank { "Bài tập Giáo viên giao" }
+                    text = activeHwTitle.ifBlank {
+                        if (teacherFiles.isNotEmpty()) "Đề bài / Tài liệu Giáo viên gửi" else "Bài tập Giáo viên giao"
+                    }
                     textSize = 16f
                     setTypeface(null, Typeface.BOLD)
                     setTextColor(0xFF0F172A.toInt())
@@ -1991,12 +2712,131 @@ class MainActivity : AppCompatActivity() {
                 card.addView(tvTitle)
 
                 val tvDesc = TextView(this).apply {
-                    text = activeHwDesc.ifBlank { "Trình bày lời giải hoặc câu trả lời vào ô bên dưới." }
+                    text = activeHwDesc.ifBlank {
+                        if (teacherFiles.isNotEmpty()) {
+                            "Xem đề bài/tài liệu đính kèm bên dưới và trình bày câu trả lời của bạn."
+                        } else {
+                            "Trình bày lời giải hoặc câu trả lời vào ô bên dưới."
+                        }
+                    }
                     textSize = 14f
                     setTextColor(0xFF334155.toInt())
-                    setPadding(0, 0, 0, dp(12))
+                    setPadding(0, 0, 0, dp(10))
                 }
                 card.addView(tvDesc)
+
+                // Danh sách Đề bài / Tài liệu Giáo viên gửi — Bấm xem lại thoải mái không giới hạn số lần!
+                if (teacherFiles.isNotEmpty()) {
+                    val attachSection = LinearLayout(this).apply {
+                        orientation = LinearLayout.VERTICAL
+                        setBackgroundResource(R.drawable.bg_callout_blue)
+                        setPadding(dp(12), dp(10), dp(12), dp(6))
+                        layoutParams = LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                        ).apply { bottomMargin = dp(12) }
+                    }
+
+                    val attachHeader = TextView(this).apply {
+                        text = "📎 Đề bài / Tài liệu từ Giáo viên (${teacherFiles.size} tệp — Chạm để xem lại)"
+                        textSize = 12.5f
+                        setTypeface(null, Typeface.BOLD)
+                        setTextColor(0xFF1A73E8.toInt())
+                        setPadding(0, 0, 0, dp(8))
+                    }
+                    attachSection.addView(attachHeader)
+
+                    teacherFiles.forEach { fItem ->
+                        val localFile = java.io.File(fItem.urlOrPath)
+                        val extLow = fItem.fileName.substringAfterLast('.', "").lowercase(Locale.ROOT)
+                        val isImg = localFile.exists() && extLow in setOf("jpg", "jpeg", "png", "webp", "bmp")
+                        val fileEmoji = when {
+                            isImg -> "🖼️"
+                            extLow == "pdf" -> "📕"
+                            extLow in setOf("doc", "docx", "txt") -> "📝"
+                            extLow in setOf("xls", "xlsx") -> "📊"
+                            extLow in setOf("ppt", "pptx") -> "📋"
+                            else -> "📄"
+                        }
+
+                        val fileRow = LinearLayout(this).apply {
+                            orientation = LinearLayout.HORIZONTAL
+                            gravity = Gravity.CENTER_VERTICAL
+                            setBackgroundResource(R.drawable.bg_m3_surface_card)
+                            setPadding(dp(10), dp(8), dp(10), dp(8))
+                            isClickable = true
+                            isFocusable = true
+                            layoutParams = LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT
+                            ).apply { bottomMargin = dp(6) }
+                        }
+
+                        val thumb = if (isImg) decodeSampledBitmapFromFile(localFile, 160) else null
+                        if (thumb != null) {
+                            val ivThumb = ImageView(this).apply {
+                                setImageBitmap(thumb)
+                                scaleType = ImageView.ScaleType.CENTER_CROP
+                                setBackgroundResource(R.drawable.bg_m3_tonal_card)
+                                clipToOutline = true
+                                layoutParams = LinearLayout.LayoutParams(dp(50), dp(50)).apply {
+                                    marginEnd = dp(10)
+                                }
+                            }
+                            fileRow.addView(ivThumb)
+                        } else {
+                            fileRow.addView(TextView(this).apply {
+                                text = fileEmoji
+                                textSize = 18f
+                                setPadding(0, 0, dp(10), 0)
+                            })
+                        }
+
+                        val metaCol = LinearLayout(this).apply {
+                            orientation = LinearLayout.VERTICAL
+                            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                        }
+                        metaCol.addView(TextView(this).apply {
+                            text = fItem.fileName
+                            textSize = 13.5f
+                            setTypeface(null, Typeface.BOLD)
+                            setTextColor(0xFF0F172A.toInt())
+                            maxLines = 1
+                            ellipsize = android.text.TextUtils.TruncateAt.MIDDLE
+                        })
+                        metaCol.addView(TextView(this).apply {
+                            text = fItem.timeText
+                            textSize = 11.5f
+                            setTextColor(0xFF64748B.toInt())
+                        })
+                        fileRow.addView(metaCol)
+
+                        val reopenAction = View.OnClickListener {
+                            openLocalReceivedFile(localFile, fItem.fileName)
+                        }
+
+                        val btnPreviewAgain = Button(this).apply {
+                            text = "👁 Xem lại"
+                            isAllCaps = false
+                            textSize = 12.5f
+                            setTypeface(null, Typeface.BOLD)
+                            setTextColor(0xFF1A73E8.toInt())
+                            setBackgroundResource(R.drawable.bg_m3_chip_selected)
+                            minWidth = 0
+                            minimumWidth = 0
+                            setPadding(dp(12), 0, dp(12), 0)
+                            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(34)).apply {
+                                marginStart = dp(8)
+                            }
+                            setOnClickListener(reopenAction)
+                        }
+                        fileRow.setOnClickListener(reopenAction)
+                        fileRow.addView(btnPreviewAgain)
+                        attachSection.addView(fileRow)
+                    }
+
+                    card.addView(attachSection)
+                }
 
                 val edtAnswer = EditText(this).apply {
                     hint = "Nhập bài làm / câu trả lời của bạn tại đây..."
@@ -2007,19 +2847,42 @@ class MainActivity : AppCompatActivity() {
                     setBackgroundResource(R.drawable.bg_m3_pin_input)
                     setPadding(dp(14), dp(12), dp(14), dp(12))
                     isEnabled = !hwSubmitted
+                    addTextChangedListener(object : android.text.TextWatcher {
+                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                        override fun afterTextChanged(s: android.text.Editable?) {
+                            hwDraftAnswer = s?.toString().orEmpty()
+                        }
+                    })
                 }
                 card.addView(edtAnswer)
                 layoutInteractiveFeature.addView(card)
 
+                val btnPickHwFile = Button(this).apply {
+                    text = "📎 Đính kèm tệp / Ảnh bài làm từ thiết bị để nộp"
+                    isAllCaps = false
+                    textSize = 14f
+                    setTypeface(null, Typeface.BOLD)
+                    setTextColor(0xFF1A73E8.toInt())
+                    setBackgroundResource(R.drawable.bg_m3_outlined_pill)
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        dp(46)
+                    ).apply { bottomMargin = dp(10) }
+                    setOnClickListener {
+                        launchStudentFilePicker()
+                    }
+                }
+                layoutInteractiveFeature.addView(btnPickHwFile)
+
                 val btnSubmitHw = Button(this).apply {
-                    text = if (hwSubmitted) "ĐÃ NỘP BÀI TẬP" else "Nộp bài tập cho Giáo viên"
+                    text = if (hwSubmitted) "ĐÃ NỘP BÀI TẬP (Có thể nộp bổ sung)" else "Nộp bài tự luận cho Giáo viên"
                     isAllCaps = false
                     textSize = 15f
                     setTypeface(null, Typeface.BOLD)
                     setTextColor(0xFFFFFFFF.toInt())
                     setBackgroundResource(R.drawable.bg_m3_primary_pill)
-                    backgroundTintList = ColorStateList.valueOf(if (hwSubmitted) 0xFF64748B.toInt() else 0xFF16A34A.toInt())
-                    isEnabled = !hwSubmitted
+                    backgroundTintList = ColorStateList.valueOf(if (hwSubmitted) 0xFF0284C7.toInt() else 0xFF16A34A.toInt())
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         dp(48)
@@ -2027,16 +2890,31 @@ class MainActivity : AppCompatActivity() {
                     setOnClickListener {
                         val ans = edtAnswer.text.toString().trim()
                         if (ans.isBlank()) {
-                            Toast.makeText(this@MainActivity, "Vui lòng nhập nội dung bài làm trước khi nộp!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@MainActivity, "Vui lòng nhập nội dung bài làm hoặc bấm '📎 Đính kèm tệp' để nộp file!", Toast.LENGTH_SHORT).show()
                             return@setOnClickListener
                         }
                         hwDraftAnswer = ans
                         val safeAns = ans.replace("|", " ").replace("\n", "\\n")
                         val hwIdVal = if (activeHwId > 0) activeHwId else 1
                         sendRawTcpLine("HOMEWORK_SUBMIT|$hwIdVal|$safeAns|[]")
-                        hwSubmitted = true
-                        Toast.makeText(this@MainActivity, "Đã gửi bài tập về máy Giáo viên!", Toast.LENGTH_SHORT).show()
-                        renderInteractiveFeaturePanel(btnId, title)
+
+                        // Đồng thời lưu thành tệp .txt chuẩn hóa đẩy thẳng vào thư mục Submissions của Giáo viên
+                        lifecycleScope.launch {
+                            val ts = SimpleDateFormat("HHmmss", Locale.US).format(Date())
+                            val tmpTxt = java.io.File(cacheDir, "BaiTuLuan_$ts.txt")
+                            withContext(Dispatchers.IO) {
+                                tmpTxt.writeText(ans, Charsets.UTF_8)
+                            }
+                            val ok = uploadLocalFileToTeacher(tmpTxt, tmpTxt.name)
+                            try { tmpTxt.delete() } catch (_: Exception) {}
+                            hwSubmitted = true
+                            if (ok.first) {
+                                Toast.makeText(this@MainActivity, "✅ Đã nộp bài tập vào thư mục Thu bài của Giáo viên!", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this@MainActivity, "Đã gửi câu trả lời (${ok.second})", Toast.LENGTH_SHORT).show()
+                            }
+                            renderInteractiveFeaturePanel(btnId, title)
+                        }
                     }
                 }
                 layoutInteractiveFeature.addView(btnSubmitHw)
@@ -2134,6 +3012,7 @@ class MainActivity : AppCompatActivity() {
                 "Giáo viên ($teacherDisplay) đang điều hành nội dung bài học trên bảng chính."
             }
         }
+        refreshLatestTeacherFileBanner()
     }
 
     private fun selectHandRaiseReason(reason: String) {
@@ -2276,45 +3155,264 @@ class MainActivity : AppCompatActivity() {
         imgInlineBroadcast.scaleY = scale
     }
 
+    private suspend fun uploadLocalFileToTeacher(
+        file: java.io.File,
+        originalDisplayName: String,
+        onProgress: ((Int) -> Unit)? = null
+    ): Pair<Boolean, String> = withContext(Dispatchers.IO) {
+        if (!file.exists() || file.length() <= 0L) {
+            return@withContext false to "Tệp rỗng (0 byte) hoặc không đọc được."
+        }
+        val teacherHost = (currentTeacherIp ?: discoveredTeacherIp ?: "").trim()
+        if (teacherHost.isBlank()) {
+            return@withContext false to "Chưa kết nối tới máy Giáo viên."
+        }
+        val webPort = if (currentTeacherWebPort > 0) currentTeacherWebPort else 8080
+        val stuCode = currentStudentCode.ifBlank { edtStudentCode.text.toString().trim().ifBlank { "HS001" } }
+        val stuName = currentStudentName.ifBlank { edtStudentName.text.toString().trim().ifBlank { "Hoc_sinh" } }
+
+        val encCode = java.net.URLEncoder.encode(stuCode, "UTF-8")
+        val encName = java.net.URLEncoder.encode(stuName, "UTF-8")
+        val encFile = java.net.URLEncoder.encode(originalDisplayName, "UTF-8")
+        val encTok = java.net.URLEncoder.encode(currentBroadcastToken, "UTF-8")
+
+        val uploadUrl = "http://$teacherHost:$webPort/api/files/upload?code=$encCode&name=$encName&filename=$encFile&token=$encTok"
+        try {
+            val totalLen = file.length()
+            val conn = (URL(uploadUrl).openConnection() as HttpURLConnection).apply {
+                requestMethod = "POST"
+                doOutput = true
+                doInput = true
+                useCaches = false
+                connectTimeout = 8000
+                readTimeout = 90000
+                setFixedLengthStreamingMode(totalLen)
+                setRequestProperty("Content-Type", "application/octet-stream")
+                setRequestProperty("Connection", "close")
+            }
+
+            var sent = 0L
+            var lastPct = -1
+            java.io.FileInputStream(file).use { fis ->
+                conn.outputStream.use { os ->
+                    val buf = ByteArray(65536)
+                    var read: Int
+                    while (fis.read(buf).also { read = it } > 0) {
+                        os.write(buf, 0, read)
+                        sent += read
+                        val pct = ((sent * 100L) / totalLen).toInt().coerceIn(0, 100)
+                        if (pct != lastPct) {
+                            lastPct = pct
+                            onProgress?.invoke(pct)
+                        }
+                    }
+                    os.flush()
+                }
+            }
+
+            val respCode = conn.responseCode
+            val respBody = try {
+                val stream = if (respCode in 200..299) conn.inputStream else conn.errorStream
+                stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
+            } catch (_: Exception) { "" }
+            conn.disconnect()
+
+            var serverMsg = if (respCode in 200..299) "Nộp bài thành công!" else "Lỗi HTTP $respCode"
+            var ok = respCode in 200..299
+            if (respBody.isNotBlank()) {
+                try {
+                    val obj = org.json.JSONObject(respBody)
+                    if (obj.has("ok")) ok = obj.optBoolean("ok", ok)
+                    val m = obj.optString("message", "")
+                    if (m.isNotBlank()) serverMsg = m
+                } catch (_: Exception) {}
+            }
+            ok to serverMsg
+        } catch (e: Exception) {
+            Log.w(TAG, "uploadLocalFileToTeacher failed ($uploadUrl): ${e.message}")
+            false to "Lỗi mạng khi nộp tệp: ${e.message}"
+        }
+    }
+
+    private fun uploadStudentUriToTeacher(uri: android.net.Uri) {
+        if (tcpSocket?.isConnected != true && currentTeacherIp.isNullOrBlank() && discoveredTeacherIp.isNullOrBlank()) {
+            Toast.makeText(this, "Vui lòng kết nối vào lớp học trước khi nộp tệp!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            layoutUploadProgress.visibility = View.VISIBLE
+            progressUploadBar.progress = 0
+            txtUploadPercent.text = "0%"
+            btnAttachQuickFile.isEnabled = false
+            btnSubmitFileFromDocs.isEnabled = false
+
+            var tempCopy: java.io.File? = null
+            try {
+                val meta = withContext(Dispatchers.IO) {
+                    var displayName = "BaiLam_${SimpleDateFormat("HHmmss", Locale.US).format(Date())}.dat"
+                    var fileSize = -1L
+                    contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                        val nameIdx = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                        val sizeIdx = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE)
+                        if (cursor.moveToFirst()) {
+                            if (nameIdx >= 0 && !cursor.isNull(nameIdx)) {
+                                displayName = cursor.getString(nameIdx)
+                            }
+                            if (sizeIdx >= 0 && !cursor.isNull(sizeIdx)) {
+                                fileSize = cursor.getLong(sizeIdx)
+                            }
+                        }
+                    }
+                    displayName to fileSize
+                }
+
+                val origName = meta.first.replace(Regex("[<>:\"|?*]"), "_").ifBlank { "BaiLam.dat" }
+                if (meta.second > 200L * 1024L * 1024L) {
+                    Toast.makeText(this@MainActivity, "⚠️ Tệp '$origName' vượt quá giới hạn 200 MB!", Toast.LENGTH_LONG).show()
+                    return@launch
+                }
+
+                // Sao luồng 64KB sang cache cục bộ để đảm bảo Content-Length chính xác 100% với mọi ContentProvider
+                val stagedFile = withContext(Dispatchers.IO) {
+                    val tmp = java.io.File(cacheDir, "upload_${System.currentTimeMillis()}_$origName")
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        java.io.FileOutputStream(tmp).use { fos ->
+                            val buf = ByteArray(65536)
+                            var r: Int
+                            while (input.read(buf).also { r = it } > 0) {
+                                fos.write(buf, 0, r)
+                            }
+                            fos.flush()
+                        }
+                    } ?: throw java.io.IOException("Không đọc được nội dung tệp đã chọn")
+                    tmp
+                }
+                tempCopy = stagedFile
+
+                if (stagedFile.length() > 200L * 1024L * 1024L) {
+                    Toast.makeText(this@MainActivity, "⚠️ Tệp '$origName' vượt quá giới hạn 200 MB!", Toast.LENGTH_LONG).show()
+                    return@launch
+                }
+
+                Toast.makeText(this@MainActivity, "📤 Đang nộp tệp '$origName' lên máy Giáo viên...", Toast.LENGTH_SHORT).show()
+                val res = uploadLocalFileToTeacher(stagedFile, origName) { pct ->
+                    runOnUiThread {
+                        progressUploadBar.progress = pct
+                        txtUploadPercent.text = "$pct%"
+                    }
+                }
+
+                if (res.first) {
+                    hwSubmitted = true
+                    progressUploadBar.progress = 100
+                    txtUploadPercent.text = "100%"
+                    Toast.makeText(this@MainActivity, "✅ Đã nộp thành công '$origName' cho Giáo viên!", Toast.LENGTH_LONG).show()
+                    if (currentTab == 1) {
+                        switchWorkSubTab(currentWorkSubTab)
+                    }
+                } else {
+                    Toast.makeText(this@MainActivity, "❌ Không nộp được '$origName': ${res.second}", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "❌ Lỗi chọn/nộp tệp: ${e.message}", Toast.LENGTH_LONG).show()
+            } finally {
+                try { tempCopy?.delete() } catch (_: Exception) {}
+                delay(1200)
+                layoutUploadProgress.visibility = View.GONE
+                btnAttachQuickFile.isEnabled = true
+                btnSubmitFileFromDocs.isEnabled = true
+            }
+        }
+    }
+
     private fun performQuickNoteOrHomeworkUpload() {
         val noteText = edtQuickLessonAnswer.text.toString().trim()
         val strokeCount = quickNoteCanvas.getStrokeCount()
         if (noteText.isBlank() && strokeCount == 0) {
-            Toast.makeText(this, "Vui lòng viết nháp hoặc nhập đáp án trước khi gửi!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Vui lòng viết nháp, nhập đáp án hoặc bấm '📎 Chọn tệp nộp'!", Toast.LENGTH_SHORT).show()
             return
         }
 
         btnQuickSubmitWork.isEnabled = false
-        btnQuickSubmitWork.text = "Đang gửi tới Giáo viên..."
+        btnQuickSubmitWork.text = "Đang nộp..."
         layoutUploadProgress.visibility = View.VISIBLE
         progressUploadBar.progress = 0
         txtUploadPercent.text = "0%"
 
         lifecycleScope.launch {
-            for (p in listOf(30, 65, 100)) {
-                delay(90)
-                progressUploadBar.progress = p
-                txtUploadPercent.text = "$p%"
-            }
-
-            val hwIdVal = if (activeHwId > 0) activeHwId else 1
-            val payloadSummary = buildString {
-                if (noteText.isNotBlank()) append(noteText.replace("|", " "))
-                if (strokeCount > 0) {
-                    if (isNotEmpty()) append(" ")
-                    append("[Kèm sổ nháp $strokeCount nét]")
+            var tempArtifact: java.io.File? = null
+            try {
+                val ts = SimpleDateFormat("HHmmss", Locale.US).format(Date())
+                val artifact: Pair<java.io.File, String> = if (strokeCount > 0 && quickNoteCanvas.width > 0 && quickNoteCanvas.height > 0) {
+                    val w = quickNoteCanvas.width
+                    val extraHeaderH = if (noteText.isNotBlank()) 72 else 0
+                    val h = quickNoteCanvas.height + extraHeaderH
+                    val bmp = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
+                    val canvas = android.graphics.Canvas(bmp)
+                    canvas.drawColor(0xFFFFFFFF.toInt())
+                    if (noteText.isNotBlank()) {
+                        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                            color = 0xFF0F172A.toInt()
+                            textSize = 28f
+                            typeface = Typeface.DEFAULT_BOLD
+                        }
+                        canvas.drawText("Đáp án: $noteText", 24f, 46f, paint)
+                        canvas.translate(0f, extraHeaderH.toFloat())
+                    }
+                    quickNoteCanvas.draw(canvas)
+                    val pngFile = java.io.File(cacheDir, "BaiNhap_$ts.png")
+                    withContext(Dispatchers.IO) {
+                        java.io.FileOutputStream(pngFile).use { fos ->
+                            bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, fos)
+                        }
+                    }
+                    bmp.recycle()
+                    pngFile to pngFile.name
+                } else {
+                    val txtFile = java.io.File(cacheDir, "DapAn_$ts.txt")
+                    withContext(Dispatchers.IO) {
+                        txtFile.writeText(noteText, Charsets.UTF_8)
+                    }
+                    txtFile to txtFile.name
                 }
-            }
-            sendRawTcpLine("HOMEWORK_SUBMIT|$hwIdVal|$payloadSummary|[]")
-            hwSubmitted = true
-            edtQuickLessonAnswer.setText("")
-            btnQuickSubmitWork.text = "✓ Đã gửi cho Giáo viên"
-            Toast.makeText(this@MainActivity, "Đã gửi bài làm / ghi chú về máy Giáo viên!", Toast.LENGTH_SHORT).show()
+                tempArtifact = artifact.first
 
-            delay(1600)
-            layoutUploadProgress.visibility = View.GONE
-            btnQuickSubmitWork.text = "Gửi bài làm / Ghi chú"
-            btnQuickSubmitWork.isEnabled = true
+                val uploadRes = uploadLocalFileToTeacher(artifact.first, artifact.second) { pct ->
+                    runOnUiThread {
+                        progressUploadBar.progress = pct
+                        txtUploadPercent.text = "$pct%"
+                    }
+                }
+
+                val hwIdVal = if (activeHwId > 0) activeHwId else 1
+                val payloadSummary = buildString {
+                    if (noteText.isNotBlank()) append(noteText.replace("|", " "))
+                    if (strokeCount > 0) {
+                        if (isNotEmpty()) append(" ")
+                        append("[Kèm ảnh nháp $strokeCount nét]")
+                    }
+                }
+                sendRawTcpLine("HOMEWORK_SUBMIT|$hwIdVal|$payloadSummary|[]")
+
+                if (uploadRes.first) {
+                    hwSubmitted = true
+                    edtQuickLessonAnswer.setText("")
+                    btnQuickSubmitWork.text = "✓ Đã nộp GV"
+                    Toast.makeText(this@MainActivity, "✅ Đã nộp bài làm / trang nháp về máy Giáo viên!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@MainActivity, "⚠️ ${uploadRes.second}", Toast.LENGTH_LONG).show()
+                    btnQuickSubmitWork.text = "Gửi bài làm / Nháp"
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Lỗi nộp bài nháp: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                try { tempArtifact?.delete() } catch (_: Exception) {}
+                delay(1400)
+                layoutUploadProgress.visibility = View.GONE
+                btnQuickSubmitWork.text = "Gửi bài làm / Nháp"
+                btnQuickSubmitWork.isEnabled = true
+            }
         }
     }
 
@@ -2327,13 +3425,16 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                val os = tcpOutputStream ?: return@launch
                 val msg = if (targetState) {
                     "HAND_RAISE|raised=True|reason=$currentHandRaiseReason\n"
                 } else {
                     "HAND_RAISE|raised=False\n"
                 }
-                tcpOutputStream?.write(msg.toByteArray(Charsets.UTF_8))
-                tcpOutputStream?.flush()
+                synchronized(os) {
+                    os.write(msg.toByteArray(Charsets.UTF_8))
+                    os.flush()
+                }
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to send hand raise: ${e.message}")
             }
@@ -2421,9 +3522,12 @@ class MainActivity : AppCompatActivity() {
         }
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                val os = tcpOutputStream ?: return@launch
                 val chatMsg = "CHAT|$studentCode|$wireChannel|$text\n"
-                tcpOutputStream?.write(chatMsg.toByteArray(Charsets.UTF_8))
-                tcpOutputStream?.flush()
+                synchronized(os) {
+                    os.write(chatMsg.toByteArray(Charsets.UTF_8))
+                    os.flush()
+                }
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to send chat: ${e.message}")
             }
@@ -3383,41 +4487,52 @@ class MainActivity : AppCompatActivity() {
                     sendScreenshotToTeacher()
                 }
                 cleanCmd.startsWith("CMD|BLACK_SCREEN") -> {
-                    val on = cleanCmd.split("|").getOrNull(2) == "1"
+                    val cmdParts = cleanCmd.substringBefore("|id=").split("|")
+                    val on = cmdParts.getOrNull(2)?.trim() == "1"
                     if (on) {
                         txtLockTitle.text = "THẦY CÔ ĐANG GIẢNG BÀI - XIN MỜI CHÚ Ý LÊN BẢNG"
                         txtLockMessage.text = "Màn hình thiết bị đã chuyển sang chế độ tập trung nghe giảng."
                         txtLockLessonName.text = "Bài học: ${activeLessonTitle.ifBlank { homeClassName.ifBlank { "Trên bảng chính" } }}"
                         lockOverlay.setBackgroundColor(0xFF000000.toInt())
+                        lockOverlay.bringToFront()
                         lockOverlay.visibility = View.VISIBLE
+                        setImmersiveFullscreen(true)
                         startLockScreenTimer()
                     } else {
                         lockOverlay.visibility = View.GONE
                         stopLockScreenTimer()
+                        setImmersiveFullscreen(isScreenBroadcastActive && broadcastOverlay.visibility == View.VISIBLE && isForceBroadcastMode)
                     }
                 }
                 cleanCmd.startsWith("CMD|LOCK") -> {
-                    val on = cleanCmd.split("|").getOrNull(2) != "0"
+                    val cmdParts = cleanCmd.substringBefore("|id=").split("|")
+                    val arg = cmdParts.getOrNull(2)?.trim()
+                    val on = arg != "0" && !arg.equals("false", ignoreCase = true)
                     if (on) {
                         txtLockTitle.text = "THẦY CÔ ĐANG GIẢNG BÀI - XIN MỜI CHÚ Ý LÊN BẢNG"
                         txtLockMessage.text = "Màn hình máy tính bảng đang tạm khóa thao tác để cả lớp tập trung nghe giảng."
                         txtLockLessonName.text = "Bài học: ${activeLessonTitle.ifBlank { homeClassName.ifBlank { "Trên bảng chính" } }}"
                         lockOverlay.setBackgroundColor(0xF80B0F19.toInt())
+                        lockOverlay.bringToFront()
                         lockOverlay.visibility = View.VISIBLE
+                        setImmersiveFullscreen(true)
                         startLockScreenTimer()
                         heartbeatWatchdog.acquireLock()
-                        Toast.makeText(this, "Giáo viên đã bật chế độ Tập trung nghe giảng", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "🔒 Giáo viên đã khóa màn hình tập trung nghe giảng", Toast.LENGTH_SHORT).show()
                     } else {
                         lockOverlay.visibility = View.GONE
                         stopLockScreenTimer()
                         heartbeatWatchdog.releaseLock()
+                        setImmersiveFullscreen(isScreenBroadcastActive && broadcastOverlay.visibility == View.VISIBLE && isForceBroadcastMode)
+                        Toast.makeText(this, "🔓 Giáo viên đã mở khóa màn hình", Toast.LENGTH_SHORT).show()
                     }
                 }
                 cleanCmd.startsWith("CMD|UNLOCK") -> {
                     lockOverlay.visibility = View.GONE
                     stopLockScreenTimer()
                     heartbeatWatchdog.releaseLock()
-                    Toast.makeText(this, "Giáo viên đã mở khóa màn hình", Toast.LENGTH_SHORT).show()
+                    setImmersiveFullscreen(isScreenBroadcastActive && broadcastOverlay.visibility == View.VISIBLE && isForceBroadcastMode)
+                    Toast.makeText(this, "🔓 Giáo viên đã mở khóa màn hình", Toast.LENGTH_SHORT).show()
                 }
                 cleanCmd.startsWith("CMD|HAND_ACK") -> {
                     updateHandRaiseUI(raised = true, acceptedByTeacher = true)
@@ -3473,6 +4588,12 @@ class MainActivity : AppCompatActivity() {
                     activeLessonSummary = ""
                     refreshHome()
                     Toast.makeText(this, "⏹️ Giáo viên đã kết thúc tiết học", Toast.LENGTH_SHORT).show()
+                }
+                cleanCmd.startsWith("CMD|BROADCAST_ALLOW_EXIT|") -> {
+                    val cmdParts = cleanCmd.substringBefore("|id=").split("|")
+                    val rawFlag = cmdParts.getOrNull(2)?.trim().orEmpty()
+                    val allowExit = rawFlag == "1" || rawFlag.equals("true", ignoreCase = true)
+                    applyBroadcastLockState(isForce = !allowExit, notifyToast = true)
                 }
                 cleanCmd.startsWith("CMD|SCREEN_BROADCAST_STOP") || cleanCmd == "CMD|SCREEN_BROADCAST_STOP" -> {
                     stopHighFrequencyScreenRelay()
@@ -3833,38 +4954,98 @@ class MainActivity : AppCompatActivity() {
                     lockOverlay.visibility = View.VISIBLE
                     disconnectFromTeacher("🔌 Giáo viên đã kết thúc phiên làm việc của thiết bị.")
                 }
-                cleanCmd.startsWith("CMD|FILE_OFFER|") || cleanCmd.startsWith("CMD|FILE_SHARE|") -> {
-                    val payload = cleanCmd.substringBefore("|id=").substringAfter("|").substringAfter("|")
-                    val pParts = payload.split("|")
-                    val fileName = pParts.getOrNull(0)?.ifBlank { "TaiLieu_LopHoc" } ?: "TaiLieu_LopHoc"
-                    val fileUrl = pParts.firstOrNull { it.startsWith("http://", true) || it.startsWith("https://", true) }
-                        ?: "http://${currentTeacherIp ?: discoveredTeacherIp}:$currentTeacherWebPort/files/$fileName"
-                    val nowText = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
-                    receivedTeacherFiles.add(
-                        0,
-                        ReceivedFileItem(
-                            fileName = fileName,
-                            urlOrPath = fileUrl,
-                            timeText = "Nhận từ Giáo viên lúc $nowText",
-                            isLocalSnapshot = false
-                        )
-                    )
-                    refreshReceivedFilesPanel()
-                    Toast.makeText(this, "📁 Giáo viên vừa gửi tệp: $fileName", Toast.LENGTH_LONG).show()
+                cleanCmd.startsWith("CMD|ASSIGNMENT|") -> {
+                    // Format: CMD|ASSIGNMENT|<deadline>|<desc>
+                    val rawAssign = cleanCmd.substringBefore("|id=").removePrefix("CMD|ASSIGNMENT|")
+                    val deadlinePart = rawAssign.substringBefore("|", "")
+                    val descPart = rawAssign.substringAfter("|", "").trim()
+                    hwSubmitted = false
+                    activeHwTitle = "Bài tập / Đề bài từ Giáo viên"
+                    activeHwDeadline = if (deadlinePart.equals("none", ignoreCase = true)) "" else deadlinePart
+                    if (descPart.isNotBlank()) {
+                        activeHwDesc = descPart
+                    }
+                    openWorkSubTabFromTeacherCommand("HOMEWORK")
+                    if (descPart.isNotBlank()) {
+                        Toast.makeText(this, "📋 Bài tập mới: $descPart", Toast.LENGTH_LONG).show()
+                    }
+                }
+                cleanCmd.startsWith("CMD|COLLECT_WORK") -> {
+                    val rawCollect = cleanCmd.substringBefore("|id=").removePrefix("CMD|COLLECT_WORK").removePrefix("|").trim()
+                    if (rawCollect.isNotBlank() && activeHwDesc.isBlank()) {
+                        activeHwTitle = "Yêu cầu nộp bài làm"
+                        activeHwDesc = rawCollect
+                    }
+                    openWorkSubTabFromTeacherCommand("HOMEWORK")
                     AlertDialog.Builder(this)
-                        .setTitle("📁 Nhận tài liệu từ Giáo viên")
-                        .setMessage("Giáo viên vừa gửi tệp bài học:\n• $fileName\n\nTệp đã lưu trong tab 'Tài liệu'. Bạn có muốn mở ngay không?")
-                        .setPositiveButton("Tải & Mở ngay") { _, _ ->
-                            try {
-                                startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(fileUrl)).apply {
-                                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                })
-                            } catch (_: Exception) {
-                                Toast.makeText(this, "Không thể mở đường dẫn tải tệp: $fileUrl", Toast.LENGTH_SHORT).show()
-                            }
+                        .setTitle("🔔 Giáo viên yêu cầu nộp bài")
+                        .setMessage(rawCollect.ifBlank { "Giáo viên đang thu bài làm. Bạn muốn chọn tệp bài làm để nộp ngay không?" })
+                        .setPositiveButton("📎 Chọn tệp nộp ngay") { _, _ ->
+                            launchStudentFilePicker()
                         }
-                        .setNegativeButton("Xem sau ở Tài liệu", null)
+                        .setNegativeButton("Viết bài trực tiếp", null)
                         .show()
+                }
+                cleanCmd.startsWith("CMD|FILE_SUBMIT_ACK|") -> {
+                    val savedAs = cleanCmd.substringBefore("|id=").removePrefix("CMD|FILE_SUBMIT_ACK|").substringBefore("|")
+                    hwSubmitted = true
+                    Toast.makeText(this, "✅ Máy Giáo viên xác nhận đã lưu bài: $savedAs", Toast.LENGTH_SHORT).show()
+                }
+                cleanCmd.startsWith("CMD|FILE_OFFER|") || cleanCmd.startsWith("CMD|FILE_SHARE|") -> {
+                    // Format chuẩn mới: CMD|FILE_OFFER|<fileId>|<fileName>|<fileSize>|<autoOpen:0|1>|<webPort>|<token>|<downloadUrl>
+                    val rawOffer = cleanCmd.substringBefore("|id=").substringAfter("|").substringAfter("|")
+                    val pParts = rawOffer.split("|")
+                    if (pParts.size >= 6) {
+                        val fileId = pParts[0].trim()
+                        val fileName = pParts[1].trim().ifBlank { "TaiLieu_LopHoc" }
+                        val autoOpen = pParts[3].trim() == "1" || pParts[3].trim().equals("true", ignoreCase = true)
+                        val parsedPort = pParts[4].trim().toIntOrNull() ?: currentTeacherWebPort
+                        val parsedToken = pParts[5].trim()
+                        if (parsedPort > 0) currentTeacherWebPort = parsedPort
+                        if (parsedToken.isNotBlank()) currentBroadcastToken = parsedToken
+
+                        downloadOfferedFileFromTeacher(
+                            fileId = fileId,
+                            rawFileName = fileName,
+                            autoOpen = autoOpen,
+                            webPort = currentTeacherWebPort,
+                            token = currentBroadcastToken
+                        )
+                    } else {
+                        // Tương thích ngược gói CMD|FILE_SHARE|<fileName>|<url>
+                        val fileName = pParts.getOrNull(0)?.ifBlank { "TaiLieu_LopHoc" } ?: "TaiLieu_LopHoc"
+                        val encName = java.net.URLEncoder.encode(fileName, "UTF-8")
+                        val encTok = java.net.URLEncoder.encode(currentBroadcastToken, "UTF-8")
+                        downloadOfferedFileFromTeacher(
+                            fileId = "",
+                            rawFileName = fileName,
+                            autoOpen = true,
+                            webPort = currentTeacherWebPort,
+                            token = currentBroadcastToken,
+                            explicitEndpointPath = "/api/file_broadcast?name=$encName&token=$encTok"
+                        )
+                    }
+                }
+                cleanCmd.startsWith("CMD|FILE_BROADCAST|") -> {
+                    // Tương thích ngược CMD|FILE_BROADCAST|<path>|<webPort>|<token>
+                    val rawBcast = cleanCmd.substringBefore("|id=").removePrefix("CMD|FILE_BROADCAST|")
+                    val bParts = rawBcast.split("|")
+                    val rawPath = bParts.getOrNull(0) ?: "TaiLieu"
+                    val parsedPort = bParts.getOrNull(1)?.trim()?.toIntOrNull() ?: currentTeacherWebPort
+                    val parsedToken = bParts.getOrNull(2)?.trim() ?: currentBroadcastToken
+                    if (parsedPort > 0) currentTeacherWebPort = parsedPort
+                    if (parsedToken.isNotBlank()) currentBroadcastToken = parsedToken
+                    val fileName = rawPath.substringAfterLast('/').substringAfterLast('\\').ifBlank { "TaiLieu_LopHoc" }
+                    val encName = java.net.URLEncoder.encode(fileName, "UTF-8")
+                    val encTok = java.net.URLEncoder.encode(currentBroadcastToken, "UTF-8")
+                    downloadOfferedFileFromTeacher(
+                        fileId = "",
+                        rawFileName = fileName,
+                        autoOpen = true,
+                        webPort = currentTeacherWebPort,
+                        token = currentBroadcastToken,
+                        explicitEndpointPath = "/api/file_broadcast?name=$encName&token=$encTok"
+                    )
                 }
                 cleanCmd.startsWith("KICK") -> {
                     disconnectFromTeacher("Bạn đã được Giáo viên cho phép rời lớp")
@@ -3950,9 +5131,12 @@ class MainActivity : AppCompatActivity() {
         val studentCode = currentStudentCode.ifBlank { "HS001" }
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                val os = tcpOutputStream ?: return@launch
                 val ackMsg = "ACK|$cmdId|$studentCode|$status\n"
-                tcpOutputStream?.write(ackMsg.toByteArray(Charsets.UTF_8))
-                tcpOutputStream?.flush()
+                synchronized(os) {
+                    os.write(ackMsg.toByteArray(Charsets.UTF_8))
+                    os.flush()
+                }
                 Log.d(TAG, "Sent ACK to teacher: $ackMsg")
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to send ACK: ${e.message}")
@@ -3981,23 +5165,21 @@ class MainActivity : AppCompatActivity() {
 
         val displayTitle = if (title.isNotBlank()) title else "Màn hình Giáo viên"
         txtBroadcastStatus.text = "● TRỰC TIẾP  •  $displayTitle"
+        txtEasyTouchPodTitle.text = "🟢 $displayTitle"
         txtInlineBroadcastTitle.text = displayTitle
 
         layoutNoBroadcast.visibility = View.GONE
         layoutLiveBroadcast.visibility = View.VISIBLE
 
-        // Giữ nguyên giao diện inline mặc định trên trang Lớp học như ban đầu (không tự nhảy Fullscreen khi chiếu thường):
-        // - Chỉ tự mở Fullscreen khi Giáo viên tích "Bắt buộc xem (FORCE_WATCH)".
-        // - Khi học sinh bấm "⛶ Toàn màn hình", luôn có nút "↙ Thu nhỏ" rõ ràng ở cả góc trên phải & thanh đáy để thu bé lại ngay 1 chạm.
-        if (isForce) {
-            broadcastOverlay.visibility = View.VISIBLE
-            btnCloseBroadcast.visibility = View.GONE
-            findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.GONE
-            showBroadcastControlsAndScheduleHide()
-        } else {
-            btnCloseBroadcast.visibility = View.VISIBLE
-            findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.VISIBLE
-        }
+        // Khi Giáo viên bấm Share màn hình, Học sinh lập tức vào thẳng Fullscreen 100%:
+        // - Mặc định khóa cứng (isForce = true): Học sinh chỉ xem Fullscreen, không có nút thu nhỏ / bấm ra ngoài.
+        // - Chỉ khi Giáo viên bật "Cho phép ra ngoài" (isForce = false): Nút "↙ Ra ngoài / Thu nhỏ" mới xuất hiện trong menu tròn EasyTouch.
+        topBroadcastBadgeBar.visibility = View.GONE
+        findViewById<View?>(R.id.btnTopMinimizeBroadcast)?.visibility = View.GONE
+        btnCloseBroadcast.visibility = if (!isForce) View.VISIBLE else View.GONE
+        broadcastOverlay.visibility = View.VISIBLE
+        setImmersiveFullscreen(true)
+        collapseStudentEasyTouch(immediate = true)
 
         if (alreadyStreamingSameSession) {
             return
@@ -4210,8 +5392,12 @@ class MainActivity : AppCompatActivity() {
         }
         if (token.isNotEmpty()) currentBroadcastToken = token
         if (webPort > 0) currentTeacherWebPort = webPort
+        if (isForce != isForceBroadcastMode) {
+            applyBroadcastLockState(isForce, notifyToast = false)
+        }
         if (title.isNotEmpty()) {
             txtBroadcastStatus.text = "● TRỰC TIẾP  •  $title"
+            txtEasyTouchPodTitle.text = "🟢 $title"
             txtInlineBroadcastTitle.text = title
             if (activeLessonTitle.isBlank()) activeLessonTitle = title
             runOnUiThread { refreshHome() }
@@ -4338,6 +5524,8 @@ class MainActivity : AppCompatActivity() {
         broadcastPollJob = null
 
         runOnUiThread {
+            collapseStudentEasyTouch(immediate = true)
+            setImmersiveFullscreen(false)
             broadcastOverlay.visibility = View.GONE
             layoutLiveBroadcast.visibility = View.GONE
             layoutNoBroadcast.visibility = View.VISIBLE
@@ -4571,6 +5759,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        try {
+            activePreviewDialog?.dismiss()
+            activePreviewDialog = null
+        } catch (_: Exception) {}
         super.onDestroy()
         disconnectFromTeacher("Ứng dụng đóng")
         discoveryService.stopListening()

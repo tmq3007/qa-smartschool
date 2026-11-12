@@ -98,8 +98,8 @@ namespace QASmartClass.StudentClient.Views
                             {
                                 Dispatcher.Invoke(() =>
                                 {
-                                    txtStatus.Text = $"❌ Lỗi: Cổng kết nối {StudentFileTransfer.FILE_PORT} bị chiếm dụng. Vui lòng tắt ứng dụng chạy ẩn.";
-                                    txtStatus.Foreground = new SolidColorBrush(Color.FromRgb(198, 40, 40));
+                                    txtStatus.Text = "📡 Sẵn sàng · Nhận/Nộp tệp qua luồng HTTP Stream trực tiếp";
+                                    txtStatus.Foreground = new SolidColorBrush(Color.FromRgb(117, 117, 117));
                                 });
                             }
                             catch (Exception ex)
@@ -299,6 +299,30 @@ namespace QASmartClass.StudentClient.Views
                     }
                     catch { }
                 };
+                var btnPreviewNow = new Button
+                {
+                    Content = "👁️ Xem ngay",
+                    Width = 120,
+                    Height = 32,
+                    Background = new SolidColorBrush(Color.FromRgb(21, 101, 192)),
+                    Foreground = Brushes.White,
+                    BorderThickness = new Thickness(0),
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    FontWeight = FontWeights.SemiBold,
+                    Margin = new Thickness(0, 0, 8, 0),
+                    Template = openTemplate
+                };
+                btnPreviewNow.Click += (s, ev) =>
+                {
+                    var savePath = e.SavePath;
+                    try { win.Close(); } catch { }
+                    OpenOrPreviewReceivedFile(savePath);
+                };
+                DockPanel.SetDock(btnPreviewNow, Dock.Left);
+                btnDock.Children.Add(btnPreviewNow);
+
+                btnOpenFolder.Background = new SolidColorBrush(Color.FromRgb(227, 242, 253));
+                btnOpenFolder.Foreground = new SolidColorBrush(Color.FromRgb(21, 101, 192));
                 DockPanel.SetDock(btnOpenFolder, Dock.Left);
                 btnDock.Children.Add(btnOpenFolder);
 
@@ -338,11 +362,73 @@ namespace QASmartClass.StudentClient.Views
             try
             {
                 var app = (QASmartTouch.App)Application.Current;
+                bool hasTextAssignment = !string.IsNullOrEmpty(QASmartTouch.App.AssessmentState.AssignmentDescription)
+                    && QASmartTouch.App.AssessmentState.AssignmentSentTime > DateTime.MinValue;
 
-                if (!string.IsNullOrEmpty(QASmartTouch.App.AssessmentState.AssignmentDescription)
-                    && QASmartTouch.App.AssessmentState.AssignmentSentTime > DateTime.MinValue)
+                var recentFiles = new List<FileInfo>();
+                try
+                {
+                    var folder = app.StudentFileTransfer?.ReceiveFolder;
+                    if (!string.IsNullOrEmpty(folder) && Directory.Exists(folder))
+                    {
+                        recentFiles = new DirectoryInfo(folder)
+                            .GetFiles()
+                            .Where(fi => !fi.Name.EndsWith(".part", StringComparison.OrdinalIgnoreCase))
+                            .OrderByDescending(fi => fi.LastWriteTime)
+                            .Take(6)
+                            .ToList();
+                    }
+                }
+                catch { }
+
+                assignmentFilesChipPanel.Children.Clear();
+                if (recentFiles.Count > 0)
+                {
+                    assignmentFilesChipPanel.Visibility = Visibility.Visible;
+                    foreach (var fi in recentFiles)
+                    {
+                        var capturedPath = fi.FullName;
+                        var chipBtn = new Button
+                        {
+                            Content = $"👁️ Xem lại: {fi.Name}",
+                            Padding = new Thickness(10, 4, 10, 4),
+                            Margin = new Thickness(0, 0, 6, 6),
+                            FontSize = 11.5,
+                            FontWeight = FontWeights.SemiBold,
+                            Background = Brushes.White,
+                            Foreground = new SolidColorBrush(Color.FromRgb(21, 101, 192)),
+                            BorderBrush = new SolidColorBrush(Color.FromRgb(144, 202, 249)),
+                            BorderThickness = new Thickness(1),
+                            Cursor = System.Windows.Input.Cursors.Hand,
+                            ToolTip = $"Nhấn để xem lại tài liệu: {fi.Name}"
+                        };
+                        var chipTemplate = new ControlTemplate(typeof(Button));
+                        var chipBorder = new FrameworkElementFactory(typeof(Border));
+                        chipBorder.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+                        chipBorder.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(Button.BorderBrushProperty));
+                        chipBorder.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(Button.BorderThicknessProperty));
+                        chipBorder.SetValue(Border.PaddingProperty, new TemplateBindingExtension(Button.PaddingProperty));
+                        chipBorder.SetValue(Border.CornerRadiusProperty, new CornerRadius(12));
+                        var chipPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
+                        chipPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                        chipPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+                        chipBorder.AppendChild(chipPresenter);
+                        chipTemplate.VisualTree = chipBorder;
+                        chipBtn.Template = chipTemplate;
+                        chipBtn.Click += (_, _) => OpenOrPreviewReceivedFile(capturedPath);
+                        assignmentFilesChipPanel.Children.Add(chipBtn);
+                    }
+                }
+                else
+                {
+                    assignmentFilesChipPanel.Visibility = Visibility.Collapsed;
+                }
+
+                if (hasTextAssignment)
                 {
                     assignmentPanel.Visibility = Visibility.Visible;
+                    txtAssignmentHeader.Text = "📋 Yêu cầu bài tập từ GV";
+                    txtAssignment.Visibility = Visibility.Visible;
                     txtAssignment.Text = QASmartTouch.App.AssessmentState.AssignmentDescription;
 
                     if (QASmartTouch.App.AssessmentState.AssignmentDeadline.HasValue)
@@ -355,6 +441,14 @@ namespace QASmartClass.StudentClient.Views
                         txtDeadline.Text = "Không có hạn nộp";
                         txtCountdown.Text = "";
                     }
+                }
+                else if (recentFiles.Count > 0)
+                {
+                    assignmentPanel.Visibility = Visibility.Visible;
+                    txtAssignmentHeader.Text = "📎 Đề bài / Tài liệu Giáo viên gửi (Bấm để xem lại bất cứ lúc nào)";
+                    txtAssignment.Visibility = Visibility.Collapsed;
+                    txtDeadline.Text = $"{recentFiles.Count} tệp đã lưu";
+                    txtCountdown.Text = "";
                 }
                 else
                 {
@@ -581,43 +675,69 @@ namespace QASmartClass.StudentClient.Views
 
         private void AddFileRowFromPath(string filePath, string fileName, long fileLength, DateTime lastWriteTime)
         {
+            var path = filePath;
             var border = new Border
             {
                 Background = new SolidColorBrush(Color.FromRgb(250, 251, 252)),
                 CornerRadius = new CornerRadius(6), Padding = new Thickness(10, 8, 10, 8),
                 Margin = new Thickness(0, 0, 0, 4),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(232, 232, 232)), BorderThickness = new Thickness(1)
+                BorderBrush = new SolidColorBrush(Color.FromRgb(232, 232, 232)), BorderThickness = new Thickness(1),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                ToolTip = "Nhấn để xem trước / mở lại tài liệu"
             };
             border.MouseEnter += (_, _) => border.Background = new SolidColorBrush(Color.FromRgb(232, 245, 255));
             border.MouseLeave += (_, _) => border.Background = new SolidColorBrush(Color.FromRgb(250, 251, 252));
+            border.MouseLeftButtonUp += (_, ev) =>
+            {
+                if (ev.OriginalSource is DependencyObject dep)
+                {
+                    var cur = dep;
+                    while (cur != null && cur != border)
+                    {
+                        if (cur is Button) return;
+                        cur = VisualTreeHelper.GetParent(cur);
+                    }
+                }
+                OpenOrPreviewReceivedFile(path);
+            };
 
             var dock = new DockPanel();
 
-            // Open button
+            var actionStack = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+
+            var previewBtn = new Button
+            {
+                Content = "👁️ Xem lại", Padding = new Thickness(9, 4, 9, 4), FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
+                Margin = new Thickness(0, 0, 6, 0),
+                Background = new SolidColorBrush(Color.FromRgb(21, 101, 192)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0), Cursor = System.Windows.Input.Cursors.Hand
+            };
+            previewBtn.Click += (_, ev) =>
+            {
+                ev.Handled = true;
+                OpenOrPreviewReceivedFile(path);
+            };
+            actionStack.Children.Add(previewBtn);
+
+            // External Open button
             var openBtn = new Button
             {
-                Content = "📂 Mở", Padding = new Thickness(8, 4, 8, 4), FontSize = 10,
+                Content = "📂 Mở ngoài", Padding = new Thickness(8, 4, 8, 4), FontSize = 10.5,
                 Background = new SolidColorBrush(Color.FromRgb(227, 242, 253)),
                 Foreground = new SolidColorBrush(Color.FromRgb(21, 101, 192)),
                 BorderThickness = new Thickness(0), Cursor = System.Windows.Input.Cursors.Hand
             };
-            var path = filePath;
-            openBtn.Click += (_, _) =>
+            openBtn.Click += (_, ev) =>
             {
-                Task.Run(() =>
-                {
-                    try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = path, UseShellExecute = true }); }
-                    catch (Exception ex)
-                    {
-                        System.Windows.Application.Current?.Dispatcher.Invoke(() =>
-                        {
-                            MessageBox.Show($"Không mở được: {ex.Message}");
-                        });
-                    }
-                });
+                ev.Handled = true;
+                OpenExternalShellFile(path);
             };
-            DockPanel.SetDock(openBtn, Dock.Right);
-            dock.Children.Add(openBtn);
+            actionStack.Children.Add(openBtn);
+
+            DockPanel.SetDock(actionStack, Dock.Right);
+            dock.Children.Add(actionStack);
 
             var iconBlock = new TextBlock
             {
@@ -643,6 +763,257 @@ namespace QASmartClass.StudentClient.Views
 
             border.Child = dock;
             fileListPanel.Children.Add(border);
+        }
+
+        private void OpenExternalShellFile(string filePath)
+        {
+            Task.Run(() =>
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = filePath,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show($"Không mở được tệp: {ex.Message}", "Mở tệp", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    });
+                }
+            });
+        }
+
+        private void OpenOrPreviewReceivedFile(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+            {
+                MessageBox.Show("Tệp không còn tồn tại trong thư mục nhận bài.", "Xem lại tài liệu", MessageBoxButton.OK, MessageBoxImage.Information);
+                LoadAssignmentInfo();
+                LoadReceivedFiles();
+                return;
+            }
+
+            var ext = (System.IO.Path.GetExtension(filePath) ?? "").ToLowerInvariant();
+            bool isImage = ext is ".png" or ".jpg" or ".jpeg" or ".bmp" or ".gif" or ".webp";
+            bool isText = ext is ".txt" or ".md" or ".csv" or ".log" or ".json" or ".xml";
+
+            if (!isImage && !isText)
+            {
+                OpenExternalShellFile(filePath);
+                return;
+            }
+
+            try
+            {
+                var fileName = System.IO.Path.GetFileName(filePath);
+                var previewWin = new Window
+                {
+                    Title = $"👁️ Xem lại tài liệu: {fileName}",
+                    Width = 900,
+                    Height = 640,
+                    MinWidth = 480,
+                    MinHeight = 360,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Background = new SolidColorBrush(Color.FromRgb(248, 250, 252))
+                };
+
+                try
+                {
+                    var ownerWin = Window.GetWindow(this);
+                    if (ownerWin != null && ownerWin.IsLoaded)
+                    {
+                        previewWin.Owner = ownerWin;
+                        previewWin.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    }
+                }
+                catch { }
+
+                var rootGrid = new Grid();
+                rootGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                rootGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+                var topBar = new Border
+                {
+                    Background = Brushes.White,
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+                    Padding = new Thickness(14, 10, 14, 10)
+                };
+                var barDock = new DockPanel();
+
+                var actionRight = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+                DockPanel.SetDock(actionRight, Dock.Right);
+
+                double zoomFactor = 1.0;
+                TextBlock? txtZoomIndicator = null;
+                ScaleTransform? imgScale = null;
+
+                if (isImage)
+                {
+                    var btnZoomOut = new Button
+                    {
+                        Content = "−", Width = 30, Height = 28, FontWeight = FontWeights.Bold,
+                        Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)), BorderThickness = new Thickness(0),
+                        Cursor = System.Windows.Input.Cursors.Hand
+                    };
+                    txtZoomIndicator = new TextBlock
+                    {
+                        Text = "100%", Width = 48, TextAlignment = TextAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center, FontWeight = FontWeights.SemiBold,
+                        Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59)),
+                        Cursor = System.Windows.Input.Cursors.Hand,
+                        ToolTip = "Nhấn để đưa về 100%"
+                    };
+                    var btnZoomIn = new Button
+                    {
+                        Content = "+", Width = 30, Height = 28, FontWeight = FontWeights.Bold,
+                        Margin = new Thickness(0, 0, 10, 0),
+                        Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)), BorderThickness = new Thickness(0),
+                        Cursor = System.Windows.Input.Cursors.Hand
+                    };
+
+                    void ApplyZoom(double next)
+                    {
+                        zoomFactor = Math.Clamp(next, 0.25, 4.0);
+                        if (imgScale != null)
+                        {
+                            imgScale.ScaleX = zoomFactor;
+                            imgScale.ScaleY = zoomFactor;
+                        }
+                        txtZoomIndicator.Text = $"{(int)Math.Round(zoomFactor * 100)}%";
+                    }
+
+                    btnZoomOut.Click += (_, _) => ApplyZoom(zoomFactor - 0.25);
+                    btnZoomIn.Click += (_, _) => ApplyZoom(zoomFactor + 0.25);
+                    txtZoomIndicator.MouseLeftButtonUp += (_, _) => ApplyZoom(1.0);
+
+                    actionRight.Children.Add(btnZoomOut);
+                    actionRight.Children.Add(txtZoomIndicator);
+                    actionRight.Children.Add(btnZoomIn);
+                }
+
+                var btnOpenExt = new Button
+                {
+                    Content = "📂 Mở bằng ứng dụng ngoài",
+                    Padding = new Thickness(10, 5, 10, 5),
+                    Margin = new Thickness(0, 0, 8, 0),
+                    Background = new SolidColorBrush(Color.FromRgb(227, 242, 253)),
+                    Foreground = new SolidColorBrush(Color.FromRgb(21, 101, 192)),
+                    FontWeight = FontWeights.SemiBold,
+                    BorderThickness = new Thickness(0),
+                    Cursor = System.Windows.Input.Cursors.Hand
+                };
+                btnOpenExt.Click += (_, _) => OpenExternalShellFile(filePath);
+                actionRight.Children.Add(btnOpenExt);
+
+                var btnClose = new Button
+                {
+                    Content = "Đóng",
+                    Padding = new Thickness(14, 5, 14, 5),
+                    Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+                    Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59)),
+                    FontWeight = FontWeights.SemiBold,
+                    BorderThickness = new Thickness(0),
+                    Cursor = System.Windows.Input.Cursors.Hand
+                };
+                btnClose.Click += (_, _) => previewWin.Close();
+                actionRight.Children.Add(btnClose);
+                barDock.Children.Add(actionRight);
+
+                barDock.Children.Add(new TextBlock
+                {
+                    Text = $"📄 {fileName}  —  Bạn có thể đóng cửa sổ này và bấm '👁️ Xem lại' bất cứ lúc nào",
+                    FontSize = 12.5,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(51, 65, 85)),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    TextTrimming = TextTrimming.CharacterEllipsis
+                });
+                topBar.Child = barDock;
+                Grid.SetRow(topBar, 0);
+                rootGrid.Children.Add(topBar);
+
+                if (isImage)
+                {
+                    byte[] rawBytes = File.ReadAllBytes(filePath);
+                    var bmp = new System.Windows.Media.Imaging.BitmapImage();
+                    using (var ms = new MemoryStream(rawBytes))
+                    {
+                        bmp.BeginInit();
+                        bmp.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                        bmp.StreamSource = ms;
+                        bmp.EndInit();
+                    }
+                    bmp.Freeze();
+
+                    imgScale = new ScaleTransform(1.0, 1.0);
+                    var imgControl = new Image
+                    {
+                        Source = bmp,
+                        Stretch = Stretch.Uniform,
+                        LayoutTransform = imgScale,
+                        Margin = new Thickness(12)
+                    };
+                    RenderOptions.SetBitmapScalingMode(imgControl, BitmapScalingMode.HighQuality);
+
+                    var scrollViewer = new ScrollViewer
+                    {
+                        HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                        VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                        Background = new SolidColorBrush(Color.FromRgb(15, 23, 42)),
+                        Content = imgControl
+                    };
+                    scrollViewer.PreviewMouseWheel += (_, wheelArgs) =>
+                    {
+                        if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) != 0 && imgScale != null && txtZoomIndicator != null)
+                        {
+                            wheelArgs.Handled = true;
+                            zoomFactor = Math.Clamp(zoomFactor + (wheelArgs.Delta > 0 ? 0.15 : -0.15), 0.25, 4.0);
+                            imgScale.ScaleX = zoomFactor;
+                            imgScale.ScaleY = zoomFactor;
+                            txtZoomIndicator.Text = $"{(int)Math.Round(zoomFactor * 100)}%";
+                        }
+                    };
+                    Grid.SetRow(scrollViewer, 1);
+                    rootGrid.Children.Add(scrollViewer);
+                }
+                else
+                {
+                    var fi = new FileInfo(filePath);
+                    if (fi.Length > 512 * 1024)
+                    {
+                        OpenExternalShellFile(filePath);
+                        return;
+                    }
+                    string content = File.ReadAllText(filePath);
+                    var txtViewer = new TextBox
+                    {
+                        Text = content,
+                        IsReadOnly = true,
+                        TextWrapping = TextWrapping.Wrap,
+                        VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                        HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                        FontSize = 13.5,
+                        Padding = new Thickness(16),
+                        BorderThickness = new Thickness(0),
+                        Background = Brushes.White,
+                        Foreground = new SolidColorBrush(Color.FromRgb(30, 41, 59))
+                    };
+                    Grid.SetRow(txtViewer, 1);
+                    rootGrid.Children.Add(txtViewer);
+                }
+
+                previewWin.Content = rootGrid;
+                previewWin.Show();
+            }
+            catch (Exception)
+            {
+                OpenExternalShellFile(filePath);
+            }
         }
 
         private void AddSubmittedRow(string name, string size, string info, string bgHex, string fgHex)
@@ -695,6 +1066,7 @@ namespace QASmartClass.StudentClient.Views
         {
             _ = ForceAutosaveAsync();
             _activeTab = "received";
+            LoadAssignmentInfo();
             LoadReceivedFiles();
         }
         private void TabSubmitted_Click(object s, RoutedEventArgs e)
@@ -707,6 +1079,7 @@ namespace QASmartClass.StudentClient.Views
         {
             _ = ForceAutosaveAsync();
             _activeTab = "editor";
+            LoadAssignmentInfo();
             LoadReceivedFiles();
         }
 
@@ -739,6 +1112,7 @@ namespace QASmartClass.StudentClient.Views
         private void WriteInline_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "editor";
+            LoadAssignmentInfo();
             LoadReceivedFiles();
         }
 
@@ -1274,10 +1648,11 @@ namespace QASmartClass.StudentClient.Views
                     var fi = new FileInfo(filePath);
                     var fileSize = fi.Length;
 
-                    // Enforce strict 1MB size limit
-                    if (fileSize > 1024 * 1024)
+                    // [MYTHWARE_LITE] Enforce strict 1MB size limit -> Nâng lên 200MB nhờ truyền luồng HTTP Chunked Stream 64KB (~0 MB RAM):
+                    // if (fileSize > 1024 * 1024)
+                    if (fileSize > 200L * 1024 * 1024)
                     {
-                        MessageBox.Show($"File \"{Path.GetFileName(originalPath)}\" vượt quá giới hạn 1MB (kích thước sau nén: {fileSize / 1024.0:F1} KB).\n\nKhông thể nộp file này!", 
+                        MessageBox.Show($"File \"{Path.GetFileName(originalPath)}\" vượt quá giới hạn 200MB (kích thước: {fileSize / (1024.0 * 1024.0):F1} MB).\n\nKhông thể nộp file này!", 
                             "Chặn file quá dung lượng", MessageBoxButton.OK, MessageBoxImage.Warning);
                         continue;
                     }
@@ -1287,7 +1662,7 @@ namespace QASmartClass.StudentClient.Views
                     progressBar.Value = 0;
                     txtStatus.Text = $"📤 Đang nộp: {fileName}...";
 
-                    // Try TCP
+                    // Ưu tiên HTTP Chunked Upload (dự phòng TCP 29879)
                     if (client.IsConnected)
                     {
                         try
@@ -1295,14 +1670,17 @@ namespace QASmartClass.StudentClient.Views
                             var teacherIP = client.ConnectedIP;
                             if (!string.IsNullOrEmpty(teacherIP))
                             {
-                                var submitRes = await sft.SubmitFileAsync(filePath, teacherIP, studentCode, studentName);
+                                var shell = Application.Current.MainWindow as StudentShell;
+                                int webPort = shell?.ActiveTeacherWebPort ?? 8080;
+                                string token = shell?.ActiveBroadcastToken ?? "";
+                                var submitRes = await sft.SubmitFileAsync(filePath, teacherIP, studentCode, studentName, webPort, token);
                                 success = submitRes.Success;
                                 errorReason = submitRes.Message;
                             }
                         }
                         catch (Exception ex)
                         {
-                            Log.Warning("TCP submit failed: {Err}", ex.Message);
+                            Log.Warning("Submit failed: {Err}", ex.Message);
                             errorReason = $"Không thể kết nối tới Giáo viên: {ex.Message}";
                         }
                     }
@@ -1636,7 +2014,10 @@ namespace QASmartClass.StudentClient.Views
                     {
                         if (!string.IsNullOrEmpty(teacherIP))
                         {
-                            var submitRes = await sft.SubmitFileAsync(filePath, teacherIP, studentCode, studentName);
+                            var shell = Application.Current.MainWindow as StudentShell;
+                            int webPort = shell?.ActiveTeacherWebPort ?? 8080;
+                            string token = shell?.ActiveBroadcastToken ?? "";
+                            var submitRes = await sft.SubmitFileAsync(filePath, teacherIP, studentCode, studentName, webPort, token);
                             success = submitRes.Success;
                         }
                     }

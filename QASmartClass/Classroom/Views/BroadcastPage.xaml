@@ -354,7 +354,7 @@
                             <StackPanel>
                                 <TextBlock Text="🎙️ Âm thanh &amp; Camera (Google Meet)" FontSize="12.5" FontWeight="Bold" Foreground="White" Margin="0,0,0,7"/>
                                 <WrapPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                    <Button x:Name="btnMeetPageSysAudio" Content="🔊 Tiếng máy: BẬT" MinHeight="34" Padding="10,5" Margin="0,0,6,6" FontSize="11.5" FontWeight="SemiBold" Background="#1A73E8" Foreground="White" BorderThickness="0" Cursor="Hand" Click="MeetPageSysAudio_Click" Template="{StaticResource RoundBtn}" ToolTip="Chia sẻ âm thanh hệ thống (video, bài nghe trên máy Giáo viên)"/>
+                                    <Button x:Name="btnMeetPageSysAudio" Content="🔊 Âm thanh: BẬT" MinHeight="34" Padding="10,5" Margin="0,0,6,6" FontSize="11.5" FontWeight="SemiBold" Background="#1A73E8" Foreground="White" BorderThickness="0" Cursor="Hand" Click="MeetPageSysAudio_Click" Template="{StaticResource RoundBtn}" ToolTip="Chia sẻ âm thanh hệ thống (video, bài nghe trên máy Giáo viên)"/>
                                     <Button x:Name="btnMeetPageMic" Content="🔇 Micro: TẮT" MinHeight="34" Padding="10,5" Margin="0,0,6,6" FontSize="11.5" FontWeight="SemiBold" Background="#EA4335" Foreground="White" BorderThickness="0" Cursor="Hand" Click="MeetPageMic_Click" Template="{StaticResource RoundBtn}" ToolTip="Bật / Tắt Micro thu giọng giảng của Giáo viên"/>
                                     <Button x:Name="btnMeetPageCam" Content="🚫 Camera: TẮT" MinHeight="34" Padding="10,5" Margin="0,0,0,6" FontSize="11.5" FontWeight="SemiBold" Background="#EA4335" Foreground="White" BorderThickness="0" Cursor="Hand" Click="MeetPageCam_Click" Template="{StaticResource RoundBtn}" ToolTip="Bật / Tắt Camera Giáo viên (PiP góc màn hình Học sinh)"/>
                                 </WrapPanel>
@@ -462,7 +462,9 @@
                             </ComboBox>
                         </Grid>
                         <CheckBox x:Name="chkShowTeacherCursor" Content="Hiển thị con trỏ chuột &amp; vòng sáng dẫn hướng GV" IsChecked="True" FontSize="13.5" Margin="0,10,0,0" VerticalAlignment="Center" Checked="CursorOption_Changed" Unchecked="CursorOption_Changed" ToolTip="Giúp học sinh nhìn rõ mũi tên chuột của Giáo viên đang chỉ vào công thức / dòng chữ nào trên màn hình"/>
-                        <CheckBox x:Name="chkForceWatch" Content="Bắt buộc xem (Khóa nút đóng phía HS)" FontSize="14" Margin="0,8,0,0" VerticalAlignment="Center"/>
+                        <!-- [MYTHWARE_LITE] Mặc định khóa cứng toàn màn hình HS khi chiếu; chỉ khi GV bật cho phép thì HS mới bấm ra ngoài được -->
+                        <CheckBox x:Name="chkForceWatch" Content="Bắt buộc xem (Khóa nút đóng phía HS)" IsChecked="True" Visibility="Collapsed" FontSize="14" Margin="0,8,0,0" VerticalAlignment="Center"/>
+                        <CheckBox x:Name="chkAllowStudentExit" Content="🔓 Cho phép học sinh thu nhỏ / bấm ra ngoài khi đang chiếu" IsChecked="False" FontSize="13.5" Margin="0,8,0,0" VerticalAlignment="Center" Checked="AllowStudentExit_Changed" Unchecked="AllowStudentExit_Changed" ToolTip="Mặc định tắt: Học sinh chỉ xem toàn màn hình 100%, không thể bấm ra ngoài. Tích chọn nếu muốn cho phép học sinh thu nhỏ màn hình chiếu để làm bài tập."/>
                         
                         <!-- SP-01: Tiêu đề bài giảng hiển thị trên overlay HS -->
                         <TextBlock Text="Tiêu đề hiển thị trên máy HS:" FontSize="14" Foreground="#616161"

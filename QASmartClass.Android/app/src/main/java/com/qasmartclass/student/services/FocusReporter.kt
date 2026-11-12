@@ -28,23 +28,23 @@ class FocusReporter(private val context: Context, private val outputStreamProvid
                       || foregroundApp == "com.qasmartclass.student"
 
         try {
-            val os = outputStreamProvider()
-            if (os != null) {
+            if (outputStreamProvider() != null) {
                 val page = currentPage.replace("|", " ").replace("\n", " ").trim()
                 val focusCmd = "CMD|FOCUS_STATUS|${if (isWatching) 1 else 0}|$foregroundApp|$page\n"
                 netExecutor.execute {
                     try {
-                        synchronized(os) {
-                            os.write(focusCmd.toByteArray(Charsets.UTF_8))
-                            os.flush()
+                        val activeOs = outputStreamProvider() ?: return@execute
+                        synchronized(activeOs) {
+                            activeOs.write(focusCmd.toByteArray(Charsets.UTF_8))
+                            activeOs.flush()
                         }
-                    } catch (ex: Exception) {
-                        ex.printStackTrace()
+                    } catch (_: java.io.IOException) {
+                        // Socket đã đóng hoặc đang chuyển phiên kết nối: bỏ qua êm, không spam Broken pipe ra logcat
+                    } catch (_: Exception) {
                     }
                 }
             }
-        } catch (ex: Exception) {
-            ex.printStackTrace()
+        } catch (_: Exception) {
         }
     }
 
