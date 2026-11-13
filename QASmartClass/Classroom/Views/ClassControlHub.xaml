@@ -83,8 +83,11 @@
             <DockPanel LastChildFill="True">
                 <!-- BÊN PHẢI: Cụm huy hiệu trạng thái trực tiếp -->
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,4,0">
-                    <!-- Live Share Status Pill -->
-                    <Border x:Name="pillLiveStatus" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,6,0" VerticalAlignment="Center">
+                    <!-- Live Share Status Pill (Clickable -> dừng chiếu 1 chạm khi đang phát) -->
+                    <Border x:Name="pillLiveStatus" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,6,0" VerticalAlignment="Center"
+                            MouseLeftButtonDown="PillLiveStatus_Click"
+                            PreviewTouchDown="PillLiveStatus_TouchDown"
+                            ToolTip="Nhấp để dừng chiếu ngay lập tức khi đang phát">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Ellipse x:Name="dotLiveStatus" Width="9" Height="9" Fill="#94A3B8" Margin="0,0,6,0"/>
                             <TextBlock x:Name="txtLiveStatus" Text="Chưa phát màn hình" FontSize="12" FontWeight="SemiBold" Foreground="#475569"/>

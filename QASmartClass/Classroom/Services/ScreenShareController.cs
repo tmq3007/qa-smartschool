@@ -1,4 +1,5 @@
 using System;
+using QASmartClass.Classroom.Helpers;
 using QASmartClass.Services;
 using Serilog;
 
@@ -44,16 +45,95 @@ namespace QASmartClass.Classroom.Services
         public static ScreenShareController Instance { get; } = new();
 
         private bool _lastIsLive;
+        private int _isStoppingFlag;
 
         public event EventHandler? LiveChanged;
 
-        /// <summary>Yêu cầu dừng mọi hoạt động chiếu màn hình (vd: khi kết thúc lớp). BroadcastPage lắng nghe và dừng đúng quy trình.</summary>
+        /// <summary>Yêu cầu dừng mọi hoạt động chiếu màn hình (chiếu bảng, chiếu màn hình, HS trình bày, VNC).</summary>
         public event EventHandler? StopRequested;
 
         /// <summary>Yêu cầu thực thi tác vụ Quảng bá / Chia sẻ màn hình từ thanh nổi FloatingModeBar.</summary>
         public event EventHandler<QuickBroadcastAction>? ActionRequested;
 
-        public void RequestStop() => StopRequested?.Invoke(this, EventArgs.Empty);
+        public void RequestStop() => StopAllActiveBroadcasts();
+
+        /// <summary>
+        /// Chốt chặn dừng trung tâm duy nhất: dừng sạch mọi bộ phát đang hoạt động (BroadcastPage, Student Demo, LessonRunner, VNC)
+        /// và đảm bảo gửi lệnh STOP kèm Token phiên đã đóng tới toàn bộ máy Học sinh, kể cả khi trang phát đang Unloaded.
+        /// </summary>
+        public void StopAllActiveBroadcasts()
+        {
+            if (System.Threading.Interlocked.Exchange(ref _isStoppingFlag, 1) == 1)
+            {
+                return;
+            }
+
+            try
+            {
+                try
+                {
+                    StopRequested?.Invoke(this, EventArgs.Empty);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning("[ScreenShare] StopRequested handler error: {Err}", ex.Message);
+                }
+
+                try
+                {
+                    QASmartClass.Classroom.Views.BroadcastPage.StopAllLiveInstances();
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning("[ScreenShare] StopAllLiveInstances error: {Err}", ex.Message);
+                }
+
+                try
+                {
+                    if (VncBroadcastService.Instance.IsVncBroadcasting)
+                    {
+                        VncBroadcastService.Instance.StopBroadcast();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning("[ScreenShare] VNC stop error: {Err}", ex.Message);
+                }
+
+                // Fail-Safe Sweep: Nếu có bất kỳ luồng mồ côi nào vẫn giữ cờ IsScreenBroadcastActive = true,
+                // cưỡng bức đóng phiên ngay lập tức và phát lệnh STOP tới toàn bộ Học sinh.
+                if (BroadcastStateService.Instance.IsScreenBroadcastActive
+                    || ClassroomAppContext.BroadcastState.IsScreenBroadcastActive)
+                {
+                    string stoppedToken = BroadcastStateService.Instance.StopScreenBroadcastSession();
+                    string tokenSuffix = string.IsNullOrEmpty(stoppedToken) ? "0" : stoppedToken;
+                    ClassroomAppContext.BroadcastState.IsScreenBroadcastActive = false;
+                    ClassroomAppContext.BroadcastState.ScreenCapturePath = string.Empty;
+
+                    string stopCmd1 = $"CMD|SCREEN_BROADCAST_STOP|{tokenSuffix}";
+                    string stopCmd2 = "CMD|BROADCAST_STOP|0";
+                    ClassroomAppContext.LessonState.LastTeacherCommand = stopCmd1;
+                    ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
+
+                    ClassroomAppContext.DispatchCommand(stopCmd1);
+                    ClassroomAppContext.DispatchCommand(stopCmd2);
+
+                    var net = ClassroomAppContext.Network;
+                    if (net?.IsBroadcasting == true)
+                    {
+                        _ = net.SendCommandAsync("CMD|STUDENT_DEMO_STOP");
+                        _ = net.SendCommandAsync(stopCmd1);
+                        _ = net.SendCommandAsync(stopCmd2);
+                    }
+                    Log.Information("[ScreenShare] Fail-safe broadcast stop executed (Token={Token})", tokenSuffix);
+                }
+            }
+            finally
+            {
+                System.Threading.Interlocked.Exchange(ref _isStoppingFlag, 0);
+                RaiseIfChanged();
+            }
+        }
 
         public void RequestAction(QuickBroadcastAction action) => ActionRequested?.Invoke(this, action);
 

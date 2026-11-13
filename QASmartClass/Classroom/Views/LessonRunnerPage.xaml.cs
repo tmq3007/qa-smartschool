@@ -48,6 +48,8 @@ namespace QASmartClass.Classroom.Views
         {
             InitializeComponent();
             _lessonId = lessonId;
+            QASmartClass.Classroom.Services.ScreenShareController.Instance.StopRequested -= OnGlobalStopShareRequested;
+            QASmartClass.Classroom.Services.ScreenShareController.Instance.StopRequested += OnGlobalStopShareRequested;
 
             Loaded += (_, _) =>
             {
@@ -1456,6 +1458,15 @@ namespace QASmartClass.Classroom.Views
             Log.Information("Screen broadcast STARTED (interval={Sec}s)", ClassroomAppContext.BroadcastState.ScreenBroadcastIntervalSec);
         }
 
+        private void OnGlobalStopShareRequested(object? sender, EventArgs e)
+        {
+            if (_broadcastTimer != null)
+            {
+                if (Dispatcher.CheckAccess()) StopScreenBroadcast();
+                else Dispatcher.Invoke(StopScreenBroadcast);
+            }
+        }
+
         private void StopScreenBroadcast()
         {
             // 1. Tắt timer
@@ -1464,6 +1475,8 @@ namespace QASmartClass.Classroom.Views
 
             // 2. Tắt flag
             ClassroomAppContext.BroadcastState.IsScreenBroadcastActive = false;
+            string stoppedToken = QASmartClass.Services.BroadcastStateService.Instance.StopScreenBroadcastSession();
+            string tokenArg = string.IsNullOrEmpty(stoppedToken) ? "0" : stoppedToken;
 
             // 3. Cập nhật UI card
             broadcastCard.Background = new SolidColorBrush(Color.FromRgb(243, 229, 245));
@@ -1474,7 +1487,7 @@ namespace QASmartClass.Classroom.Views
             txtBroadcastDesc.Foreground = new SolidColorBrush(Color.FromRgb(156, 39, 176));
 
             // 4. Gửi lệnh TẮT cho HS → đóng overlay
-            var stopCmd = "CMD|SCREEN_BROADCAST_STOP";
+            var stopCmd = $"CMD|SCREEN_BROADCAST_STOP|{tokenArg}";
             ClassroomAppContext.LessonState.LastTeacherCommand = stopCmd;
             ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
             var net = ClassroomAppContext.Network;

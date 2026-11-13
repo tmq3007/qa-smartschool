@@ -407,6 +407,8 @@ namespace QASmartClass.StudentClient.Views
 		private double _broadcastHeartbeatTimeout = 15.0; // === PHASE6-GD1 + UPGRADE_07: Giảm 30→15s cho môi trường lớp học ===
 
 		private bool _userDismissedBroadcast = false;
+		private string _lastStoppedBroadcastToken = string.Empty;
+		private DateTime _lastBroadcastStopUtc = DateTime.MinValue;
 		private System.Diagnostics.Process? _vncClientProcess = null;
 		private bool _isVncClientRunning = false;
 		private System.Windows.Threading.DispatcherTimer? _vncWatchdogTimer = null;
@@ -5140,6 +5142,11 @@ namespace QASmartClass.StudentClient.Views
 					{
 						if (_broadcastOverlay == null)
 						{
+							if ((!string.IsNullOrEmpty(token) && string.Equals(token, _lastStoppedBroadcastToken, StringComparison.OrdinalIgnoreCase))
+								|| (string.IsNullOrEmpty(token) && (DateTime.UtcNow - _lastBroadcastStopUtc).TotalMilliseconds < 2500))
+							{
+								return;
+							}
 							bool isForceUpdate = cmd.Contains("FORCE_WATCH");
 							if (isForceUpdate)
 							{
@@ -5216,6 +5223,11 @@ namespace QASmartClass.StudentClient.Views
 
 			case "SCREEN_BROADCAST_STOP":
 
+				if (parts.Length >= 3 && !string.IsNullOrWhiteSpace(parts[2]) && parts[2].StartsWith("TK_", StringComparison.OrdinalIgnoreCase))
+				{
+					_lastStoppedBroadcastToken = parts[2].Split('|')[0].Trim();
+				}
+				_lastBroadcastStopUtc = DateTime.UtcNow;
 				_userDismissedBroadcast = false; // PHASE6-GD2
 				base.Dispatcher.Invoke(delegate
 				{

@@ -39,10 +39,11 @@ namespace QASmartClass.Classroom.Views
         internal static BroadcastPage? ActiveInstance { get; private set; }
         private static readonly System.Collections.Generic.List<WeakReference<BroadcastPage>> _allInstances = new();
         private static bool _lastGlobalAllowStudentExit = false;
+        private long _activeSessionEpoch;
 
         public BroadcastPage()
         {
-            ActiveInstance ??= this;
+            ActiveInstance = this;
             lock (_allInstances)
             {
                 _allInstances.RemoveAll(r => !r.TryGetTarget(out _));
@@ -68,6 +69,10 @@ namespace QASmartClass.Classroom.Views
 
             Loaded += async (s, ev) =>
             {
+                if (ActiveInstance == null || !ActiveInstance._isBroadcasting)
+                {
+                    ActiveInstance = this;
+                }
                 _cacheRefreshTimer.Start();
                 try
                 {
@@ -152,7 +157,8 @@ namespace QASmartClass.Classroom.Views
                         _privacyBorder.Close();
                         _privacyBorder = null;
                     }
-                    ScreenShareController.Instance.StopRequested -= OnStopShareRequested;
+                    // [MYTHWARE_LITE] KHÔNG gỡ StopRequested khi Unloaded vì BroadcastPage vẫn là bộ phát ngầm khi GV ở tab Giám sát hoặc bảng viết SMART TOUCH!
+                    // ScreenShareController.Instance.StopRequested -= OnStopShareRequested;
                 }
 
                 // Dọn dẹp VNC Server khi thoát trang - KHÔNG dừng VNC ở đây để chạy ngầm (LOI_VID_46)
@@ -182,10 +188,44 @@ namespace QASmartClass.Classroom.Views
             };
         }
 
-        // Kết thúc lớp → dừng chiếu màn hình (gửi lệnh STOP cho HS trước khi mạng bị đóng)
+        // Kết thúc lớp / Bấm dừng chiếu từ bất kỳ đâu → dừng chiếu màn hình an toàn
         private void OnStopShareRequested(object? sender, EventArgs e)
         {
-            Dispatcher.Invoke(StopAllBroadcasting);
+            if (Dispatcher.CheckAccess()) StopAllBroadcasting();
+            else Dispatcher.Invoke(StopAllBroadcasting);
+        }
+
+        internal static void StopAllLiveInstances()
+        {
+            System.Collections.Generic.List<BroadcastPage> livePages = new();
+            lock (_allInstances)
+            {
+                _allInstances.RemoveAll(r => !r.TryGetTarget(out _));
+                foreach (var wr in _allInstances)
+                {
+                    if (wr.TryGetTarget(out var page) && page != null)
+                    {
+                        livePages.Add(page);
+                    }
+                }
+            }
+            if (ActiveInstance != null && !livePages.Contains(ActiveInstance))
+            {
+                livePages.Add(ActiveInstance);
+            }
+
+            foreach (var page in livePages)
+            {
+                try
+                {
+                    if (page.Dispatcher.CheckAccess()) page.StopAllBroadcasting();
+                    else page.Dispatcher.Invoke(page.StopAllBroadcasting);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning("[BroadcastPage] StopAllLiveInstances error: {Err}", ex.Message);
+                }
+            }
         }
 
         internal void StopAllBroadcasting()
@@ -207,9 +247,9 @@ namespace QASmartClass.Classroom.Views
 
         public void ToggleMythwareQuickBroadcast()
         {
-            if (_isBroadcasting || _isVncBroadcasting)
+            if (ScreenShareController.Instance.IsLive || _isBroadcasting || _isVncBroadcasting)
             {
-                StopAllBroadcasting();
+                ScreenShareController.Instance.StopAllActiveBroadcasts();
                 return;
             }
 
@@ -276,6 +316,15 @@ namespace QASmartClass.Classroom.Views
 
         public void ShareSmartTouchBoardImmediately()
         {
+            // Đảm bảo bảng viết SMART TOUCH được mở & kích hoạt ngay để luôn có cửa sổ thực tế và GV viết được liền tay
+            if (Application.Current is QASmartTouch.App app && app.ModeService != null)
+            {
+                if (app.ModeService.CurrentMode != QASmartClass.Shared.AppMode.SmartScreen)
+                {
+                    app.ModeService.GoToScreen();
+                }
+            }
+
             var src = new ScreenSourceInfo
             {
                 Kind = ScreenSourceKind.QaClassPage,
@@ -283,7 +332,7 @@ namespace QASmartClass.Classroom.Views
                 Title = "Bảng trắng tương tác SMART TOUCH",
                 Width = (int)SystemParameters.PrimaryScreenWidth,
                 Height = (int)SystemParameters.PrimaryScreenHeight,
-                AutoNavigateToPage = false
+                AutoNavigateToPage = true
             };
 
             ApplyPickedSource(src);
@@ -359,8 +408,7 @@ namespace QASmartClass.Classroom.Views
                         };
                         orb.StopRequested += (_, _) =>
                         {
-                            var active = ActiveInstance ?? this;
-                            active.Dispatcher.Invoke(active.StopAllBroadcasting);
+                            ScreenShareController.Instance.StopAllActiveBroadcasts();
                         };
                         orb.RestoreShellRequested += (_, _) =>
                         {
@@ -729,11 +777,19 @@ namespace QASmartClass.Classroom.Views
         {
             if (_isBroadcasting)
             {
-                // === STOP ===
+                // === STOP (Atomic Epoch Shutdown — Chặn tuyệt đối Race Condition gói UPDATE trễ) ===
+                _isBroadcasting = false;
+                System.Threading.Interlocked.Exchange(ref _activeSessionEpoch, 0);
                 _timer?.Stop();
                 _captureTimer?.Dispose();
+                _captureTimer = null;
+
+                string stoppedToken = QASmartClass.Services.BroadcastStateService.Instance.StopScreenBroadcastSession();
+                string stopTokenArg = string.IsNullOrEmpty(stoppedToken) ? "0" : stoppedToken;
+                ClassroomAppContext.BroadcastState.IsScreenBroadcastActive = false;
+                ClassroomAppContext.BroadcastState.ScreenCapturePath = string.Empty;
+
                 ApplyScreenCaptureExclusion(false);
-                _isBroadcasting = false;
                 _isPaused = false;
                 _seconds = 0;
                 _lastCompositedCamSeq = -1;
@@ -749,7 +805,7 @@ namespace QASmartClass.Classroom.Views
                 QASmartClass.Services.AppPerformanceMonitor.Instance.Stop();
                 
                 // Reset nút 1: Phát thường
-                btnBroadcast.Content = "▶️ Phát Thường";
+                btnBroadcast.Content = "▶️ Bắt đầu Chiếu bài giảng";
                 btnBroadcast.Background = new SolidColorBrush(Color.FromRgb(25, 118, 210));
                 btnBroadcast.IsEnabled = true;
                 
@@ -790,9 +846,14 @@ namespace QASmartClass.Classroom.Views
 
                 try
                 {
-                    // app → ClassroomAppContext (refactored)
-                    var stopCmd1 = "CMD|SCREEN_BROADCAST_STOP|0";
+                    // Chờ ngắn (tối đa 120ms) cho khung hình đang chụp dở kết thúc hẳn trước khi gửi STOP để không bao giờ có lệnh UPDATE bay sau STOP
+                    bool lockEntered = await _captureLock.WaitAsync(120);
+                    if (lockEntered) _captureLock.Release();
+
+                    var stopCmd1 = $"CMD|SCREEN_BROADCAST_STOP|{stopTokenArg}";
                     var stopCmd2 = "CMD|BROADCAST_STOP|0";
+                    ClassroomAppContext.LessonState.LastTeacherCommand = stopCmd1;
+                    ClassroomAppContext.LessonState.LastCommandTime = DateTime.Now;
 
                     // Luôn gửi qua local bus
                     ClassroomAppContext.DispatchCommand(stopCmd1);
@@ -810,19 +871,11 @@ namespace QASmartClass.Classroom.Views
                         await ClassroomAppContext.Network.SendCommandAsync(stopCmd2);
                     }
                     _currentEmergencyOtp = string.Empty; // === UPGRADE_11: Reset OTP ===
-                    ClassroomAppContext.BroadcastState.IsScreenBroadcastActive = false;
-                    ClassroomAppContext.BroadcastState.ScreenCapturePath = string.Empty;
-                    QASmartClass.Services.BroadcastStateService.Instance.Reset();
-
-                    // Giải phóng bộ nhớ lập tức khi dừng phát
-                    System.GC.Collect();
-                    System.GC.WaitForPendingFinalizers();
-                    System.GC.Collect();
                 }
                 catch (Exception ex) { Log.Warning("[BroadcastPage][StopBroadcast] Reset state error: {Err}", ex.Message); }
 
                 SaveEvent("BROADCAST", "GV", "Dừng phát màn hình");
-                Log.Information("Broadcast stopped");
+                Log.Information("Broadcast stopped cleanly (StoppedToken={Token})", stopTokenArg);
                 return;
             }
 
@@ -845,12 +898,23 @@ namespace QASmartClass.Classroom.Views
                 // === UPGRADE_06: Phân biệt rõ null (ALL) vs empty list (chưa chọn ai) ===
                 if (targetCodes != null && targetCodes.Count == 0)
                 {
-                    // Trường hợp: GV chọn "Nhóm" hoặc "Từng HS" nhưng không tick ai
-                    ClassroomDialog.Warn(
-                        "⚠️ Chưa chọn đối tượng nhận chiếu màn hình.\n\n" +
-                        "Vui lòng chọn ít nhất 1 học sinh hoặc 1 nhóm trước khi bắt đầu phát.", "Lỗi cấu hình — Không có đối tượng nhận");
-                    Log.Warning("[BroadcastPage] UPGRADE_06: Target list rỗng (Group/Individual mode nhưng chưa tick HS). Chặn broadcast.");
-                    return;
+                    if (_skipConfirmForQuickBroadcast)
+                    {
+                        // Khi bấm Chiếu nhanh từ Thanh công cụ / FloatingModeBar mà trước đó chọn Nhóm/Cá nhân rỗng, tự động chuyển về Tất cả HS
+                        if (rbAllStudents != null) rbAllStudents.IsChecked = true;
+                        QASmartClass.Services.BroadcastStateService.Instance.TargetSelectionMode = "ALL";
+                        targetCodes = null;
+                        recipientCount = ClassroomAppContext.Network?.ConnectedCount ?? 0;
+                    }
+                    else
+                    {
+                        // Trường hợp: GV chọn "Nhóm" hoặc "Từng HS" ngay trong trang Broadcast nhưng không tick ai
+                        ClassroomDialog.Warn(
+                            "⚠️ Chưa chọn đối tượng nhận chiếu màn hình.\n\n" +
+                            "Vui lòng chọn ít nhất 1 học sinh hoặc 1 nhóm trước khi bắt đầu phát.", "Lỗi cấu hình — Không có đối tượng nhận");
+                        Log.Warning("[BroadcastPage] UPGRADE_06: Target list rỗng (Group/Individual mode nhưng chưa tick HS). Chặn broadcast.");
+                        return;
+                    }
                 }
 
                 if (recipientCount == 0 && !_skipConfirmForQuickBroadcast)
@@ -987,14 +1051,7 @@ namespace QASmartClass.Classroom.Views
                 btnMulticastBroadcast.IsEnabled = false;
             }
 
-            // Giải phóng bộ nhớ lập tức khi bắt đầu phát
-            try
-            {
-                System.GC.Collect();
-                System.GC.WaitForPendingFinalizers();
-                System.GC.Collect();
-            }
-            catch { }
+            // [MYTHWARE_LITE] Bỏ GC.Collect() đồng bộ trên UI thread để thao tác bấm Bắt đầu chiếu phản hồi tức thì 0ms không gây khựng giao diện.
 
             // === UPGRADE_13: Không bật Exclusion khi chạy ở chế độ Turbo, hoặc khi GV chọn chiếu Vùng màn hình / Trang trong QA SmartClass ===
             ScreenSourceInfo? curPicked;
@@ -1069,7 +1126,7 @@ namespace QASmartClass.Classroom.Views
             }
             else
             {
-                btnBroadcast.Content = "\u23F9\uFE0F Dừng Phát";
+                btnBroadcast.Content = "\u23F9\uFE0F Dừng Chiếu ngay";
                 btnBroadcast.Background = new SolidColorBrush(Color.FromRgb(211, 47, 47));
             }
             txtPreviewLabel.Text = $"Đang chiếu: {source}";
@@ -1090,9 +1147,66 @@ namespace QASmartClass.Classroom.Views
 
             if (curPicked != null && curPicked.Kind == ScreenSourceKind.QaClassPage && curPicked.AutoNavigateToPage && !string.IsNullOrEmpty(curPicked.PageFormId) && curPicked.PageFormId != "CURRENT")
             {
-                var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
-                shell?.NavigateToQaPageForBroadcast(curPicked.PageFormId);
+                if (string.Equals(curPicked.PageFormId, "SMART_TOUCH", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (Application.Current is QASmartTouch.App stApp && stApp.ModeService != null
+                        && stApp.ModeService.CurrentMode != QASmartClass.Shared.AppMode.SmartScreen)
+                    {
+                        stApp.ModeService.GoToScreen();
+                    }
+                }
+                else
+                {
+                    var shell = (Window.GetWindow(this) as ClassroomShell) ?? (Application.Current?.MainWindow as ClassroomShell);
+                    shell?.NavigateToQaPageForBroadcast(curPicked.PageFormId);
+                }
             }
+
+            // [MYTHWARE_LITE] Khởi tạo Token phiên & Epoch TRƯỚC KHI chạy Timer chụp để Frame đầu tiên luôn mang đúng Token & EncryptionKey mới
+            try
+            {
+                var (newEpoch, tokenVal) = QASmartClass.Services.BroadcastStateService.Instance.StartNewBroadcastSession(chkForceWatch.IsChecked == true);
+                System.Threading.Interlocked.Exchange(ref _activeSessionEpoch, newEpoch);
+                ClassroomAppContext.BroadcastState.IsScreenBroadcastActive = true;
+                
+                // Khởi tạo EncryptionKey từ tokenVal (V2.2.2)
+                QASmartClass.Services.UdpScreenBroadcastService.EncryptionKey = tokenVal.Substring(3);
+
+                // Khởi động bộ giám sát tài nguyên (V2.2.4)
+                QASmartClass.Services.AppPerformanceMonitor.Instance.Start();
+
+                if (chkForceWatch.IsChecked == true)
+                {
+                    _currentEmergencyOtp = new Random().Next(100000, 999999).ToString();
+                }
+                else
+                {
+                    _currentEmergencyOtp = string.Empty;
+                }
+
+                string protocolType = _isTextMode ? "HTTP_PULL" : "UDP_MULTICAST";
+                Log.Information("[BroadcastPage] Bắt đầu phiên phát hình. Epoch={Epoch}, Giao thức={Protocol}, Cổng UDP={Port}, TTL={Ttl}, Key={Key}", 
+                    newEpoch,
+                    protocolType, 
+                    QASmartClass.Services.UdpScreenBroadcastService.MulticastPort, 
+                    QASmartClass.Services.UdpScreenBroadcastService.MulticastTTL, 
+                    QASmartClass.Services.UdpScreenBroadcastService.EncryptionKey);
+
+                if (ClassroomAppContext.Network?.IsBroadcasting == true)
+                {
+                    QASmartClass.Services.UdpScreenBroadcastService.Instance.LoadConfigFromDb();
+                    string configCmd = $"CMD|SESSION_CONFIG|Broadcast_UdpHeartbeatTimeout={QASmartTouch.Services.AppSettings.Broadcast_UdpHeartbeatTimeout}|Broadcast_EnableScreenExclusion={QASmartTouch.Services.AppSettings.Broadcast_EnableScreenExclusion}|Broadcast_TurboMode={QASmartTouch.Services.AppSettings.Broadcast_TurboMode}";
+                    configCmd += $"|MulticastIP={QASmartClass.Services.UdpScreenBroadcastService.MulticastIP}|MulticastPort={QASmartClass.Services.UdpScreenBroadcastService.MulticastPort}|MulticastTTL={QASmartClass.Services.UdpScreenBroadcastService.MulticastTTL}";
+                    configCmd += $"|EncryptionKey={QASmartClass.Services.UdpScreenBroadcastService.EncryptionKey}";
+                    if (!string.IsNullOrEmpty(_currentEmergencyOtp))
+                    {
+                        configCmd += $"|Broadcast_EmergencyOTP={_currentEmergencyOtp}";
+                    }
+                    Log.Information("[BroadcastPage] Gửi TCP SESSION_CONFIG: {Cmd}", configCmd);
+                    _ = ClassroomAppContext.Network.SendCommandAsync(configCmd);
+                }
+            }
+            catch (Exception ex) { Log.Warning("[BroadcastPage][StartBroadcast] Set token / session config error: {Err}", ex.Message); }
 
             // [MYTHWARE_LITE] Hiển thị Thanh điều khiển nổi (Floating Share Bar + Live PiP Monitor)
             EnsureFloatingBroadcastBarShown(source, resolution, fps);
@@ -1124,56 +1238,10 @@ namespace QASmartClass.Classroom.Views
             int targetFps = GetSelectedTargetFps();
             int captureMs = Math.Max(8, (int)Math.Round(1000.0 / targetFps));
             // V22-02: Background thread capture — tránh lag UI ở 60-120fps
+            _captureTimer?.Dispose();
             _captureTimer = new System.Threading.Timer(
                 async _ => await CaptureAndSendAsync(),
                 null, 0, captureMs);
-
-            // Timer tự gọi lần đầu nhờ dueTime=0, không cần gọi thủ công
-
-            try
-            {
-                // app → ClassroomAppContext (refactored)
-                ClassroomAppContext.BroadcastState.IsScreenBroadcastActive = true;
-                string tokenVal = "TK_" + Guid.NewGuid().ToString("N").Substring(0, 16);
-                QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken = tokenVal;
-                
-                // Khởi tạo EncryptionKey từ tokenVal (V2.2.2)
-                QASmartClass.Services.UdpScreenBroadcastService.EncryptionKey = tokenVal.Substring(3);
-
-                // Khởi động bộ giám sát tài nguyên (V2.2.4)
-                QASmartClass.Services.AppPerformanceMonitor.Instance.Start();
-
-                if (chkForceWatch.IsChecked == true)
-                {
-                    _currentEmergencyOtp = new Random().Next(100000, 999999).ToString();
-                }
-                else
-                {
-                    _currentEmergencyOtp = string.Empty;
-                }
-
-                string protocolType = _isTextMode ? "HTTP_PULL" : "UDP_MULTICAST";
-                Log.Information("[BroadcastPage] Bắt đầu phiên phát hình. Giao thức={Protocol}, Cổng UDP={Port}, TTL={Ttl}, Key={Key}", 
-                    protocolType, 
-                    QASmartClass.Services.UdpScreenBroadcastService.MulticastPort, 
-                    QASmartClass.Services.UdpScreenBroadcastService.MulticastTTL, 
-                    QASmartClass.Services.UdpScreenBroadcastService.EncryptionKey);
-
-                if (ClassroomAppContext.Network?.IsBroadcasting == true)
-                {
-                    QASmartClass.Services.UdpScreenBroadcastService.Instance.LoadConfigFromDb();
-                    string configCmd = $"CMD|SESSION_CONFIG|Broadcast_UdpHeartbeatTimeout={QASmartTouch.Services.AppSettings.Broadcast_UdpHeartbeatTimeout}|Broadcast_EnableScreenExclusion={QASmartTouch.Services.AppSettings.Broadcast_EnableScreenExclusion}|Broadcast_TurboMode={QASmartTouch.Services.AppSettings.Broadcast_TurboMode}";
-                    configCmd += $"|MulticastIP={QASmartClass.Services.UdpScreenBroadcastService.MulticastIP}|MulticastPort={QASmartClass.Services.UdpScreenBroadcastService.MulticastPort}|MulticastTTL={QASmartClass.Services.UdpScreenBroadcastService.MulticastTTL}";
-                    configCmd += $"|EncryptionKey={QASmartClass.Services.UdpScreenBroadcastService.EncryptionKey}";
-                    if (!string.IsNullOrEmpty(_currentEmergencyOtp))
-                    {
-                        configCmd += $"|Broadcast_EmergencyOTP={_currentEmergencyOtp}";
-                    }
-                    Log.Information("[BroadcastPage] Gửi TCP SESSION_CONFIG: {Cmd}", configCmd);
-                    _ = ClassroomAppContext.Network.SendCommandAsync(configCmd);
-                }
-            }
-            catch (Exception ex) { Log.Warning("[BroadcastPage][StartBroadcast] Set token / session config error: {Err}", ex.Message); }
 
             SaveEvent("BROADCAST", "GV", $"Bắt đầu phát: {source} {resolution} {fps}");
             Log.Information("Broadcast started: {Src} {Res} {FPS}", source, resolution, fps);
@@ -1627,10 +1695,13 @@ namespace QASmartClass.Classroom.Views
         // V22-02: Async + SemaphoreSlim guard chống overlap, KHÔNG khóa UI thread mỗi frame
         private async Task CaptureAndSendAsync()
         {
-            if (!_isBroadcasting || _isPaused || _isBroadcastPausedDueToPrivacy) return;
+            long myEpoch = System.Threading.Interlocked.Read(ref _activeSessionEpoch);
+            if (!_isBroadcasting || myEpoch <= 0 || _isPaused || _isBroadcastPausedDueToPrivacy) return;
             if (!await _captureLock.WaitAsync(15)) return;
             try
             {
+                if (!_isBroadcasting || myEpoch != System.Threading.Interlocked.Read(ref _activeSessionEpoch)) return;
+
                 int screenW = _cachedScreenW;
                 int screenH = _cachedScreenH;
                 double scaleX = _cachedScaleX;
@@ -1650,10 +1721,11 @@ namespace QASmartClass.Classroom.Views
                 var targetCodes = _cachedTargetCodes;
 
                 // ═══ CƠ CHẾ KHÓA CỐ ĐỊNH NGUỒN CHIẾU CHUẨN GOOGLE MEET (ISOLATED WINDOW / TAB / BOARD LOCK) ═══
-                // - Khi Giáo viên chọn Trang QA SmartClass / Bảng SMART TOUCH hoặc Cửa sổ ứng dụng:
-                //   tuyệt đối KHÔNG dùng BitBlt/StretchBlt từ màn hình nền (GetDC(0)) để tránh rò rỉ cửa sổ đè lên hoặc màn hình mới khi chuyển tab/mode.
-                // - Khi nguồn cố định bị ẩn (Window.Hide khi chuyển mode) hoặc thu nhỏ (Minimize), giữ nguyên khung hình hợp lệ cuối cùng (_lastIsolatedSourceBitmap).
-                bool captureSmartTouchIsolated = false;
+                // - Khi Giáo viên đang thao tác trực tiếp trên bảng viết SMART TOUCH toàn màn hình: dùng GPU BitBlt (<1ms) siêu mượt
+                //   (thanh nổi đã tự tàng hình bằng WDA_EXCLUDEFROMCAPTURE) và lưu cache khung hình.
+                // - Ngay khi Giáo viên chuyển sang SMART CLASS hoặc DESKTOP: tự động giữ cố định khung hình bảng viết (_lastIsolatedSourceBitmap),
+                //   tuyệt đối không để rò rỉ màn hình riêng của Giáo viên sang máy Học sinh!
+                bool captureSmartTouchFastGpu = false;
                 IntPtr smartTouchHwnd = _cachedSmartTouchHwnd;
                 var appRef = Application.Current as QASmartTouch.App;
                 var modeService = appRef?.ModeService;
@@ -1664,9 +1736,10 @@ namespace QASmartClass.Classroom.Views
                     {
                         if (string.IsNullOrEmpty(lessonTitle)) lessonTitle = "Bảng trắng tương tác SMART TOUCH";
 
-                        if (smartTouchHwnd == IntPtr.Zero)
+                        bool isPickerOrShellOverlayVisible = false;
+                        Dispatcher.Invoke(() =>
                         {
-                            Dispatcher.Invoke(() =>
+                            if (smartTouchHwnd == IntPtr.Zero || !NativeMethods.IsWindow(smartTouchHwnd))
                             {
                                 var stWin = Application.Current?.Windows.OfType<QASmartTouch.Forms.Form2_MainDashboard>().FirstOrDefault();
                                 if (stWin != null)
@@ -1674,20 +1747,34 @@ namespace QASmartClass.Classroom.Views
                                     _cachedSmartTouchHwnd = new System.Windows.Interop.WindowInteropHelper(stWin).Handle;
                                     smartTouchHwnd = _cachedSmartTouchHwnd;
                                 }
-                            }, DispatcherPriority.Render);
-                        }
+                            }
+
+                            if (Application.Current != null)
+                            {
+                                foreach (Window w in Application.Current.Windows)
+                                {
+                                    if (!w.IsVisible || w.WindowState == WindowState.Minimized) continue;
+                                    if (w is ClassroomShell && w.Opacity > 0.05)
+                                    {
+                                        isPickerOrShellOverlayVisible = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }, DispatcherPriority.Send);
 
                         bool isSmartTouchActiveMode = modeService == null
                             || (!modeService.IsTransitioning && modeService.CurrentMode == QASmartClass.Shared.AppMode.SmartScreen);
 
                         if (isSmartTouchActiveMode
+                            && !isPickerOrShellOverlayVisible
                             && smartTouchHwnd != IntPtr.Zero
                             && NativeMethods.IsWindow(smartTouchHwnd)
                             && NativeMethods.IsWindowVisible(smartTouchHwnd)
                             && !NativeMethods.IsIconic(smartTouchHwnd))
                         {
-                            // Chụp độc lập cửa sổ SMART TOUCH bằng PrintWindow(PW_RENDERFULLCONTENT) trên thread pool (không dính cửa sổ đè phía trên)
-                            captureSmartTouchIsolated = true;
+                            // Chụp GPU BitBlt (<1ms) siêu mượt: giữ nguyên 100% độ nhạy nét bút + hiện đủ hộp công cụ STEM/3D/Bút vẽ trên bảng
+                            captureSmartTouchFastGpu = true;
                         }
                         else if (_lastIsolatedSourceBitmap != null)
                         {
@@ -1785,9 +1872,18 @@ namespace QASmartClass.Classroom.Views
                             else if (pickedSrc.Kind == ScreenSourceKind.QaClassPage)
                             {
                                 isWindowSource = false;
-                                if (captureSmartTouchIsolated && smartTouchHwnd != IntPtr.Zero)
+                                if (captureSmartTouchFastGpu)
                                 {
-                                    isolatedHwnd = smartTouchHwnd;
+                                    var primaryScr = ScreenSourceEnumerator.GetScreens().FirstOrDefault(s => s.IsPrimary)
+                                                  ?? ScreenSourceEnumerator.GetScreens().FirstOrDefault();
+                                    if (primaryScr != null)
+                                    {
+                                        x = primaryScr.X;
+                                        y = primaryScr.Y;
+                                        pixelW = primaryScr.Width;
+                                        pixelH = primaryScr.Height;
+                                    }
+                                    captureDesktopRegion = true;
                                 }
                             }
                             else if (pickedSrc.Kind == ScreenSourceKind.Window)
@@ -1900,6 +1996,10 @@ namespace QASmartClass.Classroom.Views
                                     hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
                                 bmpSource = new FormatConvertedBitmap(rawBmp, PixelFormats.Bgr32, null, 0);
                                 bmpSource.Freeze();
+                                if (captureSmartTouchFastGpu)
+                                {
+                                    _lastIsolatedSourceBitmap = bmpSource;
+                                }
                             }
                             finally
                             {
@@ -1911,6 +2011,7 @@ namespace QASmartClass.Classroom.Views
                         }
 
                         if (bmpSource == null) return;
+                        if (!_isBroadcasting || myEpoch != System.Threading.Interlocked.Read(ref _activeSessionEpoch)) return;
 
                         // Ghép ô Camera Giáo viên (Google Meet 16:9 / SmartTouch Circle) lên luồng hình ảnh phát sóng nếu Camera đang bật
                         bool camActive = LiveBroadcastMediaService.Instance.IsCameraEnabled;
@@ -2006,10 +2107,24 @@ namespace QASmartClass.Classroom.Views
 
                         if (imgBytes == null || imgBytes.Length == 0) return;
 
+                        // Chốt chặn chống Race Condition: Nếu GV vừa bấm Dừng chiếu trong lúc đang nén JPEG trên ThreadPool, HỦY NGAY không gửi gói trễ!
+                        if (!_isBroadcasting
+                            || myEpoch != System.Threading.Interlocked.Read(ref _activeSessionEpoch)
+                            || myEpoch != QASmartClass.Services.BroadcastStateService.Instance.SessionEpoch)
+                        {
+                            return;
+                        }
+
+                        string token = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
+                        if (string.IsNullOrEmpty(token))
+                        {
+                            return;
+                        }
+
                         // Chỉ đẩy thêm bản ghi mới vào RingBuffer khi thực sự có khung chuyển động mới hoặc khung chốt nét Ultra-Sharp
                         if (hasVisualChange || (isUltraSharpKeyframe && _lastEncodedFrameUtc == nowUtc))
                         {
-                            QASmartClass.Services.BroadcastStateService.Instance.PushBroadcastFrame(imgBytes, isUltraSharpKeyframe);
+                            QASmartClass.Services.BroadcastStateService.Instance.PushBroadcastFrame(imgBytes, isUltraSharpKeyframe, myEpoch);
 
                             // Chỉ ghi đĩa nếu chạy ở chế độ cục bộ (không qua mạng LAN)
                             if (!isNetworkActive)
@@ -2027,7 +2142,9 @@ namespace QASmartClass.Classroom.Views
                                     _ = Task.Run(async () =>
                                     {
                                         await Task.Delay(45);
-                                        if (_isBroadcasting && !_isPaused && _lastFrameSampleHash == hashSnapshot)
+                                        if (_isBroadcasting && !_isPaused
+                                            && myEpoch == System.Threading.Interlocked.Read(ref _activeSessionEpoch)
+                                            && _lastFrameSampleHash == hashSnapshot)
                                         {
                                             await QASmartClass.Services.UdpScreenBroadcastService.Instance.SendFrameAsync(sharpCopy, isKeyframe: true);
                                         }
@@ -2038,7 +2155,6 @@ namespace QASmartClass.Classroom.Views
 
                         // Gửi command
                         string cmdType = _isFirstCapture ? "SCREEN_BROADCAST_START" : "SCREEN_BROADCAST_UPDATE";
-                        string token = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
 
                         // Đồng bộ giao thức và cổng kết nối động bảo mật (V2.2.2)
                         string protocol = "UDP_MULTICAST";
@@ -2056,6 +2172,11 @@ namespace QASmartClass.Classroom.Views
                             cmd += $"|TITLE={System.Uri.EscapeDataString(lessonTitle)}";
                         }
 
+                        if (!_isBroadcasting || myEpoch != System.Threading.Interlocked.Read(ref _activeSessionEpoch))
+                        {
+                            return;
+                        }
+
                         // Cập nhật state
                         ClassroomAppContext.BroadcastState.ScreenCapturePath = filePath;
                         ClassroomAppContext.BroadcastState.ScreenCaptureTime = DateTime.Now;
@@ -2067,7 +2188,7 @@ namespace QASmartClass.Classroom.Views
                         int tcpCmdMinIntervalMs = _isTextMode ? 250 : 400;
                         bool shouldSendTcpCmd = _isFirstCapture || msSinceLastTcpCmd >= tcpCmdMinIntervalMs;
 
-                        if (shouldSendTcpCmd)
+                        if (shouldSendTcpCmd && _isBroadcasting && myEpoch == System.Threading.Interlocked.Read(ref _activeSessionEpoch))
                         {
                             _lastTcpBroadcastCmdUtc = nowUtc;
                             if (ClassroomAppContext.Network?.IsBroadcasting == true)
@@ -2096,6 +2217,10 @@ namespace QASmartClass.Classroom.Views
                             if (shouldUpdatePreview) _lastLivePreview = nowUtc;
                             _ = Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
                             {
+                                if (!_isBroadcasting || myEpoch != System.Threading.Interlocked.Read(ref _activeSessionEpoch))
+                                {
+                                    return;
+                                }
                                 if (shouldUpdatePreview)
                                 {
                                     // [MYTHWARE_LITE] Luôn hiển thị khung hình thực tế mà máy Học sinh đang nhận được
@@ -2441,6 +2566,34 @@ namespace QASmartClass.Classroom.Views
             OpenSourcePicker(ScreenSourceKind.Screen, out _);
         }
 
+        private void QuickSharePrimaryScreen_Click(object sender, RoutedEventArgs e)
+        {
+            var screens = ScreenSourceEnumerator.GetScreens();
+            var primary = screens.FirstOrDefault(s => s.IsPrimary) ?? screens.FirstOrDefault();
+            if (primary != null)
+            {
+                ApplyPickedSource(primary);
+            }
+
+            if (!_isBroadcasting)
+            {
+                _skipConfirmForQuickBroadcast = true;
+                try
+                {
+                    Broadcast_Click(this, new RoutedEventArgs());
+                }
+                finally
+                {
+                    _skipConfirmForQuickBroadcast = false;
+                }
+            }
+        }
+
+        private void QuickShareSmartTouch_Click(object sender, RoutedEventArgs e)
+        {
+            ShareSmartTouchBoardImmediately();
+        }
+
         private void PickSourceAndStart_Click(object sender, RoutedEventArgs e)
         {
             if (OpenSourcePicker(ScreenSourceKind.Screen, out bool autoMin) && !_isBroadcasting)
@@ -2780,14 +2933,35 @@ namespace QASmartClass.Classroom.Views
             IntPtr selfHwnd = owner != null ? new System.Windows.Interop.WindowInteropHelper(owner).Handle : IntPtr.Zero;
             var dpi = VisualTreeHelper.GetDpi(this);
 
-            System.Collections.Generic.List<ScreenSourceInfo> sources = _inlinePreviewFilter switch
+            System.Collections.Generic.List<ScreenSourceInfo> sources;
+            if (_inlinePreviewFilter == "SCREEN")
             {
-                "SCREEN" => ScreenSourceEnumerator.GetScreens(),
-                "WINDOW" => ScreenSourceEnumerator.GetWindows(selfHwnd),
-                "QAPAGE" => ScreenSourceEnumerator.GetQaClassPages(),
-                "REGION" => ScreenSourceEnumerator.GetRegionPresets(dpi.DpiScaleX, dpi.DpiScaleY),
-                _ => ScreenSourceEnumerator.GetAllShareableSources(selfHwnd, dpi.DpiScaleX, dpi.DpiScaleY)
-            };
+                sources = ScreenSourceEnumerator.GetScreens();
+                var smartTouch = ScreenSourceEnumerator.GetQaClassPages()
+                    .FirstOrDefault(p => string.Equals(p.PageFormId, "SMART_TOUCH", StringComparison.OrdinalIgnoreCase));
+                if (smartTouch != null) sources.Add(smartTouch);
+            }
+            else if (_inlinePreviewFilter == "WINDOW")
+            {
+                sources = ScreenSourceEnumerator.GetWindows(selfHwnd);
+            }
+            else if (_inlinePreviewFilter == "QAPAGE")
+            {
+                sources = ScreenSourceEnumerator.GetQaClassPages();
+            }
+            else if (_inlinePreviewFilter == "REGION")
+            {
+                sources = ScreenSourceEnumerator.GetRegionPresets(dpi.DpiScaleX, dpi.DpiScaleY);
+            }
+            else
+            {
+                sources = new System.Collections.Generic.List<ScreenSourceInfo>();
+                sources.AddRange(ScreenSourceEnumerator.GetScreens());
+                var smartTouch = ScreenSourceEnumerator.GetQaClassPages()
+                    .FirstOrDefault(p => string.Equals(p.PageFormId, "SMART_TOUCH", StringComparison.OrdinalIgnoreCase));
+                if (smartTouch != null) sources.Add(smartTouch);
+                sources.AddRange(ScreenSourceEnumerator.GetWindows(selfHwnd));
+            }
 
             if (sources.Count == 0)
             {
@@ -4465,9 +4639,11 @@ namespace QASmartClass.Classroom.Views
                 foreach (Window win in Application.Current.Windows)
                 {
                     if (win is BroadcastPrivacyBorder) continue;
-                    if (win is FloatingBroadcastBarWindow)
+                    if (win is FloatingBroadcastBarWindow
+                        || win is QASmartClass.Shared.FloatingModeBar
+                        || win is ScreenSourcePickerWindow)
                     {
-                        // Thanh điều khiển nổi (Floating Share Bar + PiP) luôn ẩn khỏi ảnh chụp của Học sinh
+                        // Các thanh điều khiển nổi & hộp chọn nguồn của GV LUÔN ẩn khỏi ảnh chụp màn hình Học sinh
                         var fHelper = new System.Windows.Interop.WindowInteropHelper(win);
                         if (fHelper.Handle != IntPtr.Zero)
                         {
@@ -4475,10 +4651,15 @@ namespace QASmartClass.Classroom.Views
                         }
                         continue;
                     }
-                    var helper = new System.Windows.Interop.WindowInteropHelper(win);
-                    if (helper.Handle != IntPtr.Zero)
+                    // Chỉ áp dụng ẩn/hiện theo tùy chọn cho cửa sổ Quản lý lớp (ClassroomShell);
+                    // tuyệt đối KHÔNG gắn WDA_EXCLUDEFROMCAPTURE lên Bảng viết SMART TOUCH (Form2_MainDashboard)!
+                    if (win is ClassroomShell)
                     {
-                        NativeMethods.SetWindowDisplayAffinity(helper.Handle, affinity);
+                        var helper = new System.Windows.Interop.WindowInteropHelper(win);
+                        if (helper.Handle != IntPtr.Zero)
+                        {
+                            NativeMethods.SetWindowDisplayAffinity(helper.Handle, affinity);
+                        }
                     }
                 }
             }

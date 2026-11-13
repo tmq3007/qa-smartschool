@@ -32,11 +32,15 @@ namespace QASmartClass.Services
         }
         private byte[] _screenCaptureBytes = Array.Empty<byte>();
         private long _frameVersion;
+        private long _sessionEpoch;
+        private string _lastStoppedToken = string.Empty;
         private bool _lastFrameIsKeyframe;
         private const int MaxRingFrames = 64; // ~1.0s sequential frame buffer at 60 FPS
         private readonly System.Collections.Generic.Queue<(long Version, byte[] Bytes, bool IsKeyframe)> _frameRingBuffer = new(MaxRingFrames);
 
         public long FrameVersion => System.Threading.Interlocked.Read(ref _frameVersion);
+        public long SessionEpoch => System.Threading.Interlocked.Read(ref _sessionEpoch);
+        public string LastStoppedToken { get { lock (_lock) return _lastStoppedToken; } }
         public bool LastFrameIsKeyframe { get { lock (_lock) return _lastFrameIsKeyframe; } }
 
         public byte[] ScreenCaptureBytes
@@ -47,12 +51,22 @@ namespace QASmartClass.Services
 
         /// <summary>
         /// Đẩy khung hình mới vào bộ đệm vòng tuần tự, gắn cờ IsKeyframe = true cho khung chốt nét Ultra-Sharp (Q=94).
+        /// Chặn tuyệt đối các khung hình trễ từ luồng chụp cũ (stale epoch) hoặc sau khi phiên phát đã dừng.
         /// </summary>
-        public void PushBroadcastFrame(byte[] value, bool isKeyframe)
+        public void PushBroadcastFrame(byte[] value, bool isKeyframe, long expectedEpoch = -1)
         {
-            long ver = System.Threading.Interlocked.Increment(ref _frameVersion);
             lock (_lock)
             {
+                if (!_isScreenBroadcastActive)
+                {
+                    return;
+                }
+                if (expectedEpoch > 0 && expectedEpoch != System.Threading.Interlocked.Read(ref _sessionEpoch))
+                {
+                    return;
+                }
+
+                long ver = System.Threading.Interlocked.Increment(ref _frameVersion);
                 _screenCaptureBytes = value ?? Array.Empty<byte>();
                 _lastFrameIsKeyframe = isKeyframe;
                 if (value != null && value.Length > 0)
@@ -303,13 +317,73 @@ namespace QASmartClass.Services
 
         public event EventHandler? StateChanged;
 
+        /// <summary>
+        /// Khởi tạo phiên chiếu màn hình/bảng mới với Epoch tăng dần và Token duy nhất trước khi mở Timer chụp.
+        /// </summary>
+        public (long Epoch, string Token) StartNewBroadcastSession(bool isForceWatch)
+        {
+            long epoch;
+            string token;
+            lock (_lock)
+            {
+                epoch = System.Threading.Interlocked.Increment(ref _sessionEpoch);
+                token = "TK_" + Guid.NewGuid().ToString("N").Substring(0, 16);
+                _broadcastToken = token;
+                _screenCaptureBytes = Array.Empty<byte>();
+                _frameRingBuffer.Clear();
+                _lastFrameIsKeyframe = false;
+                IsForceWatchActive = isForceWatch;
+                _isScreenBroadcastActive = true;
+            }
+            Log.Information("[BroadcastState] Started new session Epoch={Epoch}, Token={Token}", epoch, token);
+            StateChanged?.Invoke(this, EventArgs.Empty);
+            return (epoch, token);
+        }
+
+        /// <summary>
+        /// Dừng sạch phiên chiếu màn hình/bảng hiện hành (tăng Epoch, ghi nhận LastStoppedToken, xóa đệm khung hình),
+        /// NHƯNG giữ nguyên danh sách tệp chia sẻ (SharedFilesById) và bộ lọc đối tượng học sinh trên giao diện.
+        /// </summary>
+        public string StopScreenBroadcastSession()
+        {
+            string stoppedToken;
+            long epoch;
+            lock (_lock)
+            {
+                epoch = System.Threading.Interlocked.Increment(ref _sessionEpoch);
+                stoppedToken = _broadcastToken;
+                if (!string.IsNullOrEmpty(stoppedToken))
+                {
+                    _lastStoppedToken = stoppedToken;
+                }
+                _screenCapturePath = string.Empty;
+                _screenCaptureBytes = Array.Empty<byte>();
+                _frameRingBuffer.Clear();
+                _lastFrameIsKeyframe = false;
+                _screenCaptureTime = DateTime.MinValue;
+                _isScreenBroadcastActive = false;
+                IsForceWatchActive = false;
+                _broadcastToken = string.Empty;
+                _isBroadcastCasting = false;
+            }
+            Log.Information("[BroadcastState] Stopped screen session Epoch={Epoch}, StoppedToken={Token}", epoch, stoppedToken);
+            StateChanged?.Invoke(this, EventArgs.Empty);
+            return stoppedToken;
+        }
+
         public void Reset()
         {
             lock (_lock)
             {
+                System.Threading.Interlocked.Increment(ref _sessionEpoch);
+                if (!string.IsNullOrEmpty(_broadcastToken))
+                {
+                    _lastStoppedToken = _broadcastToken;
+                }
                 _screenCapturePath = string.Empty;
                 _screenCaptureBytes = Array.Empty<byte>();
                 _frameRingBuffer.Clear();
+                _lastFrameIsKeyframe = false;
                 _screenCaptureTime = DateTime.MinValue;
                 _isScreenBroadcastActive = false;
                 IsForceWatchActive = false;

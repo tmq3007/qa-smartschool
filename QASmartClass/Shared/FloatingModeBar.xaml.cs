@@ -1437,22 +1437,35 @@ namespace QASmartClass.Shared
             HideClassroomShellChanged?.Invoke(this, chkHideClassroomShell.IsChecked == true);
         }
 
+        private DateTime _lastStopBroadcastUtc = DateTime.MinValue;
+
+        private void ExecuteImmediateStopBroadcast()
+        {
+            var now = DateTime.UtcNow;
+            if ((now - _lastStopBroadcastUtc).TotalMilliseconds < 60) return;
+            _lastStopBroadcastUtc = now;
+
+            if (btnLiveStopBroadcast != null) ApplyPressedFeedback(btnLiveStopBroadcast);
+            ScreenShareController.Instance.StopAllActiveBroadcasts();
+            SyncBroadcastVisualState();
+        }
+
         private void OnLiveStopBroadcastClick(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
-            if (!AcquireQuickActionDebounce()) return;
-            if (_isBroadcastBridgeBound) StopRequested?.Invoke(this, EventArgs.Empty);
-            else ScreenShareController.Instance.RequestStop();
-            SyncBroadcastVisualState();
+            ExecuteImmediateStopBroadcast();
         }
 
         private void OnLiveStopBroadcastTouchDown(object? sender, TouchEventArgs e)
         {
             e.Handled = true;
-            if (!AcquireQuickActionDebounce()) return;
-            if (_isBroadcastBridgeBound) StopRequested?.Invoke(this, EventArgs.Empty);
-            else ScreenShareController.Instance.RequestStop();
-            SyncBroadcastVisualState();
+            ExecuteImmediateStopBroadcast();
+        }
+
+        private void OnLiveStopBroadcastStylusDown(object sender, StylusDownEventArgs e)
+        {
+            e.Handled = true;
+            ExecuteImmediateStopBroadcast();
         }
 
         #endregion

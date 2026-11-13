@@ -204,20 +204,22 @@ namespace QASmartClass.Classroom.Services
                 new ScreenSourceInfo
                 {
                     Kind = ScreenSourceKind.QaClassPage,
-                    PageFormId = "CURRENT",
-                    IconGlyph = "📌",
-                    Title = "Trang đang mở trên SMART CLASS (Giữ cố định)",
-                    Subtitle = "Khóa cố định trang hiện tại (chuyển sang tab Giám sát/Chat/màn khác Học sinh vẫn chỉ thấy trang này)"
+                    PageFormId = "SMART_TOUCH",
+                    IconGlyph = "🎨",
+                    Title = "Bảng trắng tương tác SMART TOUCH",
+                    Subtitle = "Mở & khóa cố định bảng viết SMART TOUCH (chuyển sang DESKTOP / SMART CLASS Học sinh vẫn chỉ thấy bảng viết)",
+                    AutoNavigateToPage = true
                 },
                 new ScreenSourceInfo
                 {
                     Kind = ScreenSourceKind.QaClassPage,
-                    PageFormId = "SMART_TOUCH",
-                    IconGlyph = "🎨",
-                    Title = "Bảng trắng tương tác SMART TOUCH",
-                    Subtitle = "Khóa cố định bảng viết SMART TOUCH (chuyển sang DESKTOP / SMART CLASS Học sinh vẫn chỉ thấy bảng viết)"
-                },
-                new ScreenSourceInfo
+                    PageFormId = "CURRENT",
+                    IconGlyph = "📌",
+                    Title = "Trang đang mở trên SMART CLASS (Giữ cố định)",
+                    Subtitle = "Khóa cố định trang hiện tại (chuyển sang tab Giám sát/Chat/màn khác Học sinh vẫn chỉ thấy trang này)"
+                }
+                /* [MYTHWARE_LITE] Đã ẩn các trang ERP/LMS cũ để bảng chọn nguồn trình chiếu tinh gọn, trực quan cho Giáo viên:
+                ,new ScreenSourceInfo
                 {
                     Kind = ScreenSourceKind.QaClassPage,
                     PageFormId = "F_RUNNER",
@@ -305,6 +307,7 @@ namespace QASmartClass.Classroom.Services
                     Title = "Trang Biểu đồ & Thống kê Lớp học",
                     Subtitle = "Chiếu biểu đồ phân tích học tập và thi đua"
                 }
+                */
             };
         }
 
@@ -418,7 +421,9 @@ namespace QASmartClass.Classroom.Services
                     string title = sb.ToString();
                     if (string.IsNullOrWhiteSpace(title)
                         || title == "Program Manager"
-                        || title.Contains("Chọn nguồn chiếu màn hình", StringComparison.OrdinalIgnoreCase)
+                        || title == "Settings"
+                        || title.Contains("Chọn nguồn chiếu", StringComparison.OrdinalIgnoreCase)
+                        || title.Contains("Chọn nội dung trình chiếu", StringComparison.OrdinalIgnoreCase)
                         || title.Contains("Thanh điều khiển chia sẻ màn hình", StringComparison.OrdinalIgnoreCase))
                         return true;
                     if (!GetWindowRect(hWnd, out var rc)) return true;
@@ -426,7 +431,8 @@ namespace QASmartClass.Classroom.Services
                     if (!IsIconic(hWnd) && (w < 80 || h < 60)) return true;
 
                     GetWindowThreadProcessId(hWnd, out uint pid);
-                    if (pid == (uint)Environment.ProcessId && hWnd == excludeHwnd) return true;
+                    // Các cửa sổ nội bộ của QASmartClass / SMART TOUCH đã có thẻ chuyên biệt riêng (không trộn lẫn vào danh sách ứng dụng ngoài như PowerPoint/Word/Chrome)
+                    if (pid == (uint)Environment.ProcessId) return true;
 
                     list.Add(new ScreenSourceInfo
                     {

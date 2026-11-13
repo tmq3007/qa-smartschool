@@ -175,6 +175,8 @@ namespace QASmartClass.Classroom.Views
         {
 
             InitializeComponent();
+            QASmartClass.Classroom.Services.ScreenShareController.Instance.StopRequested -= OnGlobalStopShareRequested;
+            QASmartClass.Classroom.Services.ScreenShareController.Instance.StopRequested += OnGlobalStopShareRequested;
             if (lstConnectedStudents != null)
             {
                 lstConnectedStudents.ItemsSource = _onlineStudentsSidebar;
@@ -2209,9 +2211,21 @@ namespace QASmartClass.Classroom.Views
             return $"CMD|{cmdType}|student_demo.jpg|PROTOCOL=UDP_MULTICAST|PORT={multicastPort}|KEY={key}|TTL={ttl}|FORCE_WATCH|PRESENTER={presenterCode}|TITLE={title}|{webPort}|{token}";
         }
 
+        private void OnGlobalStopShareRequested(object? sender, EventArgs e)
+        {
+            if (_activeDemoStudent != null || _studentDemoRelayTimer != null)
+            {
+                if (Dispatcher.CheckAccess()) StopStudentDemoRelay();
+                else Dispatcher.Invoke(StopStudentDemoRelay);
+            }
+        }
+
         public void StartStudentDemoRelay(ConnectedStudent st)
         {
             if (st == null) return;
+
+            // Nếu Giáo viên đang phát màn hình / chiếu bảng thì dừng luồng của GV trước để tránh 2 bộ phát xung đột
+            QASmartClass.Classroom.Views.BroadcastPage.StopAllLiveInstances();
 
             // Nếu đang phát màn hình của học sinh khác thì dừng học sinh cũ trước
             if (_activeDemoStudent != null && !IsActiveDemoPresenter(st))
@@ -2222,13 +2236,9 @@ namespace QASmartClass.Classroom.Views
             _activeDemoStudent = st;
             _activeDemoStudentCode = !string.IsNullOrWhiteSpace(st.StudentCode) ? st.StudentCode.Trim() : st.PCName.Trim();
 
-            if (string.IsNullOrEmpty(QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken))
-            {
-                QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken = "TK_" + Guid.NewGuid().ToString("N").Substring(0, 16);
-            }
-            string token = QASmartClass.Services.BroadcastStateService.Instance.BroadcastToken;
+            var (_, token) = QASmartClass.Services.BroadcastStateService.Instance.StartNewBroadcastSession(isForceWatch: true);
             QASmartClass.Services.UdpScreenBroadcastService.EncryptionKey = token.Length > 3 ? token.Substring(3) : "QASmartClass2026";
-            QASmartClass.Services.BroadcastStateService.Instance.IsScreenBroadcastActive = true;
+            ClassroomAppContext.BroadcastState.IsScreenBroadcastActive = true;
 
             // Khởi tạo ngay khung hình đầu tiên từ ảnh chụp hiện có của học sinh (nếu có) để các máy học sinh khác hiển thị tức thì
             if (st.ScreenshotSource is BitmapSource existingBmp)
@@ -2299,10 +2309,12 @@ namespace QASmartClass.Classroom.Views
             {
                 SendCommandToStudent(prevStudent, "CMD|STUDENT_DEMO_STOP");
             }
+            string stoppedToken = QASmartClass.Services.BroadcastStateService.Instance.StopScreenBroadcastSession();
+            string tokenSuffix = string.IsNullOrEmpty(stoppedToken) ? "0" : stoppedToken;
+            ClassroomAppContext.BroadcastState.IsScreenBroadcastActive = false;
             SendCommand("CMD|STUDENT_DEMO_STOP");
-            SendCommand("CMD|SCREEN_BROADCAST_STOP|0");
+            SendCommand($"CMD|SCREEN_BROADCAST_STOP|{tokenSuffix}");
             SendCommand("CMD|BROADCAST_STOP|0");
-            QASmartClass.Services.BroadcastStateService.Instance.Reset();
 
             if (prevStudent != null)
             {

@@ -4694,7 +4694,11 @@ class MainActivity : AppCompatActivity() {
                     val allowExit = rawFlag == "1" || rawFlag.equals("true", ignoreCase = true)
                     applyBroadcastLockState(isForce = !allowExit, notifyToast = true)
                 }
-                cleanCmd.startsWith("CMD|SCREEN_BROADCAST_STOP") || cleanCmd == "CMD|SCREEN_BROADCAST_STOP" -> {
+                cleanCmd.startsWith("CMD|SCREEN_BROADCAST_STOP") || cleanCmd == "CMD|SCREEN_BROADCAST_STOP" || cleanCmd.startsWith("CMD|BROADCAST_STOP") -> {
+                    val stopParts = cleanCmd.substringBefore("|id=").split("|")
+                    val stoppedTok = stopParts.getOrNull(2)?.trim().orEmpty()
+                    lastStoppedBroadcastToken = if (stoppedTok.startsWith("TK_")) stoppedTok else currentBroadcastToken
+                    lastBroadcastStopElapsedMs = android.os.SystemClock.elapsedRealtime()
                     stopHighFrequencyScreenRelay()
                     stopScreenBroadcast()
                     Toast.makeText(this, "📡 Đã dừng chiếu màn hình", Toast.LENGTH_SHORT).show()
@@ -5487,9 +5491,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var lastStoppedBroadcastToken: String = ""
+    private var lastBroadcastStopElapsedMs: Long = 0L
+
     private fun updateScreenBroadcast(token: String, webPort: Int, title: String, isForce: Boolean = false) {
         if (!isScreenBroadcastActive) {
-            // Tự phục hồi nếu thiết bị Android vào lớp muộn hoặc lỡ gói SCREEN_BROADCAST_START đầu tiên
+            // Chặn tuyệt đối gói SCREEN_BROADCAST_UPDATE trễ mang Token của phiên đã bị Giáo viên bấm Dừng
+            if (token.isNotBlank() && token == lastStoppedBroadcastToken) {
+                return
+            }
+            if (token.isBlank() && (android.os.SystemClock.elapsedRealtime() - lastBroadcastStopElapsedMs) < 2500L) {
+                return
+            }
+            // Tự phục hồi nếu thiết bị Android vào lớp muộn hoặc lỡ gói SCREEN_BROADCAST_START đầu tiên của phiên mới
             startScreenBroadcast(
                 token.ifBlank { currentBroadcastToken },
                 if (webPort > 0) webPort else currentTeacherWebPort,
@@ -5622,6 +5636,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopScreenBroadcast() {
+        if (currentBroadcastToken.isNotBlank()) {
+            lastStoppedBroadcastToken = currentBroadcastToken
+        }
+        lastBroadcastStopElapsedMs = android.os.SystemClock.elapsedRealtime()
         isScreenBroadcastActive = false
         isForceBroadcastMode = false
         userMinimizedBroadcast = false

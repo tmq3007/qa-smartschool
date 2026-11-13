@@ -537,12 +537,22 @@ namespace QASmartClass.Classroom.Views
             barPanel.Children.Add(btnRestoreShell);
 
             // ─── Nút kết thúc đỏ chuẩn Google Meet (#EA4335) ───
-            var btnStop = CreateMeetActionPill("📞 Dừng", MeetMutedRedColor, Colors.White,
-                "Dừng chia sẻ màn hình & âm thanh ngay lập tức");
+            var btnStop = CreateMeetActionPill("⏹️ Dừng chiếu", MeetMutedRedColor, Colors.White,
+                "Dừng chia sẻ màn hình / bảng viết & âm thanh ngay lập tức");
             btnStop.Height = 36;
             btnStop.Margin = new Thickness(0, 0, 0, 4);
             btnStop.Padding = new Thickness(12, 0, 12, 0);
-            btnStop.Click += (_, _) => StopRequested?.Invoke(this, EventArgs.Empty);
+            btnStop.Click += (_, _) =>
+            {
+                StopRequested?.Invoke(this, EventArgs.Empty);
+                ScreenShareController.Instance.StopAllActiveBroadcasts();
+            };
+            btnStop.PreviewTouchDown += (_, ev) =>
+            {
+                ev.Handled = true;
+                StopRequested?.Invoke(this, EventArgs.Empty);
+                ScreenShareController.Instance.StopAllActiveBroadcasts();
+            };
             barPanel.Children.Add(btnStop);
 
             hubStack.Children.Add(barPanel);

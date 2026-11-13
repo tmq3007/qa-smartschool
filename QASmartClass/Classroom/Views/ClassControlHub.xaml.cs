@@ -165,13 +165,14 @@ namespace QASmartClass.Classroom.Views
                 dotLiveStatus.Fill = new SolidColorBrush(Color.FromRgb(239, 68, 68)); // Red #EF4444
                 txtLiveStatus.Text = source switch
                 {
-                    ScreenShareSource.Vnc => "🔴 Đang phát (VNC)",
-                    ScreenShareSource.Desktop => "🔴 Đang phát màn hình",
-                    _ => "🔴 Đang phát trực tiếp"
+                    ScreenShareSource.Vnc => "🔴 Đang phát VNC • Dừng",
+                    ScreenShareSource.Desktop => "🔴 Đang chiếu • Bấm để dừng",
+                    _ => "🔴 Đang phát • Bấm để dừng"
                 };
                 txtLiveStatus.Foreground = new SolidColorBrush(Color.FromRgb(220, 38, 38)); // #DC2626
                 pillLiveStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(254, 202, 202)); // #FECACA
                 pillLiveStatus.Background = new SolidColorBrush(Color.FromRgb(254, 242, 242)); // #FEF2F2
+                pillLiveStatus.Cursor = System.Windows.Input.Cursors.Hand;
 
                 if (btnQuickBroadcast != null)
                 {
@@ -189,6 +190,7 @@ namespace QASmartClass.Classroom.Views
                 txtLiveStatus.Foreground = new SolidColorBrush(Color.FromRgb(71, 85, 105)); // #475569
                 pillLiveStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)); // #CBD5E1
                 pillLiveStatus.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)); // #F1F5F9
+                pillLiveStatus.Cursor = System.Windows.Input.Cursors.Arrow;
 
                 if (btnQuickBroadcast != null)
                 {
@@ -358,6 +360,13 @@ namespace QASmartClass.Classroom.Views
         {
             try
             {
+                if (ScreenShareController.Instance.IsLive)
+                {
+                    ScreenShareController.Instance.StopAllActiveBroadcasts();
+                    UpdateLiveBroadcastUI();
+                    return;
+                }
+
                 var bp = EnsureBroadcastPageLoaded();
                 bp.ToggleMythwareQuickBroadcast();
                 UpdateLiveBroadcastUI();
@@ -366,6 +375,26 @@ namespace QASmartClass.Classroom.Views
             {
                 Log.Error(ex, "Lỗi khi bật/tắt trình chiếu màn hình nhanh");
                 ClassroomDialog.Error($"Không thể phát màn hình: {ex.Message}", "Lỗi");
+            }
+        }
+
+        private void PillLiveStatus_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (ScreenShareController.Instance.IsLive)
+            {
+                e.Handled = true;
+                ScreenShareController.Instance.StopAllActiveBroadcasts();
+                UpdateLiveBroadcastUI();
+            }
+        }
+
+        private void PillLiveStatus_TouchDown(object? sender, System.Windows.Input.TouchEventArgs e)
+        {
+            if (ScreenShareController.Instance.IsLive)
+            {
+                e.Handled = true;
+                ScreenShareController.Instance.StopAllActiveBroadcasts();
+                UpdateLiveBroadcastUI();
             }
         }
 

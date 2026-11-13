@@ -226,22 +226,19 @@ namespace QASmartClass.Classroom.Views
 				// Tải trước các trang cốt lõi vào Cache khi CPU rảnh để lần mở đầu tiên đạt tốc độ tức thì
 				PrewarmCorePages();
 
-				// Subscribe VNC events (LOI_VID_46)
+				// Subscribe VNC & ScreenShare live status events (LOI_VID_46 + Unified Stop)
 				QASmartClass.Services.VncBroadcastService.Instance.StatusChanged += OnVncBroadcastStatusChanged;
 				QASmartClass.Services.VncBroadcastService.Instance.TimerTick += OnVncBroadcastTimerTick;
+				QASmartClass.Classroom.Services.ScreenShareController.Instance.LiveChanged += OnGlobalScreenShareLiveChanged;
 
-				// Sync initial VNC state if already broadcasting
-				if (QASmartClass.Services.VncBroadcastService.Instance.IsVncBroadcasting)
-				{
-					brdBroadcastStatus.Visibility = Visibility.Visible;
-					txtBroadcastTime.Text = $"🔴 Đang phát VNC ({QASmartClass.Services.VncBroadcastService.Instance.ElapsedTimeDisplay})";
-				}
+				SyncHeaderBroadcastStatusBadge();
 			};
 
 			this.Unloaded += (s, e) =>
 			{
 				QASmartClass.Services.VncBroadcastService.Instance.StatusChanged -= OnVncBroadcastStatusChanged;
 				QASmartClass.Services.VncBroadcastService.Instance.TimerTick -= OnVncBroadcastTimerTick;
+				QASmartClass.Classroom.Services.ScreenShareController.Instance.LiveChanged -= OnGlobalScreenShareLiveChanged;
 
 				foreach (var cachedPage in _pageCache.Values)
 				{
@@ -2642,22 +2639,40 @@ namespace QASmartClass.Classroom.Views
 
 		}
 
+		private void OnGlobalScreenShareLiveChanged(object? sender, EventArgs e)
+		{
+			Dispatcher.BeginInvoke(new Action(SyncHeaderBroadcastStatusBadge));
+		}
+
+		private void SyncHeaderBroadcastStatusBadge()
+		{
+			if (brdBroadcastStatus == null || txtBroadcastTime == null) return;
+			bool isVnc = QASmartClass.Services.VncBroadcastService.Instance.IsVncBroadcasting;
+			bool isLive = QASmartClass.Classroom.Services.ScreenShareController.Instance.IsLive;
+			if (isVnc)
+			{
+				brdBroadcastStatus.Visibility = Visibility.Visible;
+				txtBroadcastTime.Text = $"🔴 Đang phát VNC ({QASmartClass.Services.VncBroadcastService.Instance.ElapsedTimeDisplay}) • Bấm dừng";
+			}
+			else if (isLive)
+			{
+				brdBroadcastStatus.Visibility = Visibility.Visible;
+				txtBroadcastTime.Text = "🔴 Đang trình chiếu • Bấm để dừng";
+			}
+			else
+			{
+				brdBroadcastStatus.Visibility = Visibility.Collapsed;
+			}
+		}
+
 		private void OnVncBroadcastStatusChanged(object? sender, string status)
 		{
 			Dispatcher.Invoke(() =>
 			{
-				if (status == "STARTED")
+				SyncHeaderBroadcastStatusBadge();
+				if (status == "STOPPED_UNEXPECTED")
 				{
-					brdBroadcastStatus.Visibility = Visibility.Visible;
-					txtBroadcastTime.Text = $"🔴 Đang phát VNC ({QASmartClass.Services.VncBroadcastService.Instance.ElapsedTimeDisplay})";
-				}
-				else if (status == "STOPPED" || status == "STOPPED_UNEXPECTED")
-				{
-					brdBroadcastStatus.Visibility = Visibility.Collapsed;
-					if (status == "STOPPED_UNEXPECTED")
-					{
-						ShowToast("Hệ thống", "Tiến trình trình chiếu VNC bị tắt bất ngờ!", "FEEDBACK");
-					}
+					ShowToast("Hệ thống", "Tiến trình trình chiếu VNC bị tắt bất ngờ!", "FEEDBACK");
 				}
 			});
 		}
@@ -2666,19 +2681,21 @@ namespace QASmartClass.Classroom.Views
 		{
 			Dispatcher.Invoke(() =>
 			{
-				txtBroadcastTime.Text = $"🔴 Đang phát VNC ({timeDisplay})";
+				if (QASmartClass.Services.VncBroadcastService.Instance.IsVncBroadcasting)
+				{
+					txtBroadcastTime.Text = $"🔴 Đang phát VNC ({timeDisplay}) • Bấm dừng";
+				}
 			});
 		}
 
-		private async void brdBroadcastStatus_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		private void brdBroadcastStatus_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-			if (QASmartClass.Services.VncBroadcastService.Instance.IsVncBroadcasting)
+			if (QASmartClass.Classroom.Services.ScreenShareController.Instance.IsLive
+				|| QASmartClass.Services.VncBroadcastService.Instance.IsVncBroadcasting)
 			{
-				bool confirm = await ShowAsyncConfirmDialog("Bạn có chắc chắn muốn dừng trình chiếu VNC?");
-				if (confirm)
-				{
-					QASmartClass.Services.VncBroadcastService.Instance.StopBroadcast();
-				}
+				e.Handled = true;
+				QASmartClass.Classroom.Services.ScreenShareController.Instance.StopAllActiveBroadcasts();
+				SyncHeaderBroadcastStatusBadge();
 			}
 		}
 
@@ -2844,8 +2861,33 @@ namespace QASmartClass.Classroom.Views
 		//  [MYTHWARE_LITE] MULTI-CHANNEL & ROOM BEACON HANDLERS
 		// ═══════════════════════════════════════════════════════════
 
-		private void MythwareChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		private bool _suppressChannelChangePrompt;
+
+		private async void MythwareChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			if (_suppressChannelChangePrompt) return;
+
+			if (IsLoaded && QASmartClass.Classroom.Services.ScreenShareController.Instance.IsLive && e.RemovedItems.Count > 0)
+			{
+				bool confirm = await ShowAsyncConfirmDialog(
+					"Hiện đang trong phiên trình chiếu bài giảng.\n\nĐổi Kênh phòng học (Channel 1–20) sẽ dừng phiên trình chiếu hiện tại và phát sóng sang kênh mới. Bạn có muốn tiếp tục?");
+				if (!confirm)
+				{
+					_suppressChannelChangePrompt = true;
+					try
+					{
+						cmbMythwareChannel.SelectedItem = e.RemovedItems[0];
+					}
+					finally
+					{
+						_suppressChannelChangePrompt = false;
+					}
+					return;
+				}
+
+				QASmartClass.Classroom.Services.ScreenShareController.Instance.StopAllActiveBroadcasts();
+			}
+
 			SyncMythwareHeaderToBeacon();
 		}
 
