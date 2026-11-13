@@ -147,36 +147,20 @@ namespace QASmartTouch.Forms
         // TAB 1: DRAWING TOOLS
         private void btnInsertRuler_Click(object sender, RoutedEventArgs e)
         {
-            if (_mainDashboard != null)
-            {
-                _mainDashboard.RegisterRecentTool(
-                    "stem:Ruler",
-                    "Thước kẻ",
-                    QASmartTouch.Services.Tools.RecentToolsManager.RulerIconPath,
-                    Color.FromRgb(0xFF, 0x98, 0x00),
-                    () => _mainDashboard.OpenRulerTool(),
-                    "Dùng lại: Thước kẻ đo chiều dài");
-            }
             SelectedInsertType = "Ruler";
             this.Close();
         }
 
         private void OpenCircleCompassHelper()
         {
-            var circleTool = new Form2_19_CircleDrawingTool();
-            circleTool.Owner = this.Owner ?? _mainDashboard;
-            circleTool.SetMainDashboard(_mainDashboard);
             if (_mainDashboard != null)
             {
-                _mainDashboard.ActiveCircleDrawingTool = circleTool;
-                circleTool.Closed += (s, args) =>
-                {
-                    if (_mainDashboard != null && ReferenceEquals(_mainDashboard.ActiveCircleDrawingTool, circleTool))
-                    {
-                        _mainDashboard.ActiveCircleDrawingTool = null;
-                    }
-                };
+                _mainDashboard.OpenCircleCompassTool();
+                return;
             }
+
+            var circleTool = new Form2_19_CircleDrawingTool();
+            circleTool.Owner = this.Owner;
             circleTool.Show();
         }
 
@@ -184,12 +168,13 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                _mainDashboard?.RegisterRecentTool(
+                var dashboard = _mainDashboard;
+                dashboard?.RegisterRecentTool(
                     "stem:CircleCompass",
                     "Compa",
                     QASmartTouch.Services.Tools.RecentToolsManager.CompassIconPath,
                     Color.FromRgb(0xE9, 0x1E, 0x63),
-                    () => OpenCircleCompassHelper(),
+                    () => dashboard?.OpenCircleCompassTool(),
                     "Dùng lại: Compa vẽ đường tròn");
 
                 // Ẩn menu trước khi mở công cụ con
@@ -208,32 +193,12 @@ namespace QASmartTouch.Forms
 
         private void btnInsertTriangle_Click(object sender, RoutedEventArgs e)
         {
-            if (_mainDashboard != null)
-            {
-                _mainDashboard.RegisterRecentTool(
-                    "stem:SetSquare",
-                    "Thước Ê-ke",
-                    QASmartTouch.Services.Tools.RecentToolsManager.TriangleToolIconPath,
-                    Color.FromRgb(0x4C, 0xAF, 0x50),
-                    () => _mainDashboard.OpenSetSquareTool(),
-                    "Dùng lại: Thước Ê-ke vuông góc");
-            }
             SelectedInsertType = "Triangle";
             this.Close();
         }
 
         private void btnInsertProtractor_Click(object sender, RoutedEventArgs e)
         {
-            if (_mainDashboard != null)
-            {
-                _mainDashboard.RegisterRecentTool(
-                    "stem:Protractor",
-                    "Đo độ",
-                    QASmartTouch.Services.Tools.RecentToolsManager.ProtractorIconPath,
-                    Color.FromRgb(0x9C, 0x27, 0xB0),
-                    () => _mainDashboard.OpenProtractorTool(),
-                    "Dùng lại: Thước đo góc (Đo độ)");
-            }
             SelectedInsertType = "Protractor";
             this.Close();
         }
@@ -352,7 +317,37 @@ namespace QASmartTouch.Forms
 
         // TIẾNG ANH (THẺ TỪ VỰNG & PHÁT ÂM)
         private bool _isEnglishCategoriesBuilt = false;
+        private static string? _lastRememberedEnglishCategoryId = null;
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, System.Windows.Media.Imaging.BitmapImage> _englishCardThumbnailCache = new(StringComparer.OrdinalIgnoreCase);
+
+        public void OpenAtTablePicker()
+        {
+            if (rbCategory2 != null)
+            {
+                rbCategory2.IsChecked = true;
+                Category_Changed(rbCategory2, new RoutedEventArgs());
+            }
+            if (pnlTableQuickPicker != null)
+            {
+                pnlTableQuickPicker.Visibility = Visibility.Visible;
+                EnsureTableMatrixBuilt();
+                HighlightMatrix(3, 3);
+            }
+        }
+
+        public void OpenAtEnglishVocabPicker()
+        {
+            if (rbCategory4 != null)
+            {
+                rbCategory4.IsChecked = true;
+                Category_Changed(rbCategory4, new RoutedEventArgs());
+            }
+            if (pnlEnglishCardsPicker != null)
+            {
+                pnlEnglishCardsPicker.Visibility = Visibility.Visible;
+                EnsureEnglishCategoriesBuilt();
+            }
+        }
 
         private void btnEnglishVocab_Click(object sender, RoutedEventArgs e)
         {
@@ -381,6 +376,7 @@ namespace QASmartTouch.Forms
             if (subject == null || subject.Categories.Count == 0) return;
 
             Button? firstBtn = null;
+            Button? rememberedBtn = null;
             foreach (var cat in subject.Categories)
             {
                 var catBtn = new Button
@@ -419,12 +415,18 @@ namespace QASmartTouch.Forms
                 EnglishCategoryTabBar.Children.Add(catBtn);
 
                 if (firstBtn == null) firstBtn = catBtn;
+                if (!string.IsNullOrEmpty(_lastRememberedEnglishCategoryId) &&
+                    string.Equals(cat.Id, _lastRememberedEnglishCategoryId, StringComparison.OrdinalIgnoreCase))
+                {
+                    rememberedBtn = catBtn;
+                }
             }
 
             _isEnglishCategoriesBuilt = true;
-            if (firstBtn != null)
+            var targetBtn = rememberedBtn ?? firstBtn;
+            if (targetBtn != null)
             {
-                ActivateEnglishCategoryButton(firstBtn);
+                ActivateEnglishCategoryButton(targetBtn);
             }
         }
 
@@ -460,6 +462,7 @@ namespace QASmartTouch.Forms
             if (activeBtn.Tag is QASmartTouch.Services.Tools.CategoryDefinition cat &&
                 QASmartTouch.Services.Tools.SubjectShapeGeometryService.EnglishCards.TryGetValue(cat.Id, out var cards))
             {
+                _lastRememberedEnglishCategoryId = cat.Id;
                 foreach (var card in cards)
                 {
                     var cardBtn = CreateEnglishCardButton(card);
@@ -591,19 +594,8 @@ namespace QASmartTouch.Forms
         {
             if (sender is Button button && button.Tag is QASmartTouch.Services.Tools.EnglishCardDefinition card)
             {
-                var capturedCard = card;
-                string? imgPath = GetEnglishCardImagePath(capturedCard.Word);
-                _mainDashboard?.RegisterRecentTool(
-                    $"eng:{capturedCard.Word}",
-                    $"Từ: {capturedCard.Word}",
-                    QASmartTouch.Services.Tools.RecentToolsManager.BookIconPath,
-                    Color.FromRgb(0x8E, 0x24, 0xAA),
-                    () =>
-                    {
-                        QASmartTouch.Services.Tools.SubjectShapeGeometryService.SpeakWord(capturedCard.Word);
-                        _mainDashboard?.InsertEnglishWordCard(capturedCard.Emoji, capturedCard.Word, capturedCard.Meaning, imgPath);
-                    },
-                    $"Dùng lại thẻ từ vựng: {capturedCard.Word} ({capturedCard.Meaning})");
+                string? imgPath = GetEnglishCardImagePath(card.Word);
+                _mainDashboard?.RecordEnglishVocabRecentTool();
 
                 QASmartTouch.Services.Tools.SubjectShapeGeometryService.SpeakWord(card.Word);
                 _mainDashboard?.InsertEnglishWordCard(card.Emoji, card.Word, card.Meaning, imgPath);
@@ -743,15 +735,7 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                int r = rows;
-                int c = cols;
-                _mainDashboard?.RegisterRecentTool(
-                    $"insert:Table:{r}x{c}",
-                    $"Bảng {r}x{c}",
-                    QASmartTouch.Services.Tools.RecentToolsManager.TableIconPath,
-                    Color.FromRgb(0x9C, 0x27, 0xB0),
-                    () => _mainDashboard?.InsertTableToCanvas(new QASmartTouch.Models.TableData(r, c)),
-                    $"Dùng lại: Chèn bảng {r} hàng x {c} cột");
+                _mainDashboard?.RecordTableRecentTool();
 
                 var tableData = new QASmartTouch.Models.TableData(rows, cols);
                 _mainDashboard?.InsertTableToCanvas(tableData);
@@ -799,6 +783,7 @@ namespace QASmartTouch.Forms
                 bool? result = tableDialog.ShowDialog();
                 if (result == true && tableDialog.ResultTableData != null)
                 {
+                    _mainDashboard?.RecordTableRecentTool();
                     _mainDashboard?.InsertTableToCanvas(tableDialog.ResultTableData);
                     this.Close();
                 }
@@ -818,27 +803,27 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                _mainDashboard?.RegisterRecentTool(
-                    "insert:SmartNote",
-                    "Thẻ ghi chú",
-                    QASmartTouch.Services.Tools.RecentToolsManager.NoteIconPath,
-                    Color.FromRgb(0xF5, 0x9E, 0x0B),
-                    () =>
-                    {
-                        var dlg = new Form2_SmartNoteDialog();
-                        if (WindowHelper.ShowChildDialog(dlg, _mainDashboard) == true && dlg.IsConfirmed && dlg.Model != null)
-                        {
-                            _mainDashboard?.InsertSmartNoteCardToBoard(dlg.Model);
-                        }
-                    },
-                    "Dùng lại: Thêm Thẻ ghi chú / Hộp văn bản");
-
+                var dashboard = _mainDashboard;
                 this.Hide();
                 var noteDialog = new Form2_SmartNoteDialog();
-                bool? result = WindowHelper.ShowChildDialog(noteDialog, _mainDashboard);
+                bool? result = WindowHelper.ShowChildDialog(noteDialog, dashboard);
                 if (result == true && noteDialog.IsConfirmed && noteDialog.Model != null)
                 {
-                    _mainDashboard?.InsertSmartNoteCardToBoard(noteDialog.Model);
+                    dashboard?.RegisterRecentTool(
+                        "insert:SmartNote",
+                        "Thẻ ghi chú",
+                        QASmartTouch.Services.Tools.RecentToolsManager.NoteIconPath,
+                        Color.FromRgb(0xF5, 0x9E, 0x0B),
+                        () =>
+                        {
+                            var dlg = new Form2_SmartNoteDialog();
+                            if (WindowHelper.ShowChildDialog(dlg, dashboard) == true && dlg.IsConfirmed && dlg.Model != null)
+                            {
+                                dashboard?.InsertSmartNoteCardToBoard(dlg.Model);
+                            }
+                        },
+                        "Dùng lại: Thêm Thẻ ghi chú / Hộp văn bản");
+                    dashboard?.InsertSmartNoteCardToBoard(noteDialog.Model);
                 }
                 this.Close();
             }
@@ -878,21 +863,7 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                _mainDashboard?.RegisterRecentTool(
-                    "insert:3DModel",
-                    "Mô hình 3D",
-                    QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
-                    Color.FromRgb(0x00, 0xBC, 0xD4),
-                    () =>
-                    {
-                        var ms = new Form2_20_3DModelSelector { Owner = _mainDashboard };
-                        if (ms.ShowDialog() == true && !string.IsNullOrEmpty(ms.SelectedModelPath) && ms.SelectedModel != null)
-                        {
-                            _mainDashboard?.Insert3DModelToCanvas(ms.SelectedModelPath, ms.SelectedModel);
-                        }
-                    },
-                    "Dùng lại: Chèn Mô hình 3D (OBJ/STL)");
-
+                var dashboard = _mainDashboard;
                 // Ẩn menu trước khi mở dialog con để không bị chồng cửa sổ
                 this.Hide();
                 var modelSelector = new Form2_20_3DModelSelector();
@@ -901,8 +872,23 @@ namespace QASmartTouch.Forms
                 
                 if (result == true && !string.IsNullOrEmpty(modelSelector.SelectedModelPath) && modelSelector.SelectedModel != null)
                 {
+                    dashboard?.RegisterRecentTool(
+                        "insert:3DModel",
+                        "Mô hình 3D",
+                        QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
+                        Color.FromRgb(0x00, 0xBC, 0xD4),
+                        () =>
+                        {
+                            var ms = new Form2_20_3DModelSelector { Owner = dashboard };
+                            if (ms.ShowDialog() == true && !string.IsNullOrEmpty(ms.SelectedModelPath) && ms.SelectedModel != null)
+                            {
+                                dashboard?.Insert3DModelToCanvas(ms.SelectedModelPath, ms.SelectedModel);
+                            }
+                        },
+                        "Dùng lại: Chèn Mô hình 3D (OBJ/STL)");
+
                     // Insert 3D model to canvas
-                    _mainDashboard?.Insert3DModelToCanvas(modelSelector.SelectedModelPath, modelSelector.SelectedModel);
+                    dashboard?.Insert3DModelToCanvas(modelSelector.SelectedModelPath, modelSelector.SelectedModel);
                     System.Diagnostics.Debug.WriteLine($"✅ 3D Model inserted: {modelSelector.SelectedModelPath}");
                 }
                 
@@ -1317,30 +1303,31 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                _mainDashboard?.RegisterRecentTool(
-                    "insert:Graph3D",
-                    "Desmos 3D",
-                    QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
-                    Color.FromRgb(0xE9, 0x1E, 0x63),
-                    () =>
-                    {
-                        var dlg = new Form2_22_Graph3D();
-                        if (WindowHelper.ShowChildDialog(dlg, _mainDashboard) == true && dlg.WasInserted && !string.IsNullOrEmpty(dlg.GraphUrl))
-                        {
-                            _mainDashboard?.InsertGraph3DToCanvas(dlg.GraphUrl);
-                        }
-                    },
-                    "Dùng lại: Đồ thị 3D tương tác (Desmos 3D)");
-
+                var dashboard = _mainDashboard;
                 // Ẩn menu trước khi mở Graph 3D
                 this.Hide();
                 var Graph3DDialog = new Form2_22_Graph3D();
-                bool? result = WindowHelper.ShowChildDialog(Graph3DDialog, _mainDashboard);
+                bool? result = WindowHelper.ShowChildDialog(Graph3DDialog, dashboard);
                 
                 if (result == true && Graph3DDialog.WasInserted && !string.IsNullOrEmpty(Graph3DDialog.GraphUrl))
                 {
+                    dashboard?.RegisterRecentTool(
+                        "insert:Graph3D",
+                        "Desmos 3D",
+                        QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
+                        Color.FromRgb(0xE9, 0x1E, 0x63),
+                        () =>
+                        {
+                            var dlg = new Form2_22_Graph3D();
+                            if (WindowHelper.ShowChildDialog(dlg, dashboard) == true && dlg.WasInserted && !string.IsNullOrEmpty(dlg.GraphUrl))
+                            {
+                                dashboard?.InsertGraph3DToCanvas(dlg.GraphUrl);
+                            }
+                        },
+                        "Dùng lại: Đồ thị 3D tương tác (Desmos 3D)");
+
                     // Insert Graph 3D graph to canvas
-                    _mainDashboard?.InsertGraph3DToCanvas(Graph3DDialog.GraphUrl);
+                    dashboard?.InsertGraph3DToCanvas(Graph3DDialog.GraphUrl);
                     System.Diagnostics.Debug.WriteLine($"✅ Graph 3D graph inserted: {Graph3DDialog.GraphUrl}");
                 }
                 
@@ -1359,30 +1346,31 @@ namespace QASmartTouch.Forms
         {
             try
             {
-                _mainDashboard?.RegisterRecentTool(
-                    "insert:Math3DGraph",
-                    "Đồ thị 3D",
-                    QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
-                    Color.FromRgb(0xE9, 0x1E, 0x63),
-                    () =>
-                    {
-                        var ed = new Form2_Graph3DEditor();
-                        if (WindowHelper.ShowChildDialog(ed, _mainDashboard) == true && ed.ExportedGraphImage != null)
-                        {
-                            _mainDashboard?.InsertGraphToCanvas(ed.ExportedGraphImage, ed.ExportedConfig);
-                        }
-                    },
-                    "Dùng lại: Vẽ Đồ thị 3D z = f(x,y)");
-
+                var dashboard = _mainDashboard;
                 // Ẩn menu trước khi mở đồ thị 3D
                 this.Hide();
                 var graph3DEditor = new Form2_Graph3DEditor();
-                bool? result = WindowHelper.ShowChildDialog(graph3DEditor, _mainDashboard);
+                bool? result = WindowHelper.ShowChildDialog(graph3DEditor, dashboard);
                 
                 if (result == true && graph3DEditor.ExportedGraphImage != null)
                 {
+                    dashboard?.RegisterRecentTool(
+                        "insert:Math3DGraph",
+                        "Đồ thị 3D",
+                        QASmartTouch.Services.Tools.RecentToolsManager.Cube3DIconPath,
+                        Color.FromRgb(0xE9, 0x1E, 0x63),
+                        () =>
+                        {
+                            var ed = new Form2_Graph3DEditor();
+                            if (WindowHelper.ShowChildDialog(ed, dashboard) == true && ed.ExportedGraphImage != null)
+                            {
+                                dashboard?.InsertGraphToCanvas(ed.ExportedGraphImage, ed.ExportedConfig);
+                            }
+                        },
+                        "Dùng lại: Vẽ Đồ thị 3D z = f(x,y)");
+
                     // Insert 3D graph image to canvas with configuration
-                    _mainDashboard?.InsertGraphToCanvas(graph3DEditor.ExportedGraphImage, graph3DEditor.ExportedConfig);
+                    dashboard?.InsertGraphToCanvas(graph3DEditor.ExportedGraphImage, graph3DEditor.ExportedConfig);
                     System.Diagnostics.Debug.WriteLine("✅ 3D Graph inserted to canvas");
                 }
                 

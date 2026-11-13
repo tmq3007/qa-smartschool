@@ -985,9 +985,11 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
                 return container;
             }
 
-            // B. Khung ảnh chèn thông thường (InsertedImage)
-            if (node.Tag == "InsertedImage" || node.BorderThickness > 0 || (node.AnnotationStrokes != null && node.AnnotationStrokes.Count > 0))
+            // B. Khung ảnh chèn thông thường (InsertedImage) — bọc Grid + InkPresenter để luôn viết/vẽ đè lên ảnh được
             {
+                img.HorizontalAlignment = HorizontalAlignment.Stretch;
+                img.VerticalAlignment = VerticalAlignment.Stretch;
+
                 var imageGrid = new Grid();
                 imageGrid.Children.Add(img);
 
@@ -999,21 +1001,20 @@ namespace QASmartClass.WhiteboardCore.IO.SceneGraph
                 RestoreAnnotationStrokes(imgInkPresenter, node.AnnotationStrokes);
                 imageGrid.Children.Add(imgInkPresenter);
 
+                bool hasVisibleBorder = node.BorderThickness > 0 && !string.IsNullOrEmpty(node.BorderColorHex);
                 var border = new Border
                 {
                     Width = totalW,
                     Height = totalH,
                     Child = imageGrid,
-                    BorderBrush = ParseBrush(node.BorderColorHex, new SolidColorBrush(Color.FromRgb(33, 150, 243))),
-                    BorderThickness = new Thickness(node.BorderThickness > 0 ? node.BorderThickness : 2),
-                    CornerRadius = new CornerRadius(4),
-                    Background = Brushes.White,
-                    Tag = node.Tag ?? "InsertedImage"
+                    BorderBrush = hasVisibleBorder ? ParseBrush(node.BorderColorHex, null) : null,
+                    BorderThickness = new Thickness(hasVisibleBorder ? node.BorderThickness : 0),
+                    CornerRadius = new CornerRadius(hasVisibleBorder ? 4 : 0),
+                    Background = Brushes.Transparent,
+                    Tag = "InsertedImage"
                 };
                 return border;
             }
-
-            return img;
         }
 
         private static UIElement RecreateText(SceneElementNode node)

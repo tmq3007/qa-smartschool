@@ -1448,11 +1448,21 @@ namespace QASmartTouch.Forms
 
 
 
+            double currentHeight = container.Height;
+            if (double.IsNaN(currentHeight) || currentHeight <= headerHeight) currentHeight = Math.Round(currentWidth * aspectRatio) + headerHeight;
+
             double newImageHeight = Math.Round(newWidth * aspectRatio);
 
             double newTotalHeight = newImageHeight + headerHeight;
 
-
+            double oldBodyH = Math.Max(1, currentHeight - headerHeight);
+            double sx = newWidth / currentWidth;
+            double sy = newImageHeight / oldBodyH;
+            var inkPresenter = FindContainerInkPresenter(container);
+            if (inkPresenter?.Strokes != null && inkPresenter.Strokes.Count > 0)
+            {
+                inkPresenter.Strokes.Transform(new Matrix(sx, 0, 0, sy, 0, 0), false);
+            }
 
             container.Width = newWidth;
 
@@ -1501,6 +1511,24 @@ namespace QASmartTouch.Forms
 
 
             InsertInteractiveImage(bitmap, sourceUrl + " (Copy)", targetX, targetY);
+
+            // Sao chép kích thước và các nét chú thích đã viết trên ảnh gốc sang bản sao vừa tạo
+            var clonedBorder = MainInteractiveBoard.Children.OfType<Border>().LastOrDefault(b => b.Tag?.ToString() == "InteractiveImage");
+            if (clonedBorder != null && clonedBorder != originalContainer)
+            {
+                if (!double.IsNaN(originalContainer.Width) && originalContainer.Width > 0)
+                    clonedBorder.Width = originalContainer.Width;
+                if (!double.IsNaN(originalContainer.Height) && originalContainer.Height > 0)
+                    clonedBorder.Height = originalContainer.Height;
+
+                var srcInk = FindContainerInkPresenter(originalContainer);
+                var dstInk = FindContainerInkPresenter(clonedBorder);
+                if (srcInk?.Strokes != null && srcInk.Strokes.Count > 0 && dstInk != null)
+                {
+                    dstInk.Strokes = srcInk.Strokes.Clone();
+                }
+                RefreshSelectableObjects();
+            }
 
         }
 

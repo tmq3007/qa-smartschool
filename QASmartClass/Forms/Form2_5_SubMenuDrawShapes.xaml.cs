@@ -18,6 +18,8 @@ namespace QASmartTouch.Forms
         public bool UserSelected { get; private set; } = false;  // ✅ Flag to check if user selected a shape
         private Form2_MainDashboard? _mainDashboard;
         private string _currentCategory = "2D";
+        private static string _lastRememberedSubjectId = "math";
+        private static string? _lastRememberedCategoryId = null;
         
         public Form2_5_SubMenuDrawShapes(Form2_MainDashboard? mainDashboard = null)
         {
@@ -86,10 +88,18 @@ namespace QASmartTouch.Forms
             if (btnChem != null) WireTouchActivation(btnChem, btnSubject_Click);
             if (btnBio != null) WireTouchActivation(btnBio, btnSubject_Click);
 
-            // Mặc định chọn môn Toán học khi mở
-            if (btnMath != null)
+            // Mở lại đúng môn học đã chọn gần nhất (mặc định là Toán học)
+            Button? initialSubjBtn = _lastRememberedSubjectId switch
             {
-                btnSubject_Click(btnMath, new RoutedEventArgs());
+                "physics" => btnPhysics,
+                "chem" => btnChem,
+                "bio" => btnBio,
+                _ => btnMath
+            } ?? btnMath;
+
+            if (initialSubjBtn != null)
+            {
+                btnSubject_Click(initialSubjBtn, new RoutedEventArgs());
             }
         }
 
@@ -123,6 +133,11 @@ namespace QASmartTouch.Forms
         {
             if (sender is Button button && button.Tag is string subjectId)
             {
+                if (!string.Equals(_lastRememberedSubjectId, subjectId, StringComparison.OrdinalIgnoreCase))
+                {
+                    _lastRememberedSubjectId = subjectId;
+                    _lastRememberedCategoryId = null;
+                }
                 ResetCategoryTabStyles();
 
                 switch (subjectId)
@@ -159,6 +174,7 @@ namespace QASmartTouch.Forms
             if (subject == null || subject.Categories.Count == 0) return;
 
             Button? firstBtn = null;
+            Button? rememberedBtn = null;
             foreach (var cat in subject.Categories)
             {
                 var catBtn = new Button
@@ -175,11 +191,17 @@ namespace QASmartTouch.Forms
                 SubCategoryTabBar.Children.Add(catBtn);
 
                 if (firstBtn == null) firstBtn = catBtn;
+                if (!string.IsNullOrEmpty(_lastRememberedCategoryId) &&
+                    string.Equals(cat.Id, _lastRememberedCategoryId, StringComparison.OrdinalIgnoreCase))
+                {
+                    rememberedBtn = catBtn;
+                }
             }
 
-            if (firstBtn != null)
+            var targetBtn = rememberedBtn ?? firstBtn;
+            if (targetBtn != null)
             {
-                ActivateSubCategoryButton(firstBtn);
+                ActivateSubCategoryButton(targetBtn);
             }
         }
 
@@ -215,6 +237,7 @@ namespace QASmartTouch.Forms
             {
                 _currentCategory = cat.Id;
                 SelectedCategory = cat.Id;
+                _lastRememberedCategoryId = cat.Id;
                 UpdateSubjectShapeGallery(cat);
             }
         }
@@ -357,19 +380,8 @@ namespace QASmartTouch.Forms
         {
             if (sender is Button button && button.Tag is EnglishCardDefinition card)
             {
-                var capturedCard = card;
-                string? imgPath = GetCardImagePath(capturedCard.Word);
-                _mainDashboard?.RegisterRecentTool(
-                    $"eng:{capturedCard.Word}",
-                    $"Từ: {capturedCard.Word}",
-                    QASmartTouch.Services.Tools.RecentToolsManager.BookIconPath,
-                    Color.FromRgb(0x8E, 0x24, 0xAA),
-                    () =>
-                    {
-                        SubjectShapeGeometryService.SpeakWord(capturedCard.Word);
-                        _mainDashboard?.InsertEnglishWordCard(capturedCard.Emoji, capturedCard.Word, capturedCard.Meaning, imgPath);
-                    },
-                    $"Dùng lại thẻ từ vựng: {capturedCard.Word} ({capturedCard.Meaning})");
+                string? imgPath = GetCardImagePath(card.Word);
+                _mainDashboard?.RecordEnglishVocabRecentTool();
 
                 // Phát âm tiếng Anh
                 SubjectShapeGeometryService.SpeakWord(card.Word);

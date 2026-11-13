@@ -1,4 +1,4 @@
-﻿<Window FontFamily="Segoe UI" x:Class="QASmartTouch.PeriodicTable.Views.CompareWindow"
+<Window FontFamily="Segoe UI" x:Class="QASmartTouch.PeriodicTable.Views.CompareWindow"
 
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 
@@ -1335,90 +1335,6 @@
             
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-
-                <!-- Nút In PDF -->
-
-                <Button Content="📄 Xuất PDF" 
-
-                        Width="130" 
-
-                        Height="40"
-
-                        Margin="0,0,15,0"
-
-                        Background="#009688"
-
-                        Foreground="White"
-
-                        FontSize="13"
-
-                        FontWeight="SemiBold"
-
-                        Cursor="Hand"
-
-                        Command="{Binding ExportPdfCommand}"
-
-                        ToolTip="Xuất kết quả so sánh ra file PDF">
-
-                    <Button.Style>
-
-                        <Style TargetType="Button">
-
-                            <Setter Property="Template">
-
-                                <Setter.Value>
-
-                                    <ControlTemplate TargetType="Button">
-
-                                        <Border x:Name="border"
-
-                                                Background="{TemplateBinding Background}" 
-
-                                                CornerRadius="6"
-
-                                                BorderThickness="0">
-
-                                            <Border.Effect>
-
-                                                <DropShadowEffect Color="#000000" Opacity="0.15" BlurRadius="8" ShadowDepth="2"/>
-
-                                            </Border.Effect>
-
-                                            <ContentPresenter HorizontalAlignment="Center" 
-
-                                                              VerticalAlignment="Center"/>
-
-                                        </Border>
-
-                                        <ControlTemplate.Triggers>
-
-                                            <Trigger Property="IsMouseOver" Value="True">
-
-                                                <Setter TargetName="border" Property="Background" Value="#00796B"/>
-
-                                            </Trigger>
-
-                                            <Trigger Property="IsPressed" Value="True">
-
-                                                <Setter TargetName="border" Property="Background" Value="#00695C"/>
-
-                                            </Trigger>
-
-                                        </ControlTemplate.Triggers>
-
-                                    </ControlTemplate>
-
-                                </Setter.Value>
-
-                            </Setter>
-
-                        </Style>
-
-                    </Button.Style>
-
-                </Button>
-
-                
 
                 <!-- Nút Đóng -->
 

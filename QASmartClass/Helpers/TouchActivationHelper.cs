@@ -266,17 +266,30 @@ namespace QASmartTouch.Helpers
             if (tabItem == null || GetIsTouchWired(tabItem)) return;
             SetIsTouchWired(tabItem, true);
 
-            tabItem.Focusable = false;
             Stylus.SetIsPressAndHoldEnabled(tabItem, false);
+
+            tabItem.PreviewMouseLeftButtonDown += (s, e) =>
+            {
+                if (!tabItem.IsSelected)
+                {
+                    tabItem.IsSelected = true;
+                }
+            };
 
             tabItem.PreviewTouchDown += (s, e) =>
             {
-                tabItem.IsSelected = true;
+                if (!tabItem.IsSelected)
+                {
+                    tabItem.IsSelected = true;
+                }
             };
 
             tabItem.PreviewStylusDown += (s, e) =>
             {
-                tabItem.IsSelected = true;
+                if (!tabItem.IsSelected)
+                {
+                    tabItem.IsSelected = true;
+                }
             };
         }
 

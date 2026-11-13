@@ -37,32 +37,35 @@ namespace QASmartTouch.Forms
         {
             if (imageSource == null) return;
 
-            // Create container Grid for image + action panel
-            var container = new Grid
-            {
-                Width = Math.Min(imageSource.PixelWidth, 800),
-                Height = Math.Min(imageSource.PixelHeight, 600)
-            };
-
             // Create Image element
             var image = new Image
             {
                 Source = imageSource,
                 Stretch = System.Windows.Media.Stretch.Uniform,
-                Cursor = Cursors.Hand,
                 Tag = "Screenshot"
             };
-            
-            // ✨ NEW: Wrap image in border (border will zoom with image)
-            var imageBorder = new Border
+
+            // ✨ CONTAINER-OWNED INKING: Lớp mực vẽ chuyên dụng nổi trên ảnh chụp màn hình, tự động di chuyển theo ảnh
+            var imageInkPresenter = new InkPresenter
             {
-                Child = image,
-                BorderBrush = null,
-                BorderThickness = new Thickness(0)
+                IsHitTestVisible = false,
+                Tag = "ImageInkPresenter"
             };
-            
-            // Add image border to container (this will be zoomed)
-            container.Children.Add(imageBorder);
+
+            var imageGrid = new Grid();
+            imageGrid.Children.Add(image);
+            imageGrid.Children.Add(imageInkPresenter);
+
+            // Wrap imageGrid in Border (Tag = "InsertedImage" để TryRouteNativeStrokeToContainer & EraseContainerEmbeddedStrokesAt hỗ trợ tự động)
+            var container = new Border
+            {
+                Width = Math.Min(imageSource.PixelWidth, 800),
+                Height = Math.Min(imageSource.PixelHeight, 600),
+                Child = imageGrid,
+                BorderBrush = null,
+                BorderThickness = new Thickness(0),
+                Tag = "InsertedImage"
+            };
 
             // Set initial position (center of canvas)
             double x = (MainInteractiveBoard.ActualWidth - container.Width) / 2;
@@ -83,8 +86,8 @@ namespace QASmartTouch.Forms
                 if (QASmartTouch.Utilities.InputValidationHelper.IsEventFromInteractiveControl(e.OriginalSource, container)) return;
                 
                 // Show this image's border
-                imageBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(33, 150, 243)); // #2196F3
-                imageBorder.BorderThickness = new Thickness(2);
+                container.BorderBrush = new SolidColorBrush(Color.FromRgb(33, 150, 243)); // #2196F3
+                container.BorderThickness = new Thickness(2);
                 
                 // Hide all other images' borders
                 HideOtherActionPanels(container);
@@ -93,14 +96,14 @@ namespace QASmartTouch.Forms
                 dragStart = e.GetPosition(MainInteractiveBoard);
                 originalPosition = new Point(Canvas.GetLeft(container), Canvas.GetTop(container));
                 container.CaptureMouse();
-                Panel.SetZIndex(container, GetMaxZIndex() + 1);
+                Panel.SetZIndex(container, AllocateMediaWidgetZIndex());
                 
                 e.Handled = true;
             };
 
             container.MouseMove += (s, e) =>
             {
-                if (dragStart.HasValue && container.IsMouseCaptured)
+                if (dragStart.HasValue && originalPosition.HasValue && container.IsMouseCaptured)
                 {
                     Point current = e.GetPosition(MainInteractiveBoard);
                     Canvas.SetLeft(container, originalPosition.Value.X + (current.X - dragStart.Value.X));
@@ -139,12 +142,12 @@ namespace QASmartTouch.Forms
             };
 
             // === ZOOM WITH MOUSE WHEEL ===
-            imageBorder.MouseWheel += (s, e) =>
+            container.MouseWheel += (s, e) =>
             {
-                // ✨ FIX: Zoom imageBorder (includes border + image)
-                var transform = imageBorder.RenderTransform as ScaleTransform ?? new ScaleTransform(1, 1);
-                imageBorder.RenderTransform = transform;
-                imageBorder.RenderTransformOrigin = new Point(0.5, 0.5);
+                // ✨ FIX: Zoom container (includes border + image + ink strokes)
+                var transform = container.RenderTransform as ScaleTransform ?? new ScaleTransform(1, 1);
+                container.RenderTransform = transform;
+                container.RenderTransformOrigin = new Point(0.5, 0.5);
 
                 transform.ScaleX *= e.Delta > 0 ? 1.1 : 0.9;
                 transform.ScaleY *= e.Delta > 0 ? 1.1 : 0.9;
@@ -160,8 +163,8 @@ namespace QASmartTouch.Forms
                 // If click is not on this container, hide its border
                 if (!IsMouseOverElement(container, e.GetPosition(MainInteractiveBoard)))
                 {
-                    imageBorder.BorderBrush = null;
-                    imageBorder.BorderThickness = new Thickness(0);
+                    container.BorderBrush = null;
+                    container.BorderThickness = new Thickness(0);
                 }
             };
             MainInteractiveBoard.MouseLeftButtonDown += clickOutsideHandler;
@@ -197,21 +200,14 @@ namespace QASmartTouch.Forms
         /// <summary>
         /// Hide borders of all other image containers
         /// </summary>
-        private void HideOtherActionPanels(Grid currentContainer)
+        private void HideOtherActionPanels(Border currentContainer)
         {
             foreach (UIElement child in MainInteractiveBoard.Children)
             {
-                if (child is Grid grid && grid != currentContainer)
+                if (child is Border border && border != currentContainer && border.Tag?.ToString() == "InsertedImage")
                 {
-                    foreach (UIElement gridChild in grid.Children)
-                    {
-                        // Remove border from imageBorder (Border with Image child)
-                        if (gridChild is Border border && border.Child is Image img && img.Tag?.ToString() == "Screenshot")
-                        {
-                            border.BorderBrush = null;
-                            border.BorderThickness = new Thickness(0);
-                        }
-                    }
+                    border.BorderBrush = null;
+                    border.BorderThickness = new Thickness(0);
                 }
             }
         }

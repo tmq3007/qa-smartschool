@@ -1320,6 +1320,56 @@ namespace QASmartTouch.Services
             var graphClone = QASmartClass.Services.Tools.FunctionGraphCardRenderer.TryCloneGraphCard(border);
             if (graphClone != null) return graphClone;
 
+            // 3b. Khung Ảnh Chèn (InsertedImage chứa Grid -> Image + InkPresenter)
+            if (border.Tag?.ToString() == "InsertedImage" && border.Child is Grid srcImgGrid)
+            {
+                var srcImg = srcImgGrid.Children.OfType<System.Windows.Controls.Image>().FirstOrDefault();
+                var srcInk = srcImgGrid.Children.OfType<System.Windows.Controls.InkPresenter>().FirstOrDefault();
+                if (srcImg != null)
+                {
+                    var clonedImg = new System.Windows.Controls.Image
+                    {
+                        Source = srcImg.Source,
+                        Stretch = srcImg.Stretch,
+                        HorizontalAlignment = srcImg.HorizontalAlignment,
+                        VerticalAlignment = srcImg.VerticalAlignment
+                    };
+                    RenderOptions.SetBitmapScalingMode(clonedImg, BitmapScalingMode.HighQuality);
+
+                    var clonedInk = new System.Windows.Controls.InkPresenter
+                    {
+                        IsHitTestVisible = false,
+                        Tag = "ImageInkPresenter",
+                        Strokes = srcInk?.Strokes != null ? srcInk.Strokes.Clone() : new System.Windows.Ink.StrokeCollection()
+                    };
+
+                    var clonedGrid = new Grid();
+                    clonedGrid.Children.Add(clonedImg);
+                    clonedGrid.Children.Add(clonedInk);
+
+                    var clonedImgBorder = new System.Windows.Controls.Border
+                    {
+                        Width = border.Width,
+                        Height = border.Height,
+                        Child = clonedGrid,
+                        Background = border.Background?.Clone(),
+                        BorderBrush = border.BorderBrush?.Clone(),
+                        BorderThickness = border.BorderThickness,
+                        CornerRadius = border.CornerRadius,
+                        Opacity = border.Opacity,
+                        Tag = "InsertedImage"
+                    };
+
+                    if (border.RenderTransform != null && border.RenderTransform != Transform.Identity)
+                    {
+                        clonedImgBorder.RenderTransform = border.RenderTransform.Clone();
+                        clonedImgBorder.RenderTransformOrigin = border.RenderTransformOrigin;
+                    }
+
+                    return clonedImgBorder;
+                }
+            }
+
             // 4. Nếu Border chứa cây giao diện phức tạp (ví dụ: Bảng biến thiên / Đồ thị nạp từ file .qasc, hoặc Grid/Canvas lồng nhau)
             //    thì dùng XamlWriter/XamlReader để sao chép nguyên vẹn toàn bộ cấu trúc con thay vì tạo StackPanel rỗng.
             bool isSimpleChild = border.Child == null

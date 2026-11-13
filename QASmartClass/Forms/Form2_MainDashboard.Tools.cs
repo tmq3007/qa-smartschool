@@ -70,6 +70,7 @@ namespace QASmartTouch.Forms
 
                 // Apply saved pen settings immediately
                 EnableDrawingMode(_savedBrushType, _savedPenSize, _savedPenColor);
+                RecordCurrentPenRecentTool();
             }
         }
 
@@ -197,6 +198,7 @@ namespace QASmartTouch.Forms
 
                 // Apply saved eraser settings immediately
                 EnableEraserMode(_savedEraserSize, _savedEraserMode);
+                RecordCurrentEraserRecentTool();
             }
         }
 
@@ -2094,6 +2096,7 @@ namespace QASmartTouch.Forms
             }
             catch { }
 
+            RecordRectangleSelectionRecentTool();
             System.Diagnostics.Debug.WriteLine("Selection Mode: Standard Selection Activated via btn8_Select_Click");
         }
 
@@ -2130,6 +2133,7 @@ namespace QASmartTouch.Forms
             catch { }
 
             ShowSmartStatusBadge("📐 Chế độ chọn Chữ nhật: Kéo khoanh vùng các đối tượng trên bảng");
+            RecordRectangleSelectionRecentTool();
             System.Diagnostics.Debug.WriteLine("Selection Mode: Rectangle/Standard Selection Activated");
         }
 
@@ -2991,6 +2995,13 @@ namespace QASmartTouch.Forms
             {
                 _selectedTool = null;
             }
+
+            // Tự động khôi phục công cụ Bút vẽ sau khi thoát chế độ DESKTOP để giáo viên viết chú thích ngay lên bảng/ảnh vừa cắt
+            if (btn1_Pen != null)
+            {
+                SelectTool(btn1_Pen);
+                EnableDrawingMode(_savedBrushType, _savedPenSize, _savedPenColor);
+            }
         }
 
         private void btn12_MoreExtended_Click(object sender, RoutedEventArgs e)
@@ -3174,6 +3185,121 @@ namespace QASmartTouch.Forms
                 $"Dùng lại: {shortTitle} ({eSize}px)");
         }
 
+        private void RecordRectangleSelectionRecentTool()
+        {
+            RegisterRecentTool(
+                "select:Rectangle",
+                "Chọn vùng",
+                QASmartTouch.Services.Tools.RecentToolsManager.SelectRectIconPath,
+                Color.FromRgb(0x2E, 0x86, 0xDE),
+                () => ActivateRectangleSelectionMode(),
+                "Dùng lại: Chọn vùng Chữ nhật");
+        }
+
+        /// <summary>
+        /// Ghi nhận nút menu tổng "Hình học" (giống UMind: lưu đầu mục menu tổng thay vì lưu lẻ từng hình vẽ).
+        /// Khi bấm lại sẽ mở ngay bảng chọn Hình học tại đúng tab môn học/chuyên mục vừa dùng.
+        /// </summary>
+        public void RecordShapesMenuRecentTool()
+        {
+            RegisterRecentTool(
+                "menu:Shapes",
+                "Hình học",
+                QASmartTouch.Services.Tools.RecentToolsManager.ShapeIconPath,
+                Color.FromRgb(0x2E, 0x86, 0xDE),
+                () => OpenShapesSubMenu(),
+                "Dùng lại: Mở thư viện Hình học & Môn học");
+        }
+
+        /// <summary>
+        /// Ghi nhận nút menu tổng "Bảng" (gom chung mọi cỡ bảng & kéo vẽ bảng).
+        /// Khi bấm lại sẽ mở ngay khung chọn Bảng trong menu Chèn.
+        /// </summary>
+        public void RecordTableRecentTool()
+        {
+            RegisterRecentTool(
+                "menu:Table",
+                "Bảng",
+                QASmartTouch.Services.Tools.RecentToolsManager.TableIconPath,
+                Color.FromRgb(0x9C, 0x27, 0xB0),
+                () => OpenInsertSubMenuAtSection("Table"),
+                "Dùng lại: Mở công cụ Chèn bảng");
+        }
+
+        /// <summary>
+        /// Ghi nhận nút menu tổng "Tiếng Anh" (gom chung mọi thẻ từ vựng Tiếng Anh).
+        /// Khi bấm lại sẽ mở ngay kho Thẻ từ vựng Tiếng Anh tại đúng chủ đề vừa chọn.
+        /// </summary>
+        public void RecordEnglishVocabRecentTool()
+        {
+            RegisterRecentTool(
+                "menu:EnglishVocab",
+                "Tiếng Anh",
+                QASmartTouch.Services.Tools.RecentToolsManager.BookIconPath,
+                Color.FromRgb(0x8E, 0x24, 0xAA),
+                () => OpenInsertSubMenuAtSection("EnglishVocab"),
+                "Dùng lại: Mở kho Thẻ từ vựng Tiếng Anh");
+        }
+
+        public void OpenShapesSubMenu()
+        {
+            if (btn5_Shapes != null)
+            {
+                btn5_Shapes_Click(btn5_Shapes, new RoutedEventArgs());
+            }
+        }
+
+        public void OpenInsertSubMenuAtSection(string section)
+        {
+            if (btn6_Inserts == null) return;
+
+            if (_activeSubMenu is Form2_4_SubMenuInsertContent existingMenu)
+            {
+                if (section == "Table") existingMenu.OpenAtTablePicker();
+                else if (section == "EnglishVocab") existingMenu.OpenAtEnglishVocabPicker();
+                try { existingMenu.Activate(); } catch { }
+                return;
+            }
+
+            btn6_Inserts_Click(btn6_Inserts, new RoutedEventArgs());
+            if (_activeSubMenu is Form2_4_SubMenuInsertContent newlyOpenedMenu)
+            {
+                if (section == "Table") newlyOpenedMenu.OpenAtTablePicker();
+                else if (section == "EnglishVocab") newlyOpenedMenu.OpenAtEnglishVocabPicker();
+            }
+        }
+
+        public void OpenCircleCompassTool()
+        {
+            if (ActiveCircleDrawingTool != null)
+            {
+                try
+                {
+                    ActiveCircleDrawingTool.Activate();
+                    ActiveCircleDrawingTool.Focus();
+                    return;
+                }
+                catch
+                {
+                    ActiveCircleDrawingTool = null;
+                }
+            }
+
+            var circleTool = new Form2_19_CircleDrawingTool();
+            circleTool.Owner = this;
+            circleTool.SetMainDashboard(this);
+            ActiveCircleDrawingTool = circleTool;
+            circleTool.Closed += (s, args) =>
+            {
+                if (ReferenceEquals(ActiveCircleDrawingTool, circleTool))
+                {
+                    ActiveCircleDrawingTool = null;
+                }
+            };
+            circleTool.Show();
+            try { circleTool.Activate(); } catch { }
+        }
+
         /// <summary>
         /// Đồng bộ danh sách 3 chức năng gần nhất lên 3 nút trên thanh Toolbar chính.
         /// </summary>
@@ -3204,6 +3330,7 @@ namespace QASmartTouch.Forms
                     var item = items[i];
                     btn.Visibility = Visibility.Visible;
                     btn.ToolTip = item.FullTooltip;
+                    QASmartTouch.Helpers.TouchActivationHelper.WireButton(btn);
 
                     btn.ApplyTemplate();
                     var iconPath = btn.Template?.FindName(iconNames[i], btn) as Path;

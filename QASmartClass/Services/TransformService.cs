@@ -440,6 +440,9 @@ namespace QASmartTouch.Services
             }
             else if (obj.Element is FrameworkElement element)
             {
+                double oldW = !double.IsNaN(element.Width) && element.Width > 0 ? element.Width : element.ActualWidth;
+                double oldH = !double.IsNaN(element.Height) && element.Height > 0 ? element.Height : element.ActualHeight;
+
                 // QC_4.2_RESIZE_GUARD: Tự động gỡ bỏ giới hạn MaxWidth/MaxHeight nếu người dùng phóng to vượt quá giới hạn cũ
                 if (!double.IsPositiveInfinity(element.MaxWidth) && element.MaxWidth < newSize.Width)
                 {
@@ -448,6 +451,29 @@ namespace QASmartTouch.Services
                 if (!double.IsPositiveInfinity(element.MaxHeight) && element.MaxHeight < newSize.Height)
                 {
                     element.MaxHeight = double.PositiveInfinity;
+                }
+
+                // Co giãn đồng bộ lớp mực vẽ nhúng (ImageInkPresenter) khi phóng to/thu nhỏ khung ảnh
+                if (element is Border imgBorder && imgBorder.Tag is string bTag &&
+                    (bTag == "InsertedImage" || bTag == "InteractiveImage") &&
+                    oldW > 1 && oldH > 1)
+                {
+                    double headerH = (bTag == "InteractiveImage") ? 36 : 0;
+                    double oldBodyH = Math.Max(1, oldH - headerH);
+                    double newBodyH = Math.Max(1, newSize.Height - headerH);
+                    double sx = newSize.Width / oldW;
+                    double sy = newBodyH / oldBodyH;
+
+                    if (Math.Abs(sx - 1.0) > 0.001 || Math.Abs(sy - 1.0) > 0.001)
+                    {
+                        var grid = imgBorder.Child as Grid;
+                        var inkPresenter = grid?.Children.OfType<InkPresenter>().FirstOrDefault()
+                            ?? grid?.Children.OfType<Grid>().SelectMany(g => g.Children.OfType<InkPresenter>()).FirstOrDefault();
+                        if (inkPresenter?.Strokes != null && inkPresenter.Strokes.Count > 0)
+                        {
+                            inkPresenter.Strokes.Transform(new Matrix(sx, 0, 0, sy, 0, 0), false);
+                        }
+                    }
                 }
 
                 // Rectangle, Ellipse, TextBlock, Border, Image

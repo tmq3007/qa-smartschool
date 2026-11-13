@@ -48,7 +48,7 @@ namespace QASmartTouch.Forms
                 {
                     if (fe.Tag is string tag)
                     {
-                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "Interactive3DModel" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "InteractiveLocalVideo" || tag == "LocalVideoContainer" || tag == "PhETSimulation" || tag == "YooBookSimulation" || tag == "PhysicsSimulation" || tag == "InteractiveImage" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel" || tag == "VideoControlPanel")
+                        if (tag == "DragHandle" || tag == "ResizeHandle" || tag == "Interactive3DModel" || tag == "GoogleMaps" || tag == "InteractiveYouTubeVideo" || tag == "InteractiveGoogleMaps" || tag == "InteractiveLocalVideo" || tag == "LocalVideoContainer" || tag == "PhETSimulation" || tag == "YooBookSimulation" || tag == "PhysicsSimulation" || tag == "SelectionBox" || tag == "YouTubeControlPanel" || tag == "GoogleMapsControlPanel" || tag == "VideoControlPanel")
                         {
                             return true;
                         }
@@ -2775,22 +2775,7 @@ namespace QASmartTouch.Forms
 
             if (!string.IsNullOrWhiteSpace(shapeName))
             {
-                string capturedShape = shapeName;
-                var (shortTitle, iconPath, accentColor) = QASmartTouch.Services.Tools.RecentToolsManager.GetShapeMetadata(capturedShape);
-                RegisterRecentTool(
-                    $"shape:{capturedShape}",
-                    shortTitle,
-                    iconPath,
-                    accentColor,
-                    () =>
-                    {
-                        DeactivateAllTools();
-                        CloseAllSubmenus();
-                        SelectTool(btn5_Shapes);
-                        HideWelcomeState();
-                        EnableShapeDrawingMode(capturedShape);
-                    },
-                    $"Dùng lại: Vẽ {shortTitle}");
+                RecordShapesMenuRecentTool();
             }
         }
 
@@ -7131,6 +7116,32 @@ namespace QASmartTouch.Forms
         /// 2. Tự động di chuyển theo Bảng / Ảnh khi kéo thả mà không bị lệch hay trôi.
         /// 3. Ảnh mới chèn che lấp hoàn toàn nét chữ nền cũ trên bảng trắng (Z=100).
         /// </summary>
+        private static InkPresenter? FindContainerInkPresenter(DependencyObject? root)
+        {
+            if (root == null) return null;
+            if (root is InkPresenter ip) return ip;
+
+            if (root is Border b)
+            {
+                return FindContainerInkPresenter(b.Child);
+            }
+
+            if (root is Panel panel)
+            {
+                foreach (UIElement child in panel.Children)
+                {
+                    if (child is InkPresenter directIp) return directIp;
+                }
+                foreach (UIElement child in panel.Children)
+                {
+                    var nestedIp = FindContainerInkPresenter(child);
+                    if (nestedIp != null) return nestedIp;
+                }
+            }
+
+            return null;
+        }
+
         public bool TryRouteNativeStrokeToContainer(Stroke stroke)
         {
             if (stroke == null || MainInteractiveBoard == null) return false;
@@ -7157,7 +7168,7 @@ namespace QASmartTouch.Forms
 
                     if (tableBodyRect.Contains(elemRect) || tableBodyRect.Contains(strokeCenter))
                     {
-                        var tableInkPresenter = sp.Children.OfType<Grid>().FirstOrDefault()?.Children.OfType<InkPresenter>().FirstOrDefault();
+                        var tableInkPresenter = FindContainerInkPresenter(sp);
                         if (tableInkPresenter != null)
                         {
                             // Chuyển đổi tọa độ nét vẽ sang hệ tọa độ cục bộ của thân bảng
@@ -7174,8 +7185,15 @@ namespace QASmartTouch.Forms
                 }
             }
 
-            // 2. Kiểm tra các Ảnh tương tác (InteractiveImage / InsertedImage)
-            foreach (UIElement child in MainInteractiveBoard.Children)
+            // 2. Kiểm tra các Ảnh tương tác (InteractiveImage / InsertedImage / ScreenshotContainer)
+            // Duyệt theo thứ tự Z-Index giảm dần để ưu tiên ảnh nằm trên cùng khi các ảnh xếp chồng nhau
+            var imageCandidates = MainInteractiveBoard.Children.Cast<UIElement>()
+                .Where(c => (c is Border b && b.Tag is string tag && (tag == "InteractiveImage" || tag == "InsertedImage")) ||
+                            (c is Grid g && g.Tag is string sTag && sTag == "ScreenshotContainer"))
+                .OrderByDescending(c => Panel.GetZIndex(c))
+                .ToList();
+
+            foreach (UIElement child in imageCandidates)
             {
                 if (child is Border b && b.Tag is string tag && (tag == "InteractiveImage" || tag == "InsertedImage"))
                 {
@@ -7189,10 +7207,14 @@ namespace QASmartTouch.Forms
                     double headerHeight = (tag == "InteractiveImage") ? 36 : 0;
                     Rect imageBodyRect = new Rect(left, top + headerHeight, width, Math.Max(10, height - headerHeight));
 
-                    if (imageBodyRect.Contains(elemRect) || imageBodyRect.Contains(strokeCenter))
+                    bool isHit = (tag == "InsertedImage")
+                        ? imageBodyRect.IntersectsWith(elemRect)
+                        : (imageBodyRect.Contains(elemRect) || imageBodyRect.Contains(strokeCenter) ||
+                           stroke.StylusPoints.Any(sp => imageBodyRect.Contains(new Point(sp.X, sp.Y))));
+
+                    if (isHit)
                     {
-                        var grid = b.Child as Grid;
-                        var imgInkPresenter = grid?.Children.OfType<InkPresenter>().FirstOrDefault();
+                        var imgInkPresenter = FindContainerInkPresenter(b);
                         if (imgInkPresenter != null)
                         {
                             // Chuyển đổi tọa độ nét vẽ sang hệ tọa độ cục bộ của thân ảnh
@@ -7202,7 +7224,33 @@ namespace QASmartTouch.Forms
 
                             imgInkPresenter.Strokes.Add(stroke);
                             RecordAddStrokeAction(stroke, "Draw stroke on Image", imgInkPresenter);
-                            System.Diagnostics.Debug.WriteLine($"🏷️ [Container Inking] Attached native stroke to Image at ({left:F0}, {top:F0})");
+                            System.Diagnostics.Debug.WriteLine($"🏷️ [Container Inking] Attached native stroke to Image ({tag}) at ({left:F0}, {top:F0})");
+                            return true;
+                        }
+                    }
+                }
+                else if (child is Grid screenshotGrid && screenshotGrid.Tag is string sTag && sTag == "ScreenshotContainer")
+                {
+                    double left = Canvas.GetLeft(screenshotGrid);
+                    double top = Canvas.GetTop(screenshotGrid);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = screenshotGrid.ActualWidth > 0 ? screenshotGrid.ActualWidth : screenshotGrid.Width;
+                    double height = screenshotGrid.ActualHeight > 0 ? screenshotGrid.ActualHeight : screenshotGrid.Height;
+
+                    Rect imageBodyRect = new Rect(left, top, width, Math.Max(10, height));
+                    if (imageBodyRect.IntersectsWith(elemRect))
+                    {
+                        var imgInkPresenter = FindContainerInkPresenter(screenshotGrid);
+                        if (imgInkPresenter != null)
+                        {
+                            double dx = -left;
+                            double dy = -top;
+                            stroke.Transform(new Matrix(1, 0, 0, 1, dx, dy), false);
+
+                            imgInkPresenter.Strokes.Add(stroke);
+                            RecordAddStrokeAction(stroke, "Draw stroke on Image", imgInkPresenter);
+                            System.Diagnostics.Debug.WriteLine($"🏷️ [Container Inking] Attached native stroke to Screenshot at ({left:F0}, {top:F0})");
                             return true;
                         }
                     }
@@ -7249,12 +7297,12 @@ namespace QASmartTouch.Forms
         /// <summary>
         /// Tẩy xóa nét vẽ trên các InkPresenter nhúng trong Container (Table / Image / Chart)
         /// </summary>
-        public void EraseContainerEmbeddedStrokesAt(Point point, bool isPointMode, Point? lastPoint = null)
+        public void EraseContainerEmbeddedStrokesAt(Point point, bool isPointMode, Point? lastPoint = null, string sessionKey = "mouse")
         {
             var eraserTool = _whiteboardManager?.ToolManager.EraserTool;
             if (eraserTool == null || MainInteractiveBoard == null) return;
 
-            var session = eraserTool.GetSession("mouse");
+            var session = eraserTool.GetSession(sessionKey) ?? eraserTool.StartSession(sessionKey);
 
             // 1. Kiểm tra Bảng dữ liệu
             foreach (UIElement child in MainInteractiveBoard.Children)
@@ -7271,7 +7319,7 @@ namespace QASmartTouch.Forms
                     Rect tableBodyRect = new Rect(left, top + 34, width, Math.Max(10, height - 34));
                     if (tableBodyRect.Contains(point))
                     {
-                        var tableInkPresenter = sp.Children.OfType<Grid>().FirstOrDefault()?.Children.OfType<InkPresenter>().FirstOrDefault();
+                        var tableInkPresenter = FindContainerInkPresenter(sp);
                         if (tableInkPresenter?.Strokes != null && tableInkPresenter.Strokes.Count > 0)
                         {
                             Point localPt = new Point(point.X - left, point.Y - (top + 34));
@@ -7299,23 +7347,46 @@ namespace QASmartTouch.Forms
 
                     double headerHeight = (imgTag == "InteractiveImage") ? 36 : 0;
                     Rect imageBodyRect = new Rect(left, top + headerHeight, width, Math.Max(10, height - headerHeight));
-                    if (imageBodyRect.Contains(point))
+                    var imgInkPresenter = FindContainerInkPresenter(b);
+                    if (imgInkPresenter?.Strokes != null && imgInkPresenter.Strokes.Count > 0 &&
+                        (imgTag == "InsertedImage" || imageBodyRect.Contains(point)))
                     {
-                        var grid = b.Child as Grid;
-                        var imgInkPresenter = grid?.Children.OfType<InkPresenter>().FirstOrDefault();
-                        if (imgInkPresenter?.Strokes != null && imgInkPresenter.Strokes.Count > 0)
-                        {
-                            Point localPt = new Point(point.X - left, point.Y - (top + headerHeight));
-                            Point? localLastPt = lastPoint.HasValue ? new Point(lastPoint.Value.X - left, lastPoint.Value.Y - (top + headerHeight)) : null;
+                        Point localPt = new Point(point.X - left, point.Y - (top + headerHeight));
+                        Point? localLastPt = lastPoint.HasValue ? new Point(lastPoint.Value.X - left, lastPoint.Value.Y - (top + headerHeight)) : null;
 
-                            if (isPointMode)
-                            {
-                                eraserTool.EraseByPointAt(imgInkPresenter.Strokes, localPt, localLastPt, _eraserSize, session);
-                            }
-                            else
-                            {
-                                eraserTool.EraseByStrokeAt(imgInkPresenter.Strokes, localPt, _eraserSize, session);
-                            }
+                        if (isPointMode)
+                        {
+                            eraserTool.EraseByPointAt(imgInkPresenter.Strokes, localPt, localLastPt, _eraserSize, session);
+                        }
+                        else
+                        {
+                            eraserTool.EraseByStrokeAt(imgInkPresenter.Strokes, localPt, _eraserSize, session);
+                        }
+                    }
+                }
+                else if (child is Grid screenshotGrid && screenshotGrid.Tag is string sTag && sTag == "ScreenshotContainer")
+                {
+                    double left = Canvas.GetLeft(screenshotGrid);
+                    double top = Canvas.GetTop(screenshotGrid);
+                    if (double.IsNaN(left)) left = 0;
+                    if (double.IsNaN(top)) top = 0;
+                    double width = screenshotGrid.ActualWidth > 0 ? screenshotGrid.ActualWidth : screenshotGrid.Width;
+                    double height = screenshotGrid.ActualHeight > 0 ? screenshotGrid.ActualHeight : screenshotGrid.Height;
+
+                    Rect imageBodyRect = new Rect(left, top, width, Math.Max(10, height));
+                    var imgInkPresenter = FindContainerInkPresenter(screenshotGrid);
+                    if (imgInkPresenter?.Strokes != null && imgInkPresenter.Strokes.Count > 0 && imageBodyRect.Contains(point))
+                    {
+                        Point localPt = new Point(point.X - left, point.Y - top);
+                        Point? localLastPt = lastPoint.HasValue ? new Point(lastPoint.Value.X - left, lastPoint.Value.Y - top) : null;
+
+                        if (isPointMode)
+                        {
+                            eraserTool.EraseByPointAt(imgInkPresenter.Strokes, localPt, localLastPt, _eraserSize, session);
+                        }
+                        else
+                        {
+                            eraserTool.EraseByStrokeAt(imgInkPresenter.Strokes, localPt, _eraserSize, session);
                         }
                     }
                 }
@@ -9231,13 +9302,7 @@ namespace QASmartTouch.Forms
             MainInteractiveBoard.Cursor = Cursors.Cross;
             MainScrollViewer.Cursor = Cursors.Cross;
 
-            RegisterRecentTool(
-                "insert:TableDraw",
-                "Kéo vẽ bảng",
-                QASmartTouch.Services.Tools.RecentToolsManager.TableIconPath,
-                Color.FromRgb(0x25, 0x63, 0xEB),
-                () => EnableTableDrawingMode(),
-                "Dùng lại: Kéo vẽ bảng trực tiếp trên trang");
+            RecordTableRecentTool();
         }
 
         /// <summary>
@@ -11527,70 +11592,96 @@ namespace QASmartTouch.Forms
                     bitmap.UriSource = new Uri(openDialog.FileName, UriKind.Absolute);
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
                     bitmap.EndInit();
+                    bitmap.Freeze();
 
-                    // Create Image control (QC_4.2_IMAGE_RESIZE_FIX: Không đặt MaxWidth/MaxHeight cứng để cho phép phóng to tự do)
-                    var image = new Image
-                    {
-                        Source = bitmap,
-                        Stretch = Stretch.Uniform,
-                        MaxWidth = 400,
-                        MaxHeight = 400,
-                        Cursor = Cursors.Hand
-                    };
+                    double pixelW = bitmap.PixelWidth > 0 ? bitmap.PixelWidth : 400;
+                    double pixelH = bitmap.PixelHeight > 0 ? bitmap.PixelHeight : 300;
+                    double aspectRatio = pixelW / pixelH;
 
-                    // Calculate size maintaining aspect ratio
-                    double aspectRatio = bitmap.PixelWidth / (double)bitmap.PixelHeight;
-                    if (bitmap.PixelWidth > 400 || bitmap.PixelHeight > 400)
+                    double displayW = pixelW;
+                    double displayH = pixelH;
+                    if (pixelW > 500 || pixelH > 500)
                     {
                         if (aspectRatio > 1)
                         {
-                            image.Width = 400;
-                            image.Height = 400 / aspectRatio;
+                            displayW = 500;
+                            displayH = Math.Round(500 / aspectRatio);
                         }
                         else
                         {
-                            image.Height = 400;
-                            image.Width = 400 * aspectRatio;
+                            displayH = 500;
+                            displayW = Math.Round(500 * aspectRatio);
                         }
                     }
-                    else
+
+                    // Create Image control (không đặt MaxWidth/MaxHeight cứng để cho phép phóng to/thu nhỏ tự do qua SelectionBox)
+                    var image = new Image
                     {
-                        image.Width = bitmap.PixelWidth;
-                        image.Height = bitmap.PixelHeight;
-                    }
+                        Source = bitmap,
+                        Stretch = Stretch.Fill,
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Stretch
+                    };
+                    RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
+
+                    // ✨ CONTAINER-OWNED INKING: Lớp mực vẽ chuyên dụng nổi trên mặt ảnh, tự động di chuyển và co giãn theo ảnh
+                    var imageInkPresenter = new InkPresenter
+                    {
+                        IsHitTestVisible = false,
+                        Tag = "ImageInkPresenter"
+                    };
+
+                    var imageGrid = new Grid();
+                    imageGrid.Children.Add(image);
+                    imageGrid.Children.Add(imageInkPresenter);
+
+                    var container = new Border
+                    {
+                        Width = displayW,
+                        Height = displayH,
+                        Child = imageGrid,
+                        Background = Brushes.Transparent,
+                        BorderBrush = null,
+                        BorderThickness = new Thickness(0),
+                        Tag = "InsertedImage"
+                    };
+
+                    // Tắt trễ cảm ứng Windows (Press-and-Hold / Flicks) để viết/vẽ lên ảnh ăn ngay từ điểm chạm đầu tiên trên màn 86"
+                    Stylus.SetIsPressAndHoldEnabled(container, false);
+                    Stylus.SetIsFlicksEnabled(container, false);
+                    Stylus.SetIsTapFeedbackEnabled(container, false);
+                    Stylus.SetIsTouchFeedbackEnabled(container, false);
+                    Stylus.SetIsPressAndHoldEnabled(image, false);
+                    Stylus.SetIsFlicksEnabled(image, false);
+                    Stylus.SetIsTapFeedbackEnabled(image, false);
+                    Stylus.SetIsTouchFeedbackEnabled(image, false);
 
                     // Position image at center of canvas
-                    double left = (MainInteractiveBoard.ActualWidth - image.Width) / 2;
-                    double top = (MainInteractiveBoard.ActualHeight - image.Height) / 2;
-                    
-                    Canvas.SetLeft(image, left);
-                    Canvas.SetTop(image, top);
+                    double boardW = MainInteractiveBoard.ActualWidth > 0 ? MainInteractiveBoard.ActualWidth : 1920;
+                    double boardH = MainInteractiveBoard.ActualHeight > 0 ? MainInteractiveBoard.ActualHeight : 1080;
+                    double left = Math.Max(0, (boardW - displayW) / 2);
+                    double top = Math.Max(0, (boardH - displayH) / 2);
+
+                    Canvas.SetLeft(container, left);
+                    Canvas.SetTop(container, top);
 
                     // Add to canvas (QC_4.2_MILESTONE_ZINDEX: Cấp phát Z-Index cao hơn nét vẽ cũ)
                     int mediaZ = AllocateMediaWidgetZIndex();
-                    Panel.SetZIndex(image, mediaZ);
-                    MainInteractiveBoard.Children.Add(image);
+                    Panel.SetZIndex(container, mediaZ);
+                    MainInteractiveBoard.Children.Add(container);
 
                     // Add to undo stack
-                    RecordAddAction(image, "Draw");
+                    RecordAddAction(container, "Chèn hình ảnh");
 
-                    // Đăng ký ngay vào SelectionManager để công cụ Chọn vùng có thể chọn và resize ngay lập tức
+                    // Đăng ký ngay vào SelectionManager để công cụ Chọn vùng có thể chọn, di chuyển, xoay và resize ngay lập tức
+                    RegisterNewObjectWithSelectionManager(container);
                     RefreshSelectableObjects();
 
-                    // Make image draggable (enable selection tool temporarily)
-                    image.MouseDown += (s, e) =>
+                    // Tự động kích hoạt lại chế độ Bút vẽ sau khi đóng hộp thoại Chèn ảnh để giáo viên viết lên ảnh ngay lập tức
+                    if (!_drawingEnabled && !_objectSelectionMode && !_eraserEnabled && !_shapeDrawingEnabled)
                     {
-                        if (_drawingEnabled || _eraserEnabled || _shapeDrawingEnabled) return;
-
-                        if (e.LeftButton == MouseButtonState.Pressed)
-                        {
-                            _selectedElement = image;
-                            _selectionStartPoint = e.GetPosition(MainInteractiveBoard);
-                            _isDraggingElement = true;
-                            MainInteractiveBoard.CaptureMouse();
-                            e.Handled = true;
-                        }
-                    };
+                        EnableDrawingMode(_currentBrushType, _currentPenSize, _currentPenColor);
+                    }
                 }
                 catch (Exception ex)
                 {

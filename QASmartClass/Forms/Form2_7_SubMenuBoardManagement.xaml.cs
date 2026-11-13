@@ -255,22 +255,7 @@ namespace QASmartTouch.Forms
 
         private void btnScreenshot_Click(object sender, RoutedEventArgs e)
         {
-            _mainDashboard?.RegisterRecentTool(
-                "board:Screenshot",
-                "Chụp vùng",
-                QASmartTouch.Services.Tools.RecentToolsManager.SelectRectIconPath,
-                Color.FromRgb(0x00, 0xB8, 0x94),
-                () =>
-                {
-                    var shot = new Form2_7_2_ScreenshotRegion();
-                    shot.ShowDialog();
-                    if (shot.PlaceOnBoard && shot.CapturedImage != null)
-                    {
-                        _mainDashboard?.AddImageToCanvas(shot.CapturedImage);
-                    }
-                },
-                "Dùng lại: Chụp vùng màn hình đưa vào bảng");
-
+            var dashboard = _mainDashboard;
             // Close board menu first
             this.Close();
             
@@ -281,8 +266,24 @@ namespace QASmartTouch.Forms
             // ✨ FIX: Don't check DialogResult, just check PlaceOnBoard and CapturedImage
             if (screenshotTool.PlaceOnBoard && screenshotTool.CapturedImage != null)
             {
+                dashboard?.RegisterRecentTool(
+                    "board:Screenshot",
+                    "Chụp vùng",
+                    QASmartTouch.Services.Tools.RecentToolsManager.SelectRectIconPath,
+                    Color.FromRgb(0x00, 0xB8, 0x94),
+                    () =>
+                    {
+                        var shot = new Form2_7_2_ScreenshotRegion();
+                        shot.ShowDialog();
+                        if (shot.PlaceOnBoard && shot.CapturedImage != null)
+                        {
+                            dashboard?.AddImageToCanvas(shot.CapturedImage);
+                        }
+                    },
+                    "Dùng lại: Chụp vùng màn hình đưa vào bảng");
+
                 // Add image to canvas
-                _mainDashboard?.AddImageToCanvas(screenshotTool.CapturedImage);
+                dashboard?.AddImageToCanvas(screenshotTool.CapturedImage);
             }
         }
 

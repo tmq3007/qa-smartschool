@@ -452,7 +452,7 @@ namespace QASmartTouch.Forms
                     }
                 }
                 // ✨ Tẩy xóa nét vẽ trên các container học liệu (Bảng/Ảnh)
-                EraseContainerEmbeddedStrokesAt(pos, mode == "Point", lastPos);
+                EraseContainerEmbeddedStrokesAt(pos, mode == "Point", lastPos, $"touch_{touchId}");
             };
             _touchHandler.OnEndTouchEraseSession = (touchId) =>
             {

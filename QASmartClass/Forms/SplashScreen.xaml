@@ -4,7 +4,7 @@
 
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 
-        Title="QA SmartBoard"
+        Title="QA Smart Touch"
 
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
 
@@ -80,7 +80,7 @@
 
                     <Run Text="QA " FontSize="30" FontWeight="Light" Foreground="#8E9AAF"/>
 
-                    <Run Text="SmartBoard" FontSize="30" FontWeight="Bold" Foreground="White"/>
+                    <Run Text="Smart Touch" FontSize="30" FontWeight="Bold" Foreground="White"/>
 
                 </TextBlock>
 
